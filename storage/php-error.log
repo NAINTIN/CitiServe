@@ -1,0 +1,24 @@
+[14-Mar-2026 10:21:21 UTC] PHP Fatal error:  Uncaught Error: Call to undefined method DocumentRequestRepository::getAllWithUserAndService() in /srv/http/CitiServe/public/admin/requests.php:78
+Stack trace:
+#0 {main}
+  thrown in /srv/http/CitiServe/public/admin/requests.php on line 78
+[14-Mar-2026 10:22:50 UTC] PHP Fatal error:  Uncaught Error: Call to undefined method DocumentRequestRepository::getAllWithUserAndService() in /srv/http/CitiServe/public/admin/requests.php:78
+Stack trace:
+#0 {main}
+  thrown in /srv/http/CitiServe/public/admin/requests.php on line 78
+[14-Mar-2026 10:24:17 UTC] PHP Fatal error:  Uncaught Error: Call to undefined method DocumentRequestRepository::getAllWithUserAndService() in /srv/http/CitiServe/public/admin/requests.php:78
+Stack trace:
+#0 {main}
+  thrown in /srv/http/CitiServe/public/admin/requests.php on line 78
+[14-Mar-2026 10:24:18 UTC] PHP Fatal error:  Uncaught Error: Call to undefined method DocumentRequestRepository::getAllWithUserAndService() in /srv/http/CitiServe/public/admin/requests.php:78
+Stack trace:
+#0 {main}
+  thrown in /srv/http/CitiServe/public/admin/requests.php on line 78
+[14-Mar-2026 10:24:18 UTC] PHP Fatal error:  Uncaught Error: Call to undefined method DocumentRequestRepository::getAllWithUserAndService() in /srv/http/CitiServe/public/admin/requests.php:78
+Stack trace:
+#0 {main}
+  thrown in /srv/http/CitiServe/public/admin/requests.php on line 78
+[14-Mar-2026 10:24:19 UTC] PHP Fatal error:  Uncaught Error: Call to undefined method DocumentRequestRepository::getAllWithUserAndService() in /srv/http/CitiServe/public/admin/requests.php:78
+Stack trace:
+#0 {main}
+  thrown in /srv/http/CitiServe/public/admin/requests.php on line 78

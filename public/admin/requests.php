@@ -1,15 +1,17 @@
 <?php
 ini_set('display_errors', 0);
-ini_set('display_startup_errors', 0);
+ini_set('log_errors', 1);
+ini_set('error_log', __DIR__ . '/../../storage/php-error.log');
 error_reporting(E_ALL);
-
 require_once __DIR__ . '/../../app/helpers/auth.php';
 require_once __DIR__ . '/../../app/helpers/csrf.php';
 require_once __DIR__ . '/../../app/repositories/DocumentRequestRepository.php';
+require_once __DIR__ . '/../../app/repositories/NotificationRepository.php';
 require_once __DIR__ . '/../../app/core/Database.php';
 
 $admin = require_admin();
 $requestRepo = new DocumentRequestRepository();
+$notifRepo = new NotificationRepository();
 $db = Database::getInstance()->getConnection();
 
 $allowedStatuses = ['received', 'pending', 'claimable', 'rejected', 'released'];
@@ -35,8 +37,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {
             $db->beginTransaction();
             try {
+                // 1) Update request status
                 $requestRepo->updateStatus($requestId, $newStatus);
 
+                // 2) Save status history
                 $stmt = $db->prepare("
                     INSERT INTO status_history (entity_type, entity_id, old_status, new_status, changed_by, notes)
                     VALUES ('document_request', ?, ?, ?, ?, ?)
@@ -49,17 +53,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $notes !== '' ? $notes : null
                 ]);
 
+                // 3) Notify resident
+                if (!empty($current['user_id'])) {
+                    $notifRepo->create(
+                        (int)$current['user_id'],
+                        'Document Request Update',
+                        "Your request #{$requestId} status is now '{$newStatus}'.",
+                        '/CitiServe/public/my_requests.php'
+                    );
+                }
+
                 $db->commit();
                 $message = "Request #{$requestId} updated to '{$newStatus}'.";
             } catch (Throwable $e) {
-                if ($db->inTransaction()) $db->rollBack();
-                $error = 'Failed to update request.';
-            }
+    if ($db->inTransaction()) $db->rollBack();
+    error_log('ADMIN REQUEST UPDATE ERROR: ' . $e->getMessage());
+    error_log($e->getTraceAsString());
+    $error = 'Failed to update request.';
+}
         }
     }
 }
 
-$rows = $requestRepo->getAllWithUserAndService();
+$rows = $requestRepo->getAllWithUsers();
 ?>
 <!doctype html>
 <html>

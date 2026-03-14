@@ -54,6 +54,7 @@ class DocumentRequestRepository
         $stmt = $this->db->query("
             SELECT
                 dr.id,
+                dr.user_id,
                 dr.status,
                 dr.purpose,
                 dr.payment_reference,
@@ -74,7 +75,7 @@ class DocumentRequestRepository
     public function findById(int $id): ?array
     {
         $stmt = $this->db->prepare("
-            SELECT id, status
+            SELECT id, user_id, status
             FROM document_requests
             WHERE id = ?
             LIMIT 1

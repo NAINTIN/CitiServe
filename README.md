@@ -4,6 +4,8 @@ This document explains the **MySQL database structure** for CitiServe and how to
 
 ---
 
+To access the system go to localhost/CitiServe/public
+
 Before Pushing Please export citiserve_db then put it in the Citiserve folder so if you made any changes we can just import it back and forth
 
 

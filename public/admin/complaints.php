@@ -6,10 +6,12 @@ error_reporting(E_ALL);
 require_once __DIR__ . '/../../app/helpers/auth.php';
 require_once __DIR__ . '/../../app/helpers/csrf.php';
 require_once __DIR__ . '/../../app/repositories/ComplaintRepository.php';
+require_once __DIR__ . '/../../app/repositories/NotificationRepository.php';
 require_once __DIR__ . '/../../app/core/Database.php';
 
 $admin = require_admin();
 $repo = new ComplaintRepository();
+$notifRepo = new NotificationRepository();
 $db = Database::getInstance()->getConnection();
 
 $allowedStatuses = ['submitted', 'under_review', 'in_progress', 'resolved', 'rejected'];
@@ -35,8 +37,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {
             $db->beginTransaction();
             try {
+                // 1) Update complaint status
                 $repo->updateStatus($complaintId, $newStatus);
 
+                // 2) Save status history
                 $stmt = $db->prepare("
                     INSERT INTO status_history (entity_type, entity_id, old_status, new_status, changed_by, notes)
                     VALUES ('complaint', ?, ?, ?, ?, ?)
@@ -48,6 +52,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     (int)$admin['id'],
                     $notes !== '' ? $notes : null
                 ]);
+
+                // 3) Notify complainant (if not anonymous record edge-case)
+                if (!empty($current['user_id'])) {
+                    $notifRepo->create(
+                        (int)$current['user_id'],
+                        'Complaint Update',
+                        "Your complaint #{$complaintId} status is now '{$newStatus}'.",
+                        '/CitiServe/public/my_complaints.php'
+                    );
+                }
 
                 $db->commit();
                 $message = "Complaint #{$complaintId} updated to '{$newStatus}'.";

@@ -1,12 +1,24 @@
 <?php
 require_once __DIR__ . '/../app/repositories/UserRepository.php';
+require_once __DIR__ . '/../app/repositories/NotificationRepository.php';
 session_start();
 
 $repo = new UserRepository();
 $user = null;
+$unreadCount = 0;
 
 if (!empty($_SESSION['user_id'])) {
     $user = $repo->findById((int)$_SESSION['user_id']);
+
+    
+    if ($user) {
+        try {
+            $notifRepo = new NotificationRepository();
+            $unreadCount = $notifRepo->unreadCount((int)$user->id);
+        } catch (Throwable $e) {
+            $unreadCount = 0;
+        }
+    }
 }
 ?>
 <!doctype html>
@@ -18,7 +30,10 @@ if (!empty($_SESSION['user_id'])) {
         Welcome, <?= htmlspecialchars($user->full_name) ?>
         (<?= htmlspecialchars($user->email) ?>) - Role: <?= htmlspecialchars($user->role) ?>
     </p>
-    <p><a href="/CitiServe/public/logout.php">Logout</a></p>
+    <p>
+        <a href="/CitiServe/public/notifications.php">Notifications (<?= (int)$unreadCount ?>)</a> |
+        <a href="/CitiServe/public/logout.php">Logout</a>
+    </p>
 <?php else: ?>
     <p>You are not logged in.
         <a href="/CitiServe/public/login.php">Login</a> or
@@ -30,7 +45,7 @@ if (!empty($_SESSION['user_id'])) {
 <ul>
     <li><a href="/CitiServe/public/register.php">Register</a></li>
     <li><a href="/CitiServe/public/login.php">Login</a></li>
-
+    <li><a href="/CitiServe/public/notifications.php">My Notifications (<?= (int)$unreadCount ?>)</a></li>
     <li><a href="/CitiServe/public/profile.php">My Profile</a></li>
     <li><a href="/CitiServe/public/profile_edit.php">Edit Profile</a></li>
     <li><a href="/CitiServe/public/change_password.php">Change Password</a></li>

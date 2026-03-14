@@ -56,6 +56,20 @@ INSERT INTO `complaints` (`id`, `user_id`, `category_id`, `is_anonymous`, `title
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `complaint_evidence`
+--
+
+CREATE TABLE `complaint_evidence` (
+  `id` int(10) UNSIGNED NOT NULL,
+  `complaint_id` int(10) UNSIGNED NOT NULL,
+  `file_path` varchar(255) NOT NULL,
+  `file_name` varchar(255) DEFAULT NULL,
+  `uploaded_at` timestamp NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `complaint_categories`
 --
 
@@ -229,6 +243,13 @@ ALTER TABLE `complaint_categories`
   ADD PRIMARY KEY (`id`);
 
 --
+-- Indexes for table `complaint_evidence`
+--
+ALTER TABLE `complaint_evidence`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `fk_complaint_evidence_complaint` (`complaint_id`);
+
+--
 -- Indexes for table `document_requests`
 --
 ALTER TABLE `document_requests`
@@ -281,6 +302,12 @@ ALTER TABLE `complaint_categories`
   MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
+-- AUTO_INCREMENT for table `complaint_evidence`
+--
+ALTER TABLE `complaint_evidence`
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT for table `document_requests`
 --
 ALTER TABLE `document_requests`
@@ -320,6 +347,12 @@ ALTER TABLE `users`
 ALTER TABLE `complaints`
   ADD CONSTRAINT `fk_complaints_category` FOREIGN KEY (`category_id`) REFERENCES `complaint_categories` (`id`),
   ADD CONSTRAINT `fk_complaints_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL;
+
+--
+-- Constraints for table `complaint_evidence`
+--
+ALTER TABLE `complaint_evidence`
+  ADD CONSTRAINT `fk_complaint_evidence_complaint` FOREIGN KEY (`complaint_id`) REFERENCES `complaints` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `document_requests`

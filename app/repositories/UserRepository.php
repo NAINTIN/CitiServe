@@ -29,7 +29,10 @@ class UserRepository
 
     public function create(array $data): int
     {
-        $stmt = $this->db->prepare('INSERT INTO users (full_name, email, password_hash, role, address, contact_number) VALUES (?, ?, ?, ?, ?, ?)');
+        $stmt = $this->db->prepare('
+            INSERT INTO users (full_name, email, password_hash, role, address, contact_number)
+            VALUES (?, ?, ?, ?, ?, ?)
+        ');
         $stmt->execute([
             $data['full_name'],
             $data['email'],
@@ -39,5 +42,25 @@ class UserRepository
             $data['contact_number'] ?? null,
         ]);
         return (int)$this->db->lastInsertId();
+    }
+
+    public function updateProfile(int $id, string $fullName, ?string $address, ?string $contactNumber): bool
+    {
+        $stmt = $this->db->prepare('
+            UPDATE users
+            SET full_name = ?, address = ?, contact_number = ?, updated_at = NOW()
+            WHERE id = ?
+        ');
+        return $stmt->execute([$fullName, $address, $contactNumber, $id]);
+    }
+
+    public function updatePasswordHash(int $id, string $newHash): bool
+    {
+        $stmt = $this->db->prepare('
+            UPDATE users
+            SET password_hash = ?, updated_at = NOW()
+            WHERE id = ?
+        ');
+        return $stmt->execute([$newHash, $id]);
     }
 }

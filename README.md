@@ -16,15 +16,13 @@ PLEASE READ NUMBER 3 IN THE OVERVIEW TO IMPORT THE DATABASE FIRST THEN YOU CAN F
    - Open phpMyAdmin (e.g., `http://localhost/phpmyadmin`).
    - Create a database named `citiserve_db`.
    - Select `citiserve_db` → **Import** tab.
-   - Choose the file: `database/citiserve_latest.sql` from this project.
+   - Select file `citiserve_db.sql`
    - Click **Go**.
 
 2. **Configure your local database connection**
    - Copy the example config:
 
-     ```bash
-     cp app/config/database.example.php app/config/database.php
-     ```
+     open the folder app/config/select database.php 
 
    - Open `app/config/database.php` and set:
      - `database` → the name of your DB (usually `citiserve_db`)

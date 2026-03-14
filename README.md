@@ -12,13 +12,6 @@ Before Pushing Please export citiserve_db then put it in the Citiserve folder so
 ## Local database configuration - IMPORTANT!!!!!!!! This is how you can see it when you clone this repo
 PLEASE READ NUMBER 3 IN THE OVERVIEW TO IMPORT THE DATABASE FIRST THEN YOU CAN FOLLOW THIS STEP
 
-1. **Create the database and import data**
-   - Open phpMyAdmin (e.g., `http://localhost/phpmyadmin`).
-   - Create a database named `citiserve_db`.
-   - Select `citiserve_db` → **Import** tab.
-   - Select file `citiserve_db.sql`
-   - Click **Go**.
-
 2. **Configure your local database connection**
    - Copy the example config:
 
@@ -33,7 +26,7 @@ PLEASE READ NUMBER 3 IN THE OVERVIEW TO IMPORT THE DATABASE FIRST THEN YOU CAN F
 3. **Test the connection**
    - Open in your browser:
 
-     `http://localhost/CitiServe/public/test_services.php`
+     `http://localhost/CitiServe/test/php_test.php`
 
    - You should see a “Connected to citiserve_db” message and a list of document services.
 
@@ -296,7 +289,8 @@ Follow these steps to set up the CitiServe database on your own computer.
    - Click **Choose File** (or **Browse**).
    - Navigate to the project folder and select:
 
-     `database/citiserve_latest.sql`
+     `citiserve_db.sql`
+     **its in the folder CitiServe of this repo**
 
    - Make sure the format is **SQL**.
    - Click **Go**.

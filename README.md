@@ -50,7 +50,7 @@ The database mainly covers:
 
 You will find an SQL export file in this project:
 
-- `database/citiserve_latest.sql`
+- `citiserve_db.sql`
 
 Importing this file will automatically create all required tables and insert some initial records (e.g., document services, complaint categories).
 
@@ -263,7 +263,7 @@ Follow these steps to set up the CitiServe database on your own computer.
 - MySQL running.
 - phpMyAdmin accessible (usually at `http://localhost/phpmyadmin`).
 
-### 3.2 Steps to import `citiserve_latest.sql`
+### 3.2 Steps to import `citiserve_db.sql`
 
 1. **Open phpMyAdmin**
 

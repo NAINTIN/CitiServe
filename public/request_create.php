@@ -7,6 +7,22 @@ require_once __DIR__ . '/../app/helpers/auth.php';
 require_once __DIR__ . '/../app/helpers/csrf.php';
 require_once __DIR__ . '/../app/repositories/DocumentServiceRepository.php';
 require_once __DIR__ . '/../app/repositories/DocumentRequestRepository.php';
+require_once __DIR__ . '/../app/helpers/upload.php';
+
+function bytes_from_ini(string $v): int
+{
+    $v = trim($v);
+    if ($v === '') return 0;
+    $unit = strtolower(substr($v, -1));
+    $num = (float)$v;
+
+    return match ($unit) {
+        'g' => (int)($num * 1024 * 1024 * 1024),
+        'm' => (int)($num * 1024 * 1024),
+        'k' => (int)($num * 1024),
+        default => (int)$num,
+    };
+}
 
 $user = require_login();
 $serviceRepo = new DocumentServiceRepository();
@@ -18,54 +34,56 @@ $errors = [];
 $success = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    csrf_verify_or_die();
+    // Handle request body too large (post_max_size overflow) BEFORE CSRF check
+    $contentLen = (int)($_SERVER['CONTENT_LENGTH'] ?? 0);
+    $postMax = bytes_from_ini((string)ini_get('post_max_size'));
 
-    $serviceId = (int)($_POST['service_id'] ?? 0);
-    $notes = trim($_POST['notes'] ?? '');
+    if ($contentLen > 0 && $postMax > 0 && $contentLen > $postMax && empty($_POST) && empty($_FILES)) {
+        $errors[] = 'Uploaded data is too large for server limit. Please upload a smaller file (max 5MB).';
+    } else {
+        csrf_verify_or_die();
 
-    if ($serviceId <= 0) {
-        $errors[] = 'Please select a document service.';
-    }
+        $serviceId = (int)($_POST['service_id'] ?? 0);
+        $notes = trim($_POST['notes'] ?? '');
 
-    $paymentProofPath = null;
-
-    if (!empty($_FILES['payment_proof']['name'])) {
-        $uploadDir = __DIR__ . '/uploads/payment_proofs';
-        if (!is_dir($uploadDir)) {
-            mkdir($uploadDir, 0775, true);
+        if ($serviceId <= 0) {
+            $errors[] = 'Please select a document service.';
         }
 
-        $tmp = $_FILES['payment_proof']['tmp_name'];
-        $original = $_FILES['payment_proof']['name'];
-        $size = (int)$_FILES['payment_proof']['size'];
-        $ext = strtolower(pathinfo($original, PATHINFO_EXTENSION));
-        $allowed = ['jpg', 'jpeg', 'png', 'pdf'];
+        $paymentProofPath = null;
 
-        if (!in_array($ext, $allowed, true)) {
-            $errors[] = 'Payment proof must be jpg, jpeg, png, or pdf.';
-        } elseif ($size > 10 * 1024 * 1024) {
-            $errors[] = 'Payment proof must be 10MB or less.';
-        } else {
-            $safeName = uniqid('pay_', true) . '.' . $ext;
-            $dest = $uploadDir . '/' . $safeName;
-            if (move_uploaded_file($tmp, $dest)) {
-                $paymentProofPath = 'uploads/payment_proofs/' . $safeName;
+        // Upload handling (friendly size/type errors)
+        if (isset($_FILES['payment_proof']) && (int)$_FILES['payment_proof']['error'] !== UPLOAD_ERR_NO_FILE) {
+            $uploadErr = (int)$_FILES['payment_proof']['error'];
+
+            if ($uploadErr === UPLOAD_ERR_INI_SIZE || $uploadErr === UPLOAD_ERR_FORM_SIZE) {
+                $errors[] = 'Payment proof exceeds the maximum allowed size (max 5MB).';
+            } elseif ($uploadErr !== UPLOAD_ERR_OK) {
+                $errors[] = 'Upload failed. Please try again.';
             } else {
-                $errors[] = 'Failed to upload payment proof.';
+                try {
+                    $paymentProofPath = savePaymentProof(
+                        $_FILES['payment_proof'],
+                        __DIR__ . '/uploads/payment_proofs',
+                        'uploads/payment_proofs'
+                    );
+                } catch (Throwable $e) {
+                    $errors[] = $e->getMessage();
+                }
             }
         }
-    }
 
-    if (empty($errors)) {
-        $requestId = $requestRepo->create([
-            'user_id' => (int)$user['id'],
-            'document_service_id' => $serviceId,
-            'notes' => $notes !== '' ? $notes : null,
-            'payment_proof_path' => $paymentProofPath
-        ]);
+        if (empty($errors)) {
+            $requestId = $requestRepo->create([
+                'user_id' => (int)$user['id'],
+                'document_service_id' => $serviceId,
+                'purpose' => $notes !== '' ? $notes : null,
+                'payment_proof_path' => $paymentProofPath,
+            ]);
 
-        $success = "Request submitted successfully. Request #{$requestId}";
-        $_POST = [];
+            $success = "Request submitted successfully. Request #{$requestId}";
+            $_POST = [];
+        }
     }
 }
 ?>
@@ -107,7 +125,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <?php foreach ($services as $s): ?>
                     <option value="<?= (int)$s['id'] ?>"
                         <?= ((int)($_POST['service_id'] ?? 0) === (int)$s['id']) ? 'selected' : '' ?>>
-                        <?= htmlspecialchars($s['name']) ?> - ₱<?= htmlspecialchars($s['price']) ?>
+                        <?= htmlspecialchars($s['name']) ?> - ₱<?= htmlspecialchars((string)$s['price']) ?>
                     </option>
                 <?php endforeach; ?>
             </select>
@@ -119,8 +137,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
 
         <div>
-            <label>Payment Proof (optional: jpg/jpeg/png/pdf, max 10MB)</label><br>
-            <input type="file" name="payment_proof" accept=".jpg,.jpeg,.png,.pdf">
+            <label>Payment Proof (optional: jpg/jpeg/png/pdf, max 5MB)</label><br>
+            <input type="file" name="payment_proof" accept=".jpg,.jpeg,.png,.pdf,application/pdf,image/jpeg,image/png">
         </div>
 
         <br>

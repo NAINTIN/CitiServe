@@ -18,27 +18,27 @@ class ComplaintRepository
             WHERE is_active = 1
             ORDER BY name ASC
         ");
-        return $stmt->fetchAll();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     public function create(array $data): int
-{
-    $stmt = $this->db->prepare("
-        INSERT INTO complaints
-        (user_id, category_id, is_anonymous, title, description, location, status)
-        VALUES (?, ?, ?, ?, ?, ?, 'submitted')
-    ");
-    $stmt->execute([
-        $data['user_id'],
-        $data['category_id'],
-        $data['is_anonymous'] ? 1 : 0,
-        $data['title'],
-        $data['description'],
-        $data['location'] ?? null,
-    ]);
+    {
+        $stmt = $this->db->prepare("
+            INSERT INTO complaints
+            (user_id, category_id, is_anonymous, title, description, location, status)
+            VALUES (?, ?, ?, ?, ?, ?, 'submitted')
+        ");
+        $stmt->execute([
+            (int)$data['user_id'],
+            (int)$data['category_id'],
+            !empty($data['is_anonymous']) ? 1 : 0,
+            (string)$data['title'],
+            (string)$data['description'],
+            $data['location'] ?? null,
+        ]);
 
-    return (int)$this->db->lastInsertId();
-}
+        return (int)$this->db->lastInsertId();
+    }
 
     public function addEvidence(int $complaintId, string $filePath, ?string $fileName = null): bool
     {
@@ -67,7 +67,7 @@ class ComplaintRepository
             ORDER BY c.created_at DESC
         ");
         $stmt->execute([$userId]);
-        return $stmt->fetchAll();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     public function getAll(): array
@@ -90,7 +90,7 @@ class ComplaintRepository
             LEFT JOIN users u ON u.id = c.user_id
             ORDER BY c.created_at DESC
         ");
-        return $stmt->fetchAll();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     public function findById(int $id): ?array
@@ -102,7 +102,7 @@ class ComplaintRepository
             LIMIT 1
         ");
         $stmt->execute([$id]);
-        $row = $stmt->fetch();
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
         return $row ?: null;
     }
 
@@ -125,6 +125,6 @@ class ComplaintRepository
             ORDER BY uploaded_at DESC
         ");
         $stmt->execute([$complaintId]);
-        return $stmt->fetchAll();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 }

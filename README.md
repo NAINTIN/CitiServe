@@ -4,6 +4,41 @@ This document explains the **MySQL database structure** for CitiServe and how to
 
 ---
 
+
+## Local database configuration - IMPORTANT!!!!!!!! This is how you can see it when you clone this repo
+
+1. **Create the database and import data**
+   - Open phpMyAdmin (e.g., `http://localhost/phpmyadmin`).
+   - Create a database named `citiserve_db`.
+   - Select `citiserve_db` → **Import** tab.
+   - Choose the file: `database/citiserve_latest.sql` from this project.
+   - Click **Go**.
+
+2. **Configure your local database connection**
+   - Copy the example config:
+
+     ```bash
+     cp app/config/database.example.php app/config/database.php
+     ```
+
+   - Open `app/config/database.php` and set:
+     - `database` → the name of your DB (usually `citiserve_db`)
+     - `username` → your own MySQL/phpMyAdmin username  
+       (for example, `root` or `phpmyadmin`)
+     - `password` → your own MySQL/phpMyAdmin password
+
+3. **Test the connection**
+   - Open in your browser:
+
+     `http://localhost/CitiServe/public/test_services.php`
+
+   - You should see a “Connected to citiserve_db” message and a list of document services.
+
+
+
+
+
+
 ## 1. Overview
 
 Database name (recommended): **`citiserve_db`**

@@ -96,7 +96,13 @@ $rows = $repo->getAll();
                 <th>Update</th>
             </tr>
             <?php foreach ($rows as $r): ?>
-                <?php $evidence = $repo->getEvidenceByComplaintId((int)$r['id']); ?>
+                <?php
+                    try {
+                        $evidence = $repo->getEvidenceByComplaintId((int)$r['id']);
+                    } catch (Throwable $e) {
+                        $evidence = [];
+                    }
+                ?>
                 <tr>
                     <td><?= (int)$r['id'] ?></td>
                     <td>

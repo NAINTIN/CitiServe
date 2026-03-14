@@ -51,7 +51,9 @@ The database mainly covers:
 
 - **User accounts** (residents, staff, admin)
 - **Barangay document services** and **requests**
-- **Complaint categories** and **complaint records**
+- **Complaint categories**, **complaint records**, and **complaint evidence**
+- **Notifications** for users
+- **Status history** tracking for document requests and complaints
 
 You will find an SQL export file in this project:
 
@@ -191,6 +193,73 @@ This table powers the **Complaint Management** part of the system, including com
 
 ---
 
+### 2.6 `complaint_evidence`
+
+**Purpose:** Stores evidence files (photos, documents) uploaded by residents to support their complaints.
+
+**Relationships:**
+
+- `complaint_id` → references `complaints.id` (cascade on delete)
+
+**Important columns:**
+
+- `id` – Primary key.
+- `complaint_id` – The complaint this evidence belongs to.
+- `file_path` – Path to the uploaded file on the server.
+- `file_name` – Original file name of the upload.
+- `uploaded_at` – Timestamp when the file was uploaded.
+
+When a complaint is deleted, all associated evidence records are automatically removed.
+
+---
+
+### 2.7 `notifications`
+
+**Purpose:** Stores in-app notifications sent to users (e.g., status updates on their requests or complaints).
+
+**Relationships:**
+
+- `user_id` → references `users.id` (cascade on delete)
+
+**Important columns:**
+
+- `id` – Primary key.
+- `user_id` – The user who receives the notification.
+- `title` – Short title of the notification.
+- `message` – Full notification message.
+- `link` – Optional URL the user can click to view more details.
+- `is_read` – Whether the notification has been read (`0` = unread, `1` = read).
+- `created_at` – Timestamp.
+
+This table drives the **notification bell/badge** in the user interface, keeping residents informed about changes to their requests and complaints.
+
+---
+
+### 2.8 `status_history`
+
+**Purpose:** Keeps an audit log of every status change for document requests and complaints.
+
+**Relationships:**
+
+- `changed_by` → references `users.id` (cascade on delete)
+
+**Important columns:**
+
+- `id` – Primary key.
+- `entity_type` – The type of record whose status changed. Possible values:
+  - `document_request`
+  - `complaint`
+- `entity_id` – The ID of the document request or complaint.
+- `old_status` – The previous status value.
+- `new_status` – The new status value.
+- `changed_by` – The user (usually staff/admin) who made the change.
+- `notes` – Optional notes explaining the reason for the change.
+- `created_at` – Timestamp.
+
+This table provides a complete **audit trail** so that residents and staff can see the full history of how a request or complaint progressed through different statuses.
+
+---
+
 ## 3. How to import the database (for group members)
 
 Follow these steps to set up the CitiServe database on your own computer.
@@ -241,6 +310,9 @@ Follow these steps to set up the CitiServe database on your own computer.
      - `document_requests`
      - `complaint_categories`
      - `complaints`
+     - `complaint_evidence`
+     - `notifications`
+     - `status_history`
 
 You now have the same database structure and sample data as the original developer.
 

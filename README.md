@@ -250,6 +250,11 @@ You now have the same database structure and sample data as the original develop
 
 ## 4. Common issues & quick fixes
 
+- **Error: Table already exists**
+
+  - This used to happen when re-importing `citiserve_db.sql` on a database that already had the tables.
+  - Fix: The SQL file now uses `CREATE TABLE IF NOT EXISTS` and `INSERT IGNORE`, so you can safely re-import it without dropping existing tables. Just import it again through phpMyAdmin and it will skip anything that already exists.
+
 - **Error: Unknown database `citiserve_db`**
 
   - You forgot to create the database before importing.

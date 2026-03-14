@@ -42,3 +42,16 @@ function require_admin(): array
 
     return $user;
 }
+
+function require_resident(): array
+{
+    $user = require_login();
+
+    if ($user['role'] !== 'resident') {
+        http_response_code(403);
+        echo "<h2>403 Forbidden</h2><p>This page is for residents only.</p>";
+        exit;
+    }
+
+    return $user;
+}

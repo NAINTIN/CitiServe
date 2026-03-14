@@ -24,7 +24,7 @@ function bytes_from_ini(string $v): int
     };
 }
 
-$user = require_login();
+$user = require_resident();
 $serviceRepo = new DocumentServiceRepository();
 $requestRepo = new DocumentRequestRepository();
 

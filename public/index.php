@@ -50,15 +50,17 @@ if (!empty($_SESSION['user_id'])) {
     <li><a href="/CitiServe/public/profile_edit.php">Edit Profile</a></li>
     <li><a href="/CitiServe/public/change_password.php">Change Password</a></li>
 
-    <li><a href="/CitiServe/public/services.php">Document Services</a></li>
-    <li><a href="/CitiServe/public/my_requests.php">My Requests</a></li>
-    <li><a href="/CitiServe/public/admin/requests.php">Admin Requests</a> (admin/staff only)</li>
-
-    <li><a href="/CitiServe/public/complaint_create.php">Submit Complaint</a></li>
-    <li><a href="/CitiServe/public/my_complaints.php">My Complaints</a></li>
-    <li><a href="/CitiServe/public/admin/complaints.php">Admin Complaints</a> (admin/staff only)</li>
-
-    <li><a href="/CitiServe/public/admin/users.php">Manage User Roles</a> (admin/staff only)</li>
+    <?php if ($user && in_array($user->role, ['admin', 'staff'], true)): ?>
+        <li><a href="/CitiServe/public/admin/requests.php">Customer Requests</a></li>
+        <li><a href="/CitiServe/public/admin/complaints.php">Customer Complaints</a></li>
+        <li><a href="/CitiServe/public/admin/users.php">Manage User Roles</a></li>
+    <?php else: ?>
+        <li><a href="/CitiServe/public/services.php">Document Services</a></li>
+        <li><a href="/CitiServe/public/request_create.php">Submit Document Request</a></li>
+        <li><a href="/CitiServe/public/my_requests.php">My Requests</a></li>
+        <li><a href="/CitiServe/public/complaint_create.php">Submit Complaint</a></li>
+        <li><a href="/CitiServe/public/my_complaints.php">My Complaints</a></li>
+    <?php endif; ?>
 </ul>
 </body>
 </html>

@@ -23,7 +23,7 @@ function bytes_from_ini(string $v): int
     };
 }
 
-$user = require_login();
+$user = require_resident();
 $repo = new ComplaintRepository();
 
 $categories = $repo->getActiveCategories();
@@ -36,7 +36,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $postMax = bytes_from_ini((string)ini_get('post_max_size'));
 
     if ($contentLen > 0 && $postMax > 0 && $contentLen > $postMax && empty($_POST) && empty($_FILES)) {
-        $errors[] = 'Evidence file exceeds server upload limit. Please upload a smaller file (max 10MB).';
+        $errors[] = 'Only files less than or equal to 10MB are allowed.';
     } else {
         csrf_verify_or_die();
 
@@ -57,7 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $err = (int)$_FILES['evidence']['error'];
 
             if ($err === UPLOAD_ERR_INI_SIZE || $err === UPLOAD_ERR_FORM_SIZE) {
-                $errors[] = 'Evidence file must be 10MB or less.';
+                $errors[] = 'Only files less than or equal to 10MB are allowed.';
             } elseif ($err !== UPLOAD_ERR_OK) {
                 $errors[] = 'Evidence upload failed (code ' . $err . ').';
             } else {
@@ -65,7 +65,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $tmp  = $_FILES['evidence']['tmp_name'] ?? '';
 
                 if ($size > 10 * 1024 * 1024) {
-                    $errors[] = 'Evidence file must be 10MB or less.';
+                    $errors[] = 'Only files less than or equal to 10MB are allowed.';
                 } elseif ($size <= 0 || $tmp === '' || !is_uploaded_file($tmp)) {
                     $errors[] = 'Uploaded file is invalid. Please reselect the file.';
                 } else {

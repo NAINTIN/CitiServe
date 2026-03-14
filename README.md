@@ -6,6 +6,7 @@ This document explains the **MySQL database structure** for CitiServe and how to
 
 
 ## Local database configuration - IMPORTANT!!!!!!!! This is how you can see it when you clone this repo
+PLEASE READ NUMBER 3 IN THE OVERVIEW TO IMPORT THE DATABASE FIRST THEN YOU CAN FOLLOW THIS STEP
 
 1. **Create the database and import data**
    - Open phpMyAdmin (e.g., `http://localhost/phpmyadmin`).

@@ -27,7 +27,7 @@ SET time_zone = "+00:00";
 -- Table structure for table `complaints`
 --
 
-CREATE TABLE `complaints` (
+CREATE TABLE IF NOT EXISTS `complaints` (
   `id` int(10) UNSIGNED NOT NULL,
   `user_id` int(10) UNSIGNED DEFAULT NULL,
   `category_id` int(10) UNSIGNED NOT NULL,
@@ -44,7 +44,7 @@ CREATE TABLE `complaints` (
 -- Dumping data for table `complaints`
 --
 
-INSERT INTO `complaints` (`id`, `user_id`, `category_id`, `is_anonymous`, `title`, `description`, `location`, `status`, `created_at`, `updated_at`) VALUES
+INSERT IGNORE INTO `complaints` (`id`, `user_id`, `category_id`, `is_anonymous`, `title`, `description`, `location`, `status`, `created_at`, `updated_at`) VALUES
 (1, 1, 9, 0, 'asdsad', 'adsadasd', NULL, 'submitted', '2026-03-14 09:31:03', '2026-03-14 09:31:03'),
 (2, 1, 3, 0, 'Manong', 'Ang ingay ni manong kainis', 'block 1 new zealand canada.usa mars jupiter', 'submitted', '2026-03-14 09:31:45', '2026-03-14 09:31:45'),
 (3, 1, 7, 0, 'madumi', 'ang dumi', NULL, 'submitted', '2026-03-14 09:58:54', '2026-03-14 09:58:54'),
@@ -59,7 +59,7 @@ INSERT INTO `complaints` (`id`, `user_id`, `category_id`, `is_anonymous`, `title
 -- Table structure for table `complaint_evidence`
 --
 
-CREATE TABLE `complaint_evidence` (
+CREATE TABLE IF NOT EXISTS `complaint_evidence` (
   `id` int(10) UNSIGNED NOT NULL,
   `complaint_id` int(10) UNSIGNED NOT NULL,
   `file_path` varchar(255) NOT NULL,
@@ -73,7 +73,7 @@ CREATE TABLE `complaint_evidence` (
 -- Table structure for table `complaint_categories`
 --
 
-CREATE TABLE `complaint_categories` (
+CREATE TABLE IF NOT EXISTS `complaint_categories` (
   `id` int(10) UNSIGNED NOT NULL,
   `name` varchar(100) NOT NULL,
   `description` text DEFAULT NULL,
@@ -84,7 +84,7 @@ CREATE TABLE `complaint_categories` (
 -- Dumping data for table `complaint_categories`
 --
 
-INSERT INTO `complaint_categories` (`id`, `name`, `description`, `is_active`) VALUES
+INSERT IGNORE INTO `complaint_categories` (`id`, `name`, `description`, `is_active`) VALUES
 (1, 'Road/Infrastructure', 'Potholes, broken streetlights, damaged sidewalks', 1),
 (2, 'Garbage/Sanitation', 'Uncollected trash, illegal dumping, drainage issues', 1),
 (3, 'Noise Disturbance', 'Loud parties, construction noise, barking dogs', 1),
@@ -102,7 +102,7 @@ INSERT INTO `complaint_categories` (`id`, `name`, `description`, `is_active`) VA
 -- Table structure for table `document_requests`
 --
 
-CREATE TABLE `document_requests` (
+CREATE TABLE IF NOT EXISTS `document_requests` (
   `id` int(10) UNSIGNED NOT NULL,
   `user_id` int(10) UNSIGNED NOT NULL,
   `document_service_id` int(10) UNSIGNED NOT NULL,
@@ -119,7 +119,7 @@ CREATE TABLE `document_requests` (
 -- Dumping data for table `document_requests`
 --
 
-INSERT INTO `document_requests` (`id`, `user_id`, `document_service_id`, `purpose`, `status`, `payment_reference`, `payment_proof_path`, `claimed_at`, `created_at`, `updated_at`) VALUES
+INSERT IGNORE INTO `document_requests` (`id`, `user_id`, `document_service_id`, `purpose`, `status`, `payment_reference`, `payment_proof_path`, `claimed_at`, `created_at`, `updated_at`) VALUES
 (1, 1, 1, 'maingay kapitbahay', 'claimable', NULL, NULL, NULL, '2026-03-14 08:54:24', '2026-03-14 10:25:43'),
 (2, 3, 3, 'asdsadsad', 'received', NULL, 'uploads/payment_proofs/69d887c73e6ae864e25822be32fc04e2.jpg', NULL, '2026-03-14 10:34:03', '2026-03-14 10:34:03'),
 (3, 1, 3, 'safsaf', 'received', NULL, 'uploads/payment_proofs/badc990a15872a38d89229edb3a7fac4.jpg', NULL, '2026-03-14 10:58:13', '2026-03-14 10:58:13');
@@ -130,7 +130,7 @@ INSERT INTO `document_requests` (`id`, `user_id`, `document_service_id`, `purpos
 -- Table structure for table `document_services`
 --
 
-CREATE TABLE `document_services` (
+CREATE TABLE IF NOT EXISTS `document_services` (
   `id` int(10) UNSIGNED NOT NULL,
   `name` varchar(100) NOT NULL,
   `description` text DEFAULT NULL,
@@ -145,7 +145,7 @@ CREATE TABLE `document_services` (
 -- Dumping data for table `document_services`
 --
 
-INSERT INTO `document_services` (`id`, `name`, `description`, `price`, `processing_time_days`, `is_active`, `created_at`, `updated_at`) VALUES
+INSERT IGNORE INTO `document_services` (`id`, `name`, `description`, `price`, `processing_time_days`, `is_active`, `created_at`, `updated_at`) VALUES
 (1, 'Barangay Clearance', 'General clearance', 50.00, 1, 1, '2026-03-14 08:53:18', '2026-03-14 08:53:18'),
 (2, 'Certificate of Residency', 'Proof of residency', 30.00, 1, 1, '2026-03-14 08:53:18', '2026-03-14 08:53:18'),
 (3, 'Business Permit Endorsement', 'For permit processing', 100.00, 3, 1, '2026-03-14 08:53:18', '2026-03-14 08:53:18');
@@ -156,7 +156,7 @@ INSERT INTO `document_services` (`id`, `name`, `description`, `price`, `processi
 -- Table structure for table `notifications`
 --
 
-CREATE TABLE `notifications` (
+CREATE TABLE IF NOT EXISTS `notifications` (
   `id` int(10) UNSIGNED NOT NULL,
   `user_id` int(10) UNSIGNED NOT NULL,
   `title` varchar(150) NOT NULL,
@@ -170,7 +170,7 @@ CREATE TABLE `notifications` (
 -- Dumping data for table `notifications`
 --
 
-INSERT INTO `notifications` (`id`, `user_id`, `title`, `message`, `link`, `is_read`, `created_at`) VALUES
+INSERT IGNORE INTO `notifications` (`id`, `user_id`, `title`, `message`, `link`, `is_read`, `created_at`) VALUES
 (1, 1, 'Document Request Update', 'Your request #1 status is now \'claimable\'.', '/CitiServe/public/my_requests.php', 1, '2026-03-14 10:25:43');
 
 -- --------------------------------------------------------
@@ -179,7 +179,7 @@ INSERT INTO `notifications` (`id`, `user_id`, `title`, `message`, `link`, `is_re
 -- Table structure for table `status_history`
 --
 
-CREATE TABLE `status_history` (
+CREATE TABLE IF NOT EXISTS `status_history` (
   `id` int(10) UNSIGNED NOT NULL,
   `entity_type` enum('document_request','complaint') NOT NULL,
   `entity_id` int(10) UNSIGNED NOT NULL,
@@ -194,7 +194,7 @@ CREATE TABLE `status_history` (
 -- Dumping data for table `status_history`
 --
 
-INSERT INTO `status_history` (`id`, `entity_type`, `entity_id`, `old_status`, `new_status`, `changed_by`, `notes`, `created_at`) VALUES
+INSERT IGNORE INTO `status_history` (`id`, `entity_type`, `entity_id`, `old_status`, `new_status`, `changed_by`, `notes`, `created_at`) VALUES
 (1, 'document_request', 1, 'received', 'claimable', 3, NULL, '2026-03-14 10:25:43');
 
 -- --------------------------------------------------------
@@ -203,7 +203,7 @@ INSERT INTO `status_history` (`id`, `entity_type`, `entity_id`, `old_status`, `n
 -- Table structure for table `users`
 --
 
-CREATE TABLE `users` (
+CREATE TABLE IF NOT EXISTS `users` (
   `id` int(10) UNSIGNED NOT NULL,
   `full_name` varchar(100) NOT NULL,
   `email` varchar(100) NOT NULL,
@@ -219,7 +219,7 @@ CREATE TABLE `users` (
 -- Dumping data for table `users`
 --
 
-INSERT INTO `users` (`id`, `full_name`, `email`, `password_hash`, `role`, `address`, `contact_number`, `created_at`, `updated_at`) VALUES
+INSERT IGNORE INTO `users` (`id`, `full_name`, `email`, `password_hash`, `role`, `address`, `contact_number`, `created_at`, `updated_at`) VALUES
 (1, 'Dan Deniel V. Belaro', 'danndenielbelaro@gmail.com', '$2y$12$UegDuWyBvBpUG/hVL4LsPeFOCQY9FbtKdlqsvg6KP/dwXWxQ/zpUK', 'resident', 'blok 1 lot 4', '945855940404044', '2026-03-14 07:58:33', '2026-03-14 09:57:10'),
 (2, 'testing the database', 'thechosenone@gmail.com', '$2y$12$VXWioTizKE5Vz7PTG378Yuxm/TcwsEPnXZfbOJEUR2lI.2JWDTG2G', 'resident', NULL, NULL, '2026-03-14 08:18:38', '2026-03-14 08:18:38'),
 (3, 'admin_citi', 'admin@citiserve.local', '$2y$12$HLaUZerW/3VWIB9GqJzGwuNYf2Gdyq6sbXt7KmhhZu/tpgDh0MOiy', 'admin', NULL, NULL, '2026-03-14 08:56:45', '2026-03-14 08:57:44');
@@ -232,58 +232,58 @@ INSERT INTO `users` (`id`, `full_name`, `email`, `password_hash`, `role`, `addre
 -- Indexes for table `complaints`
 --
 ALTER TABLE `complaints`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `fk_complaints_user` (`user_id`),
-  ADD KEY `fk_complaints_category` (`category_id`);
+  ADD PRIMARY KEY IF NOT EXISTS (`id`),
+  ADD KEY IF NOT EXISTS `fk_complaints_user` (`user_id`),
+  ADD KEY IF NOT EXISTS `fk_complaints_category` (`category_id`);
 
 --
 -- Indexes for table `complaint_categories`
 --
 ALTER TABLE `complaint_categories`
-  ADD PRIMARY KEY (`id`);
+  ADD PRIMARY KEY IF NOT EXISTS (`id`);
 
 --
 -- Indexes for table `complaint_evidence`
 --
 ALTER TABLE `complaint_evidence`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `fk_complaint_evidence_complaint` (`complaint_id`);
+  ADD PRIMARY KEY IF NOT EXISTS (`id`),
+  ADD KEY IF NOT EXISTS `fk_complaint_evidence_complaint` (`complaint_id`);
 
 --
 -- Indexes for table `document_requests`
 --
 ALTER TABLE `document_requests`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `fk_document_requests_user` (`user_id`),
-  ADD KEY `fk_document_requests_service` (`document_service_id`);
+  ADD PRIMARY KEY IF NOT EXISTS (`id`),
+  ADD KEY IF NOT EXISTS `fk_document_requests_user` (`user_id`),
+  ADD KEY IF NOT EXISTS `fk_document_requests_service` (`document_service_id`);
 
 --
 -- Indexes for table `document_services`
 --
 ALTER TABLE `document_services`
-  ADD PRIMARY KEY (`id`);
+  ADD PRIMARY KEY IF NOT EXISTS (`id`);
 
 --
 -- Indexes for table `notifications`
 --
 ALTER TABLE `notifications`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `idx_notifications_user_id` (`user_id`);
+  ADD PRIMARY KEY IF NOT EXISTS (`id`),
+  ADD KEY IF NOT EXISTS `idx_notifications_user_id` (`user_id`);
 
 --
 -- Indexes for table `status_history`
 --
 ALTER TABLE `status_history`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `idx_status_history_entity` (`entity_type`,`entity_id`),
-  ADD KEY `idx_status_history_changed_by` (`changed_by`);
+  ADD PRIMARY KEY IF NOT EXISTS (`id`),
+  ADD KEY IF NOT EXISTS `idx_status_history_entity` (`entity_type`,`entity_id`),
+  ADD KEY IF NOT EXISTS `idx_status_history_changed_by` (`changed_by`);
 
 --
 -- Indexes for table `users`
 --
 ALTER TABLE `users`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `email` (`email`);
+  ADD PRIMARY KEY IF NOT EXISTS (`id`),
+  ADD UNIQUE KEY IF NOT EXISTS `email` (`email`);
 
 --
 -- AUTO_INCREMENT for dumped tables
@@ -345,33 +345,33 @@ ALTER TABLE `users`
 -- Constraints for table `complaints`
 --
 ALTER TABLE `complaints`
-  ADD CONSTRAINT `fk_complaints_category` FOREIGN KEY (`category_id`) REFERENCES `complaint_categories` (`id`),
-  ADD CONSTRAINT `fk_complaints_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL;
+  ADD CONSTRAINT IF NOT EXISTS `fk_complaints_category` FOREIGN KEY (`category_id`) REFERENCES `complaint_categories` (`id`),
+  ADD CONSTRAINT IF NOT EXISTS `fk_complaints_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL;
 
 --
 -- Constraints for table `complaint_evidence`
 --
 ALTER TABLE `complaint_evidence`
-  ADD CONSTRAINT `fk_complaint_evidence_complaint` FOREIGN KEY (`complaint_id`) REFERENCES `complaints` (`id`) ON DELETE CASCADE;
+  ADD CONSTRAINT IF NOT EXISTS `fk_complaint_evidence_complaint` FOREIGN KEY (`complaint_id`) REFERENCES `complaints` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `document_requests`
 --
 ALTER TABLE `document_requests`
-  ADD CONSTRAINT `fk_document_requests_service` FOREIGN KEY (`document_service_id`) REFERENCES `document_services` (`id`),
-  ADD CONSTRAINT `fk_document_requests_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+  ADD CONSTRAINT IF NOT EXISTS `fk_document_requests_service` FOREIGN KEY (`document_service_id`) REFERENCES `document_services` (`id`),
+  ADD CONSTRAINT IF NOT EXISTS `fk_document_requests_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `notifications`
 --
 ALTER TABLE `notifications`
-  ADD CONSTRAINT `fk_notifications_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+  ADD CONSTRAINT IF NOT EXISTS `fk_notifications_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `status_history`
 --
 ALTER TABLE `status_history`
-  ADD CONSTRAINT `fk_status_history_changed_by` FOREIGN KEY (`changed_by`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+  ADD CONSTRAINT IF NOT EXISTS `fk_status_history_changed_by` FOREIGN KEY (`changed_by`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

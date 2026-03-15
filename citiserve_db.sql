@@ -24,11 +24,97 @@ SET time_zone = "+00:00";
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `users`
+--
+
+CREATE TABLE IF NOT EXISTS `users` (
+  `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `full_name` varchar(100) NOT NULL,
+  `email` varchar(100) NOT NULL,
+  `password_hash` varchar(255) NOT NULL,
+  `role` enum('resident','staff','admin') NOT NULL DEFAULT 'resident',
+  `address` text DEFAULT NULL,
+  `contact_number` varchar(20) DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `email` (`email`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `users`
+--
+
+INSERT IGNORE INTO `users` (`id`, `full_name`, `email`, `password_hash`, `role`, `address`, `contact_number`, `created_at`, `updated_at`) VALUES
+(1, 'Dan Deniel V. Belaro', 'danndenielbelaro@gmail.com', '$2y$12$UegDuWyBvBpUG/hVL4LsPeFOCQY9FbtKdlqsvg6KP/dwXWxQ/zpUK', 'resident', 'blok 1 lot 4', '945855940404044', '2026-03-14 07:58:33', '2026-03-14 09:57:10'),
+(2, 'testing the database', 'thechosenone@gmail.com', '$2y$12$VXWioTizKE5Vz7PTG378Yuxm/TcwsEPnXZfbOJEUR2lI.2JWDTG2G', 'resident', NULL, NULL, '2026-03-14 08:18:38', '2026-03-14 08:18:38'),
+(3, 'admin_citi', 'admin@citiserve.local', '$2y$12$HLaUZerW/3VWIB9GqJzGwuNYf2Gdyq6sbXt7KmhhZu/tpgDh0MOiy', 'admin', NULL, NULL, '2026-03-14 08:56:45', '2026-03-14 08:57:44');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `complaint_categories`
+--
+
+CREATE TABLE IF NOT EXISTS `complaint_categories` (
+  `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `name` varchar(100) NOT NULL,
+  `description` text DEFAULT NULL,
+  `is_active` tinyint(1) NOT NULL DEFAULT 1,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `complaint_categories`
+--
+
+INSERT IGNORE INTO `complaint_categories` (`id`, `name`, `description`, `is_active`) VALUES
+(1, 'Road/Infrastructure', 'Potholes, broken streetlights, damaged sidewalks', 1),
+(2, 'Garbage/Sanitation', 'Uncollected trash, illegal dumping, drainage issues', 1),
+(3, 'Noise Disturbance', 'Loud parties, construction noise, barking dogs', 1),
+(4, 'Health/Sanitation', 'Unsanitary establishments, public health hazards', 1),
+(5, 'Traffic/Parking', 'Illegal parking, traffic violations, blocked roads', 1),
+(6, 'Public Safety/Security', 'Theft, vandalism, suspicious activities', 1),
+(7, 'Environmental/Tree/Animal Concerns', 'Fallen trees, stray animals, pollution', 1),
+(8, 'Water/Electricity/Utilities', 'Water leaks, power outages, utility issues', 1),
+(9, 'Community/Social Issues', 'Disputes between neighbors, harassment', 1),
+(10, 'Other', 'Any complaint not covered by the above', 1);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `document_services`
+--
+
+CREATE TABLE IF NOT EXISTS `document_services` (
+  `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `name` varchar(100) NOT NULL,
+  `description` text DEFAULT NULL,
+  `price` decimal(10,2) NOT NULL DEFAULT 0.00,
+  `processing_time_days` int(11) NOT NULL DEFAULT 1,
+  `is_active` tinyint(1) NOT NULL DEFAULT 1,
+  `created_at` timestamp NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `document_services`
+--
+
+INSERT IGNORE INTO `document_services` (`id`, `name`, `description`, `price`, `processing_time_days`, `is_active`, `created_at`, `updated_at`) VALUES
+(1, 'Barangay Clearance', 'General clearance', 50.00, 1, 1, '2026-03-14 08:53:18', '2026-03-14 08:53:18'),
+(2, 'Certificate of Residency', 'Proof of residency', 30.00, 1, 1, '2026-03-14 08:53:18', '2026-03-14 08:53:18'),
+(3, 'Business Permit Endorsement', 'For permit processing', 100.00, 3, 1, '2026-03-14 08:53:18', '2026-03-14 08:53:18');
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `complaints`
 --
 
 CREATE TABLE IF NOT EXISTS `complaints` (
-  `id` int(10) UNSIGNED NOT NULL,
+  `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,
   `user_id` int(10) UNSIGNED DEFAULT NULL,
   `category_id` int(10) UNSIGNED NOT NULL,
   `is_anonymous` tinyint(1) NOT NULL DEFAULT 0,
@@ -37,7 +123,12 @@ CREATE TABLE IF NOT EXISTS `complaints` (
   `location` varchar(255) DEFAULT NULL,
   `status` enum('submitted','under_review','in_progress','resolved','rejected') NOT NULL DEFAULT 'submitted',
   `created_at` timestamp NULL DEFAULT current_timestamp(),
-  `updated_at` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+  `updated_at` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `fk_complaints_user` (`user_id`),
+  KEY `fk_complaints_category` (`category_id`),
+  CONSTRAINT `fk_complaints_category` FOREIGN KEY (`category_id`) REFERENCES `complaint_categories` (`id`),
+  CONSTRAINT `fk_complaints_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
@@ -60,41 +151,15 @@ INSERT IGNORE INTO `complaints` (`id`, `user_id`, `category_id`, `is_anonymous`,
 --
 
 CREATE TABLE IF NOT EXISTS `complaint_evidence` (
-  `id` int(10) UNSIGNED NOT NULL,
+  `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,
   `complaint_id` int(10) UNSIGNED NOT NULL,
   `file_path` varchar(255) NOT NULL,
   `file_name` varchar(255) DEFAULT NULL,
-  `uploaded_at` timestamp NULL DEFAULT current_timestamp()
+  `uploaded_at` timestamp NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `fk_complaint_evidence_complaint` (`complaint_id`),
+  CONSTRAINT `fk_complaint_evidence_complaint` FOREIGN KEY (`complaint_id`) REFERENCES `complaints` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `complaint_categories`
---
-
-CREATE TABLE IF NOT EXISTS `complaint_categories` (
-  `id` int(10) UNSIGNED NOT NULL,
-  `name` varchar(100) NOT NULL,
-  `description` text DEFAULT NULL,
-  `is_active` tinyint(1) NOT NULL DEFAULT 1
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- Dumping data for table `complaint_categories`
---
-
-INSERT IGNORE INTO `complaint_categories` (`id`, `name`, `description`, `is_active`) VALUES
-(1, 'Road/Infrastructure', 'Potholes, broken streetlights, damaged sidewalks', 1),
-(2, 'Garbage/Sanitation', 'Uncollected trash, illegal dumping, drainage issues', 1),
-(3, 'Noise Disturbance', 'Loud parties, construction noise, barking dogs', 1),
-(4, 'Health/Sanitation', 'Unsanitary establishments, public health hazards', 1),
-(5, 'Traffic/Parking', 'Illegal parking, traffic violations, blocked roads', 1),
-(6, 'Public Safety/Security', 'Theft, vandalism, suspicious activities', 1),
-(7, 'Environmental/Tree/Animal Concerns', 'Fallen trees, stray animals, pollution', 1),
-(8, 'Water/Electricity/Utilities', 'Water leaks, power outages, utility issues', 1),
-(9, 'Community/Social Issues', 'Disputes between neighbors, harassment', 1),
-(10, 'Other', 'Any complaint not covered by the above', 1);
 
 -- --------------------------------------------------------
 
@@ -103,7 +168,7 @@ INSERT IGNORE INTO `complaint_categories` (`id`, `name`, `description`, `is_acti
 --
 
 CREATE TABLE IF NOT EXISTS `document_requests` (
-  `id` int(10) UNSIGNED NOT NULL,
+  `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,
   `user_id` int(10) UNSIGNED NOT NULL,
   `document_service_id` int(10) UNSIGNED NOT NULL,
   `purpose` text DEFAULT NULL,
@@ -112,7 +177,12 @@ CREATE TABLE IF NOT EXISTS `document_requests` (
   `payment_proof_path` varchar(255) DEFAULT NULL,
   `claimed_at` datetime DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT current_timestamp(),
-  `updated_at` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+  `updated_at` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `fk_document_requests_user` (`user_id`),
+  KEY `fk_document_requests_service` (`document_service_id`),
+  CONSTRAINT `fk_document_requests_service` FOREIGN KEY (`document_service_id`) REFERENCES `document_services` (`id`),
+  CONSTRAINT `fk_document_requests_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
@@ -127,43 +197,20 @@ INSERT IGNORE INTO `document_requests` (`id`, `user_id`, `document_service_id`, 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `document_services`
---
-
-CREATE TABLE IF NOT EXISTS `document_services` (
-  `id` int(10) UNSIGNED NOT NULL,
-  `name` varchar(100) NOT NULL,
-  `description` text DEFAULT NULL,
-  `price` decimal(10,2) NOT NULL DEFAULT 0.00,
-  `processing_time_days` int(11) NOT NULL DEFAULT 1,
-  `is_active` tinyint(1) NOT NULL DEFAULT 1,
-  `created_at` timestamp NULL DEFAULT current_timestamp(),
-  `updated_at` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- Dumping data for table `document_services`
---
-
-INSERT IGNORE INTO `document_services` (`id`, `name`, `description`, `price`, `processing_time_days`, `is_active`, `created_at`, `updated_at`) VALUES
-(1, 'Barangay Clearance', 'General clearance', 50.00, 1, 1, '2026-03-14 08:53:18', '2026-03-14 08:53:18'),
-(2, 'Certificate of Residency', 'Proof of residency', 30.00, 1, 1, '2026-03-14 08:53:18', '2026-03-14 08:53:18'),
-(3, 'Business Permit Endorsement', 'For permit processing', 100.00, 3, 1, '2026-03-14 08:53:18', '2026-03-14 08:53:18');
-
--- --------------------------------------------------------
-
---
 -- Table structure for table `notifications`
 --
 
 CREATE TABLE IF NOT EXISTS `notifications` (
-  `id` int(10) UNSIGNED NOT NULL,
+  `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,
   `user_id` int(10) UNSIGNED NOT NULL,
   `title` varchar(150) NOT NULL,
   `message` text NOT NULL,
   `link` varchar(255) DEFAULT NULL,
   `is_read` tinyint(1) NOT NULL DEFAULT 0,
-  `created_at` timestamp NULL DEFAULT current_timestamp()
+  `created_at` timestamp NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `idx_notifications_user_id` (`user_id`),
+  CONSTRAINT `fk_notifications_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
@@ -180,14 +227,18 @@ INSERT IGNORE INTO `notifications` (`id`, `user_id`, `title`, `message`, `link`,
 --
 
 CREATE TABLE IF NOT EXISTS `status_history` (
-  `id` int(10) UNSIGNED NOT NULL,
+  `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,
   `entity_type` enum('document_request','complaint') NOT NULL,
   `entity_id` int(10) UNSIGNED NOT NULL,
   `old_status` varchar(50) NOT NULL,
   `new_status` varchar(50) NOT NULL,
   `changed_by` int(10) UNSIGNED NOT NULL,
   `notes` varchar(500) DEFAULT NULL,
-  `created_at` timestamp NULL DEFAULT current_timestamp()
+  `created_at` timestamp NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `idx_status_history_entity` (`entity_type`,`entity_id`),
+  KEY `idx_status_history_changed_by` (`changed_by`),
+  CONSTRAINT `fk_status_history_changed_by` FOREIGN KEY (`changed_by`) REFERENCES `users` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
@@ -197,181 +248,6 @@ CREATE TABLE IF NOT EXISTS `status_history` (
 INSERT IGNORE INTO `status_history` (`id`, `entity_type`, `entity_id`, `old_status`, `new_status`, `changed_by`, `notes`, `created_at`) VALUES
 (1, 'document_request', 1, 'received', 'claimable', 3, NULL, '2026-03-14 10:25:43');
 
--- --------------------------------------------------------
-
---
--- Table structure for table `users`
---
-
-CREATE TABLE IF NOT EXISTS `users` (
-  `id` int(10) UNSIGNED NOT NULL,
-  `full_name` varchar(100) NOT NULL,
-  `email` varchar(100) NOT NULL,
-  `password_hash` varchar(255) NOT NULL,
-  `role` enum('resident','staff','admin') NOT NULL DEFAULT 'resident',
-  `address` text DEFAULT NULL,
-  `contact_number` varchar(20) DEFAULT NULL,
-  `created_at` timestamp NULL DEFAULT current_timestamp(),
-  `updated_at` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- Dumping data for table `users`
---
-
-INSERT IGNORE INTO `users` (`id`, `full_name`, `email`, `password_hash`, `role`, `address`, `contact_number`, `created_at`, `updated_at`) VALUES
-(1, 'Dan Deniel V. Belaro', 'danndenielbelaro@gmail.com', '$2y$12$UegDuWyBvBpUG/hVL4LsPeFOCQY9FbtKdlqsvg6KP/dwXWxQ/zpUK', 'resident', 'blok 1 lot 4', '945855940404044', '2026-03-14 07:58:33', '2026-03-14 09:57:10'),
-(2, 'testing the database', 'thechosenone@gmail.com', '$2y$12$VXWioTizKE5Vz7PTG378Yuxm/TcwsEPnXZfbOJEUR2lI.2JWDTG2G', 'resident', NULL, NULL, '2026-03-14 08:18:38', '2026-03-14 08:18:38'),
-(3, 'admin_citi', 'admin@citiserve.local', '$2y$12$HLaUZerW/3VWIB9GqJzGwuNYf2Gdyq6sbXt7KmhhZu/tpgDh0MOiy', 'admin', NULL, NULL, '2026-03-14 08:56:45', '2026-03-14 08:57:44');
-
---
--- Indexes for dumped tables
---
-
---
--- Indexes for table `complaints`
---
-ALTER TABLE `complaints`
-  ADD PRIMARY KEY IF NOT EXISTS (`id`),
-  ADD KEY IF NOT EXISTS `fk_complaints_user` (`user_id`),
-  ADD KEY IF NOT EXISTS `fk_complaints_category` (`category_id`);
-
---
--- Indexes for table `complaint_categories`
---
-ALTER TABLE `complaint_categories`
-  ADD PRIMARY KEY IF NOT EXISTS (`id`);
-
---
--- Indexes for table `complaint_evidence`
---
-ALTER TABLE `complaint_evidence`
-  ADD PRIMARY KEY IF NOT EXISTS (`id`),
-  ADD KEY IF NOT EXISTS `fk_complaint_evidence_complaint` (`complaint_id`);
-
---
--- Indexes for table `document_requests`
---
-ALTER TABLE `document_requests`
-  ADD PRIMARY KEY IF NOT EXISTS (`id`),
-  ADD KEY IF NOT EXISTS `fk_document_requests_user` (`user_id`),
-  ADD KEY IF NOT EXISTS `fk_document_requests_service` (`document_service_id`);
-
---
--- Indexes for table `document_services`
---
-ALTER TABLE `document_services`
-  ADD PRIMARY KEY IF NOT EXISTS (`id`);
-
---
--- Indexes for table `notifications`
---
-ALTER TABLE `notifications`
-  ADD PRIMARY KEY IF NOT EXISTS (`id`),
-  ADD KEY IF NOT EXISTS `idx_notifications_user_id` (`user_id`);
-
---
--- Indexes for table `status_history`
---
-ALTER TABLE `status_history`
-  ADD PRIMARY KEY IF NOT EXISTS (`id`),
-  ADD KEY IF NOT EXISTS `idx_status_history_entity` (`entity_type`,`entity_id`),
-  ADD KEY IF NOT EXISTS `idx_status_history_changed_by` (`changed_by`);
-
---
--- Indexes for table `users`
---
-ALTER TABLE `users`
-  ADD PRIMARY KEY IF NOT EXISTS (`id`),
-  ADD UNIQUE KEY IF NOT EXISTS `email` (`email`);
-
---
--- AUTO_INCREMENT for dumped tables
---
-
---
--- AUTO_INCREMENT for table `complaints`
---
-ALTER TABLE `complaints`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
-
---
--- AUTO_INCREMENT for table `complaint_categories`
---
-ALTER TABLE `complaint_categories`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
-
---
--- AUTO_INCREMENT for table `complaint_evidence`
---
-ALTER TABLE `complaint_evidence`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `document_requests`
---
-ALTER TABLE `document_requests`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
-
---
--- AUTO_INCREMENT for table `document_services`
---
-ALTER TABLE `document_services`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
-
---
--- AUTO_INCREMENT for table `notifications`
---
-ALTER TABLE `notifications`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
-
---
--- AUTO_INCREMENT for table `status_history`
---
-ALTER TABLE `status_history`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
-
---
--- AUTO_INCREMENT for table `users`
---
-ALTER TABLE `users`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
-
---
--- Constraints for dumped tables
---
-
---
--- Constraints for table `complaints`
---
-ALTER TABLE `complaints`
-  ADD CONSTRAINT IF NOT EXISTS `fk_complaints_category` FOREIGN KEY (`category_id`) REFERENCES `complaint_categories` (`id`),
-  ADD CONSTRAINT IF NOT EXISTS `fk_complaints_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL;
-
---
--- Constraints for table `complaint_evidence`
---
-ALTER TABLE `complaint_evidence`
-  ADD CONSTRAINT IF NOT EXISTS `fk_complaint_evidence_complaint` FOREIGN KEY (`complaint_id`) REFERENCES `complaints` (`id`) ON DELETE CASCADE;
-
---
--- Constraints for table `document_requests`
---
-ALTER TABLE `document_requests`
-  ADD CONSTRAINT IF NOT EXISTS `fk_document_requests_service` FOREIGN KEY (`document_service_id`) REFERENCES `document_services` (`id`),
-  ADD CONSTRAINT IF NOT EXISTS `fk_document_requests_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
-
---
--- Constraints for table `notifications`
---
-ALTER TABLE `notifications`
-  ADD CONSTRAINT IF NOT EXISTS `fk_notifications_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
-
---
--- Constraints for table `status_history`
---
-ALTER TABLE `status_history`
-  ADD CONSTRAINT IF NOT EXISTS `fk_status_history_changed_by` FOREIGN KEY (`changed_by`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

@@ -314,10 +314,21 @@ You now have the same database structure and sample data as the original develop
 
 ## 4. Common issues & quick fixes
 
-- **Error: Table already exists**
+- **Error #1050: Table 'document_requests' already exists**
 
-  - This used to happen when re-importing `citiserve_db.sql` on a database that already had the tables.
-  - Fix: The SQL file now uses `CREATE TABLE IF NOT EXISTS` and `INSERT IGNORE`, so you can safely re-import it without dropping existing tables. Just import it again through phpMyAdmin and it will skip anything that already exists.
+  - This happens when re-importing a SQL file on a database that already has the tables.
+  - Fix: The repo's `citiserve_db.sql` now includes `DROP TABLE IF EXISTS` statements (with foreign key checks disabled) before each `CREATE TABLE`, so you can safely re-import it. Always use the `citiserve_db.sql` from this repo — do **not** import raw phpMyAdmin exports directly.
+
+- **Error: Unknown collation 'utf8mb4_uca1400_ai_ci'**
+
+  - MariaDB 12.2+ uses `utf8mb4_uca1400_ai_ci` as its default collation. This collation is not available in MySQL or older versions of MariaDB, so importing a dump that uses it will fail.
+  - Fix (new install): The repo's `citiserve_db.sql` already uses the compatible `utf8mb4_unicode_ci` collation. Just import it normally.
+  - Fix (existing database): If your existing database already has tables with `utf8mb4_uca1400_ai_ci`, run the migration script in phpMyAdmin:
+
+    `database/migrations/002_fix_collation.sql`
+
+    This will convert all tables to `utf8mb4_unicode_ci`.
+  - When creating the database in phpMyAdmin, always choose collation **`utf8mb4_unicode_ci`** (not `utf8mb4_uca1400_ai_ci`).
 
 - **Error: Unknown database `citiserve_db`**
 

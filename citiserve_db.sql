@@ -11,6 +11,7 @@ SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
 SET time_zone = "+00:00";
 
+SET FOREIGN_KEY_CHECKS = 0;
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -26,6 +27,15 @@ SET time_zone = "+00:00";
 --
 -- Table structure for table `users`
 --
+
+DROP TABLE IF EXISTS `status_history`;
+DROP TABLE IF EXISTS `notifications`;
+DROP TABLE IF EXISTS `document_requests`;
+DROP TABLE IF EXISTS `complaint_evidence`;
+DROP TABLE IF EXISTS `complaints`;
+DROP TABLE IF EXISTS `document_services`;
+DROP TABLE IF EXISTS `complaint_categories`;
+DROP TABLE IF EXISTS `users`;
 
 CREATE TABLE IF NOT EXISTS `users` (
   `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -247,6 +257,8 @@ CREATE TABLE IF NOT EXISTS `status_history` (
 
 INSERT IGNORE INTO `status_history` (`id`, `entity_type`, `entity_id`, `old_status`, `new_status`, `changed_by`, `notes`, `created_at`) VALUES
 (1, 'document_request', 1, 'received', 'claimable', 3, NULL, '2026-03-14 10:25:43');
+
+SET FOREIGN_KEY_CHECKS = 1;
 
 COMMIT;
 

@@ -11,4 +11,4 @@ CREATE TABLE IF NOT EXISTS `complaint_evidence` (
   PRIMARY KEY (`id`),
   KEY `fk_complaint_evidence_complaint` (`complaint_id`),
   CONSTRAINT `fk_complaint_evidence_complaint` FOREIGN KEY (`complaint_id`) REFERENCES `complaints` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

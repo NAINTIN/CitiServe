@@ -1,41 +1,50 @@
 <?php
 
+// This class handles our database connection.
+// We use a "singleton" pattern so we only connect to the database once.
 class Database
 {
-    private static ?Database $instance = null;
-    private PDO $connection;
+    // This stores the single instance of this class
+    private static $instance = null;
 
+    // This stores the PDO database connection
+    private $connection;
+
+    // The constructor is private so nobody can create a new Database() from outside
     private function __construct()
     {
+        // Load the database settings from our config file
         $config = require __DIR__ . '/../config/database.php';
 
-        $dsn = sprintf(
-            '%s:host=%s;port=%d;dbname=%s;charset=%s',
-            $config['driver'],
-            $config['host'],
-            $config['port'],
-            $config['database'],
-            $config['charset']
-        );
+        // Build the DSN (Data Source Name) string that PDO needs to connect
+        $dsn = $config['driver'] . ':host=' . $config['host']
+             . ';port=' . $config['port']
+             . ';dbname=' . $config['database']
+             . ';charset=' . $config['charset'];
 
+        // Try to connect to the database
         try {
             $this->connection = new PDO(
                 $dsn,
                 $config['username'],
                 $config['password'],
                 [
+                    // Throw exceptions when there's a database error
                     PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+                    // Return rows as associative arrays (e.g. $row['name'])
                     PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                    // Use real prepared statements for security
                     PDO::ATTR_EMULATE_PREPARES   => false,
                 ]
             );
         } catch (PDOException $e) {
-            // On production, don't echo the error; log it instead.
+            // If connection fails, stop everything and show an error
             die('Database connection failed: ' . $e->getMessage());
         }
     }
 
-    public static function getInstance(): Database
+    // Get the single instance of this class (create it if it doesn't exist yet)
+    public static function getInstance()
     {
         if (self::$instance === null) {
             self::$instance = new Database();
@@ -43,7 +52,8 @@ class Database
         return self::$instance;
     }
 
-    public function getConnection(): PDO
+    // Get the PDO connection so we can run queries
+    public function getConnection()
     {
         return $this->connection;
     }

@@ -53,7 +53,8 @@ function savePaymentProof($file, $targetDirAbs, $targetDirDbPrefix = 'uploads/pa
     // Step 6: Create the upload directory if it doesn't exist
     if (!is_dir($targetDirAbs)) {
         $created = mkdir($targetDirAbs, 0775, true);
-        if (!$created) {
+        // Double-check: another process might have created it at the same time
+        if (!$created && !is_dir($targetDirAbs)) {
             throw new RuntimeException('Failed to create upload directory.');
         }
     }

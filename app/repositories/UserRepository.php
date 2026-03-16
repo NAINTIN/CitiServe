@@ -1,66 +1,100 @@
 <?php
+// Include the User model and Database connection
 require_once __DIR__ . '/../models/User.php';
 require_once __DIR__ . '/../core/Database.php';
 
+// This class handles all database operations for users.
+// It can find users, create new ones, and update profiles.
 class UserRepository
 {
-    private PDO $db;
+    // This stores our database connection
+    private $db;
 
+    // When we create a new UserRepository, it connects to the database
     public function __construct()
     {
         $this->db = Database::getInstance()->getConnection();
     }
 
-    public function findByEmail(string $email): ?User
+    // Find a user by their email address
+    // Returns a User object if found, or null if not found
+    public function findByEmail($email)
     {
-        $stmt = $this->db->prepare('SELECT * FROM users WHERE email = ? LIMIT 1');
+        $sql = 'SELECT * FROM users WHERE email = ? LIMIT 1';
+        $stmt = $this->db->prepare($sql);
         $stmt->execute([$email]);
         $row = $stmt->fetch();
-        return $row ? User::fromRow($row) : null;
+
+        // If we found a row, convert it to a User object
+        if ($row) {
+            return User::fromRow($row);
+        }
+        return null;
     }
 
-    public function findById(int $id): ?User
+    // Find a user by their ID number
+    // Returns a User object if found, or null if not found
+    public function findById($id)
     {
-        $stmt = $this->db->prepare('SELECT * FROM users WHERE id = ? LIMIT 1');
+        $sql = 'SELECT * FROM users WHERE id = ? LIMIT 1';
+        $stmt = $this->db->prepare($sql);
         $stmt->execute([$id]);
         $row = $stmt->fetch();
-        return $row ? User::fromRow($row) : null;
+
+        // If we found a row, convert it to a User object
+        if ($row) {
+            return User::fromRow($row);
+        }
+        return null;
     }
 
-    public function create(array $data): int
+    // Create a new user in the database
+    // Returns the new user's ID number
+    public function create($data)
     {
-        $stmt = $this->db->prepare('
+        $sql = '
             INSERT INTO users (full_name, email, password_hash, role, address, contact_number)
             VALUES (?, ?, ?, ?, ?, ?)
-        ');
-        $stmt->execute([
-            $data['full_name'],
-            $data['email'],
-            $data['password_hash'],
-            $data['role'] ?? 'resident',
-            $data['address'] ?? null,
-            $data['contact_number'] ?? null,
-        ]);
+        ';
+        $stmt = $this->db->prepare($sql);
+
+        // Get the values from the data array, with defaults for optional fields
+        $fullName = $data['full_name'];
+        $email = $data['email'];
+        $passwordHash = $data['password_hash'];
+        $role = isset($data['role']) ? $data['role'] : 'resident';
+        $address = isset($data['address']) ? $data['address'] : null;
+        $contactNumber = isset($data['contact_number']) ? $data['contact_number'] : null;
+
+        $stmt->execute([$fullName, $email, $passwordHash, $role, $address, $contactNumber]);
+
+        // Return the ID of the newly created user
         return (int)$this->db->lastInsertId();
     }
 
-    public function updateProfile(int $id, string $fullName, ?string $address, ?string $contactNumber): bool
+    // Update a user's profile (name, address, contact number)
+    // Returns true if the update was successful
+    public function updateProfile($id, $fullName, $address, $contactNumber)
     {
-        $stmt = $this->db->prepare('
+        $sql = '
             UPDATE users
             SET full_name = ?, address = ?, contact_number = ?, updated_at = NOW()
             WHERE id = ?
-        ');
+        ';
+        $stmt = $this->db->prepare($sql);
         return $stmt->execute([$fullName, $address, $contactNumber, $id]);
     }
 
-    public function updatePasswordHash(int $id, string $newHash): bool
+    // Update a user's password hash
+    // Returns true if the update was successful
+    public function updatePasswordHash($id, $newHash)
     {
-        $stmt = $this->db->prepare('
+        $sql = '
             UPDATE users
             SET password_hash = ?, updated_at = NOW()
             WHERE id = ?
-        ');
+        ';
+        $stmt = $this->db->prepare($sql);
         return $stmt->execute([$newHash, $id]);
     }
 }

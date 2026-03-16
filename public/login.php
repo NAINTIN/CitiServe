@@ -1,24 +1,41 @@
 <?php
+// Include the UserRepository to look up users
 require_once __DIR__ . '/../app/repositories/UserRepository.php';
+
+// Start the session
 session_start();
 
+// Create a UserRepository
 $repo = new UserRepository();
+
+// Variables to store error message and the email they typed
 $error = '';
 $email = '';
 
+// Check if the form was submitted
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $email = trim($_POST['email'] ?? '');
-    $password = $_POST['password'] ?? '';
 
+    // Get the email and password from the form
+    $email = trim(isset($_POST['email']) ? $_POST['email'] : '');
+    $password = isset($_POST['password']) ? $_POST['password'] : '';
+
+    // Make sure both fields are filled in
     if ($email === '' || $password === '') {
         $error = 'Email and password are required.';
     } else {
+        // Try to find the user by email
         $user = $repo->findByEmail($email);
+
+        // Check if user exists and password is correct
         if ($user && password_verify($password, $user->password_hash)) {
+            // Password is correct! Save the user ID in the session
             $_SESSION['user_id'] = $user->id;
+
+            // Redirect to the home page
             header('Location: /CitiServe/public/index.php');
             exit;
         } else {
+            // Wrong email or password
             $error = 'Invalid email or password.';
         }
     }

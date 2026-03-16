@@ -1,29 +1,59 @@
 <?php
 
+// This class represents a User in our system.
+// Each property matches a column in the "users" database table.
 class User
 {
-    public ?int $id = null;
-    public string $full_name;
-    public string $email;
-    public string $password_hash;
-    public string $role = 'resident';
-    public ?string $address = null;
-    public ?string $contact_number = null;
-    public ?string $created_at = null;
-    public ?string $updated_at = null;
+    // User's ID number (null if not saved to database yet)
+    public $id = null;
 
-    public static function fromRow(array $row): User
+    // User's full name
+    public $full_name = '';
+
+    // User's email address
+    public $email = '';
+
+    // User's hashed password (never store plain text passwords!)
+    public $password_hash = '';
+
+    // User's role: 'resident', 'staff', or 'admin'
+    public $role = 'resident';
+
+    // User's home address (optional)
+    public $address = null;
+
+    // User's contact number (optional)
+    public $contact_number = null;
+
+    // When the account was created
+    public $created_at = null;
+
+    // When the account was last updated
+    public $updated_at = null;
+
+    // This static method creates a User object from a database row (associative array).
+    // It's like a helper that converts database data into a User object.
+    public static function fromRow($row)
     {
-        $u = new User();
-        $u->id = isset($row['id']) ? (int)$row['id'] : null;
-        $u->full_name = $row['full_name'] ?? '';
-        $u->email = $row['email'] ?? '';
-        $u->password_hash = $row['password_hash'] ?? '';
-        $u->role = $row['role'] ?? 'resident';
-        $u->address = $row['address'] ?? null;
-        $u->contact_number = $row['contact_number'] ?? null;
-        $u->created_at = $row['created_at'] ?? null;
-        $u->updated_at = $row['updated_at'] ?? null;
-        return $u;
+        $user = new User();
+
+        // Set the id (convert to integer, or null if not set)
+        if (isset($row['id'])) {
+            $user->id = (int)$row['id'];
+        } else {
+            $user->id = null;
+        }
+
+        // Set each property from the row, using defaults if the value is missing
+        $user->full_name = isset($row['full_name']) ? $row['full_name'] : '';
+        $user->email = isset($row['email']) ? $row['email'] : '';
+        $user->password_hash = isset($row['password_hash']) ? $row['password_hash'] : '';
+        $user->role = isset($row['role']) ? $row['role'] : 'resident';
+        $user->address = isset($row['address']) ? $row['address'] : null;
+        $user->contact_number = isset($row['contact_number']) ? $row['contact_number'] : null;
+        $user->created_at = isset($row['created_at']) ? $row['created_at'] : null;
+        $user->updated_at = isset($row['updated_at']) ? $row['updated_at'] : null;
+
+        return $user;
     }
 }

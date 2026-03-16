@@ -1,35 +1,46 @@
 <?php
+// Include the Database connection
 require_once __DIR__ . '/../core/Database.php';
 
+// This class handles all database operations for document requests.
 class DocumentRequestRepository
 {
-    private PDO $db;
+    // This stores our database connection
+    private $db;
 
+    // When we create a new DocumentRequestRepository, it connects to the database
     public function __construct()
     {
         $this->db = Database::getInstance()->getConnection();
     }
 
-    public function create(array $data): int
+    // Create a new document request in the database
+    // Returns the new request's ID number
+    public function create($data)
     {
-        $stmt = $this->db->prepare("
+        $sql = "
             INSERT INTO document_requests
             (user_id, document_service_id, purpose, status, payment_reference, payment_proof_path)
             VALUES (?, ?, ?, 'received', ?, ?)
-        ");
-        $stmt->execute([
-            $data['user_id'],
-            $data['document_service_id'],
-            $data['purpose'] ?? null,
-            $data['payment_reference'] ?? null,
-            $data['payment_proof_path'] ?? null,
-        ]);
+        ";
+        $stmt = $this->db->prepare($sql);
+
+        // Get values from the data array, with null as default for optional fields
+        $userId = $data['user_id'];
+        $serviceId = $data['document_service_id'];
+        $purpose = isset($data['purpose']) ? $data['purpose'] : null;
+        $paymentRef = isset($data['payment_reference']) ? $data['payment_reference'] : null;
+        $proofPath = isset($data['payment_proof_path']) ? $data['payment_proof_path'] : null;
+
+        $stmt->execute([$userId, $serviceId, $purpose, $paymentRef, $proofPath]);
+
         return (int)$this->db->lastInsertId();
     }
 
-    public function getByUserId(int $userId): array
+    // Get all document requests submitted by a specific user
+    public function getByUserId($userId)
     {
-        $stmt = $this->db->prepare("
+        $sql = "
             SELECT
                 dr.id,
                 dr.status,
@@ -44,14 +55,16 @@ class DocumentRequestRepository
             INNER JOIN document_services ds ON ds.id = dr.document_service_id
             WHERE dr.user_id = ?
             ORDER BY dr.created_at DESC
-        ");
+        ";
+        $stmt = $this->db->prepare($sql);
         $stmt->execute([$userId]);
         return $stmt->fetchAll();
     }
 
-    public function getAllWithUsers(): array
+    // Get ALL document requests with user info (for admin/staff)
+    public function getAllWithUsers()
     {
-        $stmt = $this->db->query("
+        $sql = "
             SELECT
                 dr.id,
                 dr.user_id,
@@ -68,30 +81,40 @@ class DocumentRequestRepository
             INNER JOIN document_services ds ON ds.id = dr.document_service_id
             INNER JOIN users u ON u.id = dr.user_id
             ORDER BY dr.created_at DESC
-        ");
+        ";
+        $stmt = $this->db->query($sql);
         return $stmt->fetchAll();
     }
 
-    public function findById(int $id): ?array
+    // Find a single document request by its ID
+    // Returns the request as an array, or null if not found
+    public function findById($id)
     {
-        $stmt = $this->db->prepare("
+        $sql = "
             SELECT id, user_id, status
             FROM document_requests
             WHERE id = ?
             LIMIT 1
-        ");
+        ";
+        $stmt = $this->db->prepare($sql);
         $stmt->execute([$id]);
         $row = $stmt->fetch();
-        return $row ?: null;
+
+        if ($row) {
+            return $row;
+        }
+        return null;
     }
 
-    public function updateStatus(int $requestId, string $newStatus): bool
+    // Update the status of a document request
+    public function updateStatus($requestId, $newStatus)
     {
-        $stmt = $this->db->prepare("
+        $sql = "
             UPDATE document_requests
             SET status = ?, updated_at = NOW()
             WHERE id = ?
-        ");
+        ";
+        $stmt = $this->db->prepare($sql);
         return $stmt->execute([$newStatus, $requestId]);
     }
 }

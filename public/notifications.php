@@ -1,20 +1,28 @@
 <?php
+// Include helpers and repository
 require_once __DIR__ . '/../app/helpers/auth.php';
 require_once __DIR__ . '/../app/helpers/csrf.php';
 require_once __DIR__ . '/../app/repositories/NotificationRepository.php';
 
+// Make sure the user is logged in
 $user = require_login();
+
+// Create a NotificationRepository to work with notifications
 $repo = new NotificationRepository();
 
+// Check if the form was submitted (POST request)
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Verify the CSRF token
     csrf_verify_or_die();
 
+    // Check if the user clicked "Mark all as read"
     if (isset($_POST['mark_all_read'])) {
         $repo->markAllAsRead((int)$user['id']);
         header('Location: /CitiServe/public/notifications.php');
         exit;
     }
 
+    // Check if the user clicked "Mark read" on a single notification
     if (isset($_POST['mark_read_id'])) {
         $id = (int)$_POST['mark_read_id'];
         if ($id > 0) {
@@ -25,6 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
+// Get all notifications for this user
 $rows = $repo->getByUser((int)$user['id']);
 ?>
 <!doctype html>
@@ -58,7 +67,16 @@ $rows = $repo->getByUser((int)$user['id']);
             </tr>
             <?php foreach ($rows as $n): ?>
                 <tr>
-                    <td><?= ((int)$n['is_read'] === 1) ? 'Read' : 'Unread' ?></td>
+                    <td>
+                        <?php
+                        // Show "Read" or "Unread" based on the is_read value
+                        if ((int)$n['is_read'] === 1) {
+                            echo 'Read';
+                        } else {
+                            echo 'Unread';
+                        }
+                        ?>
+                    </td>
                     <td><?= htmlspecialchars($n['title']) ?></td>
                     <td>
                         <?= htmlspecialchars($n['message']) ?>

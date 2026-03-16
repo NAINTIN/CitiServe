@@ -1,34 +1,56 @@
 <?php
+// Don't show errors on the page (for security), but still log them
 ini_set('display_errors', 0);
 ini_set('display_startup_errors', 0);
 error_reporting(E_ALL);
 
+// Include all the files we need
 require_once __DIR__ . '/../../app/helpers/auth.php';
 require_once __DIR__ . '/../../app/helpers/csrf.php';
 require_once __DIR__ . '/../../app/core/Database.php';
 
+// Make sure the user is an admin or staff
 $admin = require_admin();
+
+// Get the database connection
 $db = Database::getInstance()->getConnection();
 
+// These are the valid roles a user can have
 $allowedRoles = ['resident', 'staff', 'admin'];
+
+// Variables for success and error messages
 $message = '';
 $error = '';
 
+// Check if the form was submitted (admin changing a user's role)
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Verify the CSRF token
     csrf_verify_or_die();
 
-    $userId = (int)($_POST['user_id'] ?? 0);
-    $newRole = trim($_POST['new_role'] ?? '');
+    // Get the user ID and new role from the form
+    $userId = 0;
+    if (isset($_POST['user_id'])) {
+        $userId = (int)$_POST['user_id'];
+    }
 
+    $newRole = '';
+    if (isset($_POST['new_role'])) {
+        $newRole = trim($_POST['new_role']);
+    }
+
+    // Validate the input
     if ($userId <= 0 || !in_array($newRole, $allowedRoles, true)) {
         $error = 'Invalid role update.';
     } else {
+        // Don't let admins remove their own admin role
         if ($userId === (int)$admin['id'] && $newRole !== 'admin') {
             $error = 'You cannot remove your own admin role.';
         } else {
             try {
+                // Start a transaction
                 $db->beginTransaction();
 
+                // Look up the user we want to change
                 $stmtOld = $db->prepare("SELECT id, role, full_name, email FROM users WHERE id = ? LIMIT 1");
                 $stmtOld->execute([$userId]);
                 $target = $stmtOld->fetch();
@@ -39,36 +61,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 $oldRole = $target['role'];
 
+                // Check if the role is actually changing
                 if ($oldRole === $newRole) {
                     $message = "No changes made. User already has role '{$newRole}'.";
                 } else {
+                    // Update the user's role
                     $stmt = $db->prepare("UPDATE users SET role = ?, updated_at = NOW() WHERE id = ?");
                     $stmt->execute([$newRole, $userId]);
-
-                    // Optional audit log (if table exists)
-                    // $stmtAudit = $db->prepare("
-                    //     INSERT INTO audit_logs (user_id, action, table_name, record_id, old_data, new_data)
-                    //     VALUES (?, 'update_role', 'users', ?, ?, ?)
-                    // ");
-                    // $stmtAudit->execute([
-                    //     (int)$admin['id'],
-                    //     (string)$userId,
-                    //     json_encode(['role' => $oldRole], JSON_UNESCAPED_UNICODE),
-                    //     json_encode(['role' => $newRole], JSON_UNESCAPED_UNICODE),
-                    // ]);
 
                     $message = "Updated role for {$target['full_name']} ({$target['email']}) from '{$oldRole}' to '{$newRole}'.";
                 }
 
+                // Commit the transaction
                 $db->commit();
             } catch (Throwable $e) {
-                if ($db->inTransaction()) $db->rollBack();
+                // If something went wrong, undo everything
+                if ($db->inTransaction()) {
+                    $db->rollBack();
+                }
                 $error = 'Failed to update role.';
             }
         }
     }
 }
 
+// Get all users to display in the table
 $users = $db->query("
     SELECT id, full_name, email, role, created_at
     FROM users
@@ -122,7 +139,13 @@ $users = $db->query("
                             <input type="hidden" name="user_id" value="<?= (int)$u['id'] ?>">
                             <select name="new_role">
                                 <?php foreach ($allowedRoles as $role): ?>
-                                    <option value="<?= htmlspecialchars($role) ?>" <?= $role === $u['role'] ? 'selected' : '' ?>>
+                                    <?php
+                                    $isSelected = '';
+                                    if ($role === $u['role']) {
+                                        $isSelected = 'selected';
+                                    }
+                                    ?>
+                                    <option value="<?= htmlspecialchars($role) ?>" <?= $isSelected ?>>
                                         <?= htmlspecialchars($role) ?>
                                     </option>
                                 <?php endforeach; ?>

@@ -1,31 +1,55 @@
 <?php
+// Don't show errors on the page (for security), but still log them
 ini_set('display_errors', 0);
 ini_set('display_startup_errors', 0);
 error_reporting(E_ALL);
 
+// Include all the files we need
 require_once __DIR__ . '/../../app/helpers/auth.php';
 require_once __DIR__ . '/../../app/helpers/csrf.php';
 require_once __DIR__ . '/../../app/repositories/ComplaintRepository.php';
 require_once __DIR__ . '/../../app/core/Database.php';
 
+// Make sure the user is an admin or staff
 $admin = require_admin();
+
+// Create a ComplaintRepository and get the database connection
 $repo = new ComplaintRepository();
 $db = Database::getInstance()->getConnection();
 
+// These are all the valid complaint statuses
 $allowedStatuses = ['submitted', 'under_review', 'in_progress', 'resolved', 'rejected'];
+
+// Variables for success and error messages
 $message = '';
 $error = '';
 
+// Check if the form was submitted (admin updating a complaint status)
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Verify the CSRF token
     csrf_verify_or_die();
 
-    $complaintId = (int)($_POST['complaint_id'] ?? 0);
-    $newStatus = trim($_POST['new_status'] ?? '');
-    $notes = trim($_POST['notes'] ?? '');
+    // Get the complaint ID and new status from the form
+    $complaintId = 0;
+    if (isset($_POST['complaint_id'])) {
+        $complaintId = (int)$_POST['complaint_id'];
+    }
 
+    $newStatus = '';
+    if (isset($_POST['new_status'])) {
+        $newStatus = trim($_POST['new_status']);
+    }
+
+    $notes = '';
+    if (isset($_POST['notes'])) {
+        $notes = trim($_POST['notes']);
+    }
+
+    // Validate the input
     if ($complaintId <= 0 || !in_array($newStatus, $allowedStatuses, true)) {
         $error = 'Invalid complaint status update request.';
     } else {
+        // Find the current complaint
         $current = $repo->findById($complaintId);
 
         if (!$current) {
@@ -33,32 +57,48 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } elseif ($current['status'] === $newStatus) {
             $error = 'Status is already set to that value.';
         } else {
+            // Use a transaction so both updates happen together (or neither)
             $db->beginTransaction();
             try {
+                // Update the complaint status
                 $repo->updateStatus($complaintId, $newStatus);
 
-                $stmt = $db->prepare("
+                // Save the status change in the history table
+                $sql = "
                     INSERT INTO status_history (entity_type, entity_id, old_status, new_status, changed_by, notes)
                     VALUES ('complaint', ?, ?, ?, ?, ?)
-                ");
+                ";
+                $stmt = $db->prepare($sql);
+
+                // Set notes to null if empty
+                $notesForDb = null;
+                if ($notes !== '') {
+                    $notesForDb = $notes;
+                }
+
                 $stmt->execute([
                     $complaintId,
                     $current['status'],
                     $newStatus,
                     (int)$admin['id'],
-                    $notes !== '' ? $notes : null
+                    $notesForDb
                 ]);
 
+                // If everything worked, commit the transaction
                 $db->commit();
                 $message = "Complaint #{$complaintId} updated to '{$newStatus}'.";
             } catch (Throwable $e) {
-                if ($db->inTransaction()) $db->rollBack();
+                // If something went wrong, undo everything
+                if ($db->inTransaction()) {
+                    $db->rollBack();
+                }
                 $error = 'Failed to update complaint.';
             }
         }
     }
 }
 
+// Get all complaints to display in the table
 $rows = $repo->getAll();
 ?>
 <!doctype html>
@@ -97,6 +137,7 @@ $rows = $repo->getAll();
             </tr>
             <?php foreach ($rows as $r): ?>
                 <?php
+                    // Try to get the evidence files for this complaint
                     try {
                         $evidence = $repo->getEvidenceByComplaintId((int)$r['id']);
                     } catch (Throwable $e) {
@@ -109,15 +150,41 @@ $rows = $repo->getAll();
                         <?php if ((int)$r['is_anonymous'] === 1): ?>
                             <em>Anonymous</em>
                         <?php else: ?>
-                            <?= htmlspecialchars($r['full_name'] ?? 'N/A') ?><br>
-                            <small><?= htmlspecialchars($r['email'] ?? '') ?></small>
+                            <?php
+                            // Show the user's name and email
+                            if (isset($r['full_name'])) {
+                                echo htmlspecialchars($r['full_name']);
+                            } else {
+                                echo 'N/A';
+                            }
+                            ?>
+                            <br>
+                            <small><?php
+                                if (isset($r['email'])) {
+                                    echo htmlspecialchars($r['email']);
+                                } else {
+                                    echo '';
+                                }
+                            ?></small>
                         <?php endif; ?>
                     </td>
                     <td><?= htmlspecialchars($r['category_name']) ?></td>
                     <td><?= htmlspecialchars($r['title']) ?></td>
                     <td><?= htmlspecialchars($r['description']) ?></td>
-                    <td><?= htmlspecialchars($r['location'] ?? '') ?></td>
-                    <td><?= ((int)$r['is_anonymous'] === 1) ? 'Yes' : 'No' ?></td>
+                    <td><?php
+                        if (isset($r['location'])) {
+                            echo htmlspecialchars($r['location']);
+                        } else {
+                            echo '';
+                        }
+                    ?></td>
+                    <td><?php
+                        if ((int)$r['is_anonymous'] === 1) {
+                            echo 'Yes';
+                        } else {
+                            echo 'No';
+                        }
+                    ?></td>
                     <td><strong><?= htmlspecialchars($r['status']) ?></strong></td>
                     <td>
                         <?php if (empty($evidence)): ?>
@@ -125,7 +192,14 @@ $rows = $repo->getAll();
                         <?php else: ?>
                             <?php foreach ($evidence as $ev): ?>
                                 <a href="/CitiServe/public/<?= htmlspecialchars($ev['file_path']) ?>" target="_blank">
-                                    <?= htmlspecialchars($ev['file_name'] ?: 'evidence') ?>
+                                    <?php
+                                    // Show the file name, or "evidence" if no name
+                                    if ($ev['file_name']) {
+                                        echo htmlspecialchars($ev['file_name']);
+                                    } else {
+                                        echo 'evidence';
+                                    }
+                                    ?>
                                 </a><br>
                             <?php endforeach; ?>
                         <?php endif; ?>
@@ -137,7 +211,13 @@ $rows = $repo->getAll();
                             <input type="hidden" name="complaint_id" value="<?= (int)$r['id'] ?>">
                             <select name="new_status">
                                 <?php foreach ($allowedStatuses as $st): ?>
-                                    <option value="<?= htmlspecialchars($st) ?>" <?= $st === $r['status'] ? 'selected' : '' ?>>
+                                    <?php
+                                    $isSelected = '';
+                                    if ($st === $r['status']) {
+                                        $isSelected = 'selected';
+                                    }
+                                    ?>
+                                    <option value="<?= htmlspecialchars($st) ?>" <?= $isSelected ?>>
                                         <?= htmlspecialchars($st) ?>
                                     </option>
                                 <?php endforeach; ?>

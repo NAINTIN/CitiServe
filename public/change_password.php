@@ -1,12 +1,17 @@
 <?php
+// Include helpers and repository
 require_once __DIR__ . '/../app/helpers/auth.php';
 require_once __DIR__ . '/../app/helpers/csrf.php';
 require_once __DIR__ . '/../app/repositories/UserRepository.php';
 
+// Make sure the user is logged in
 $authUser = require_login();
+
+// Get the full user info from the database
 $userRepo = new UserRepository();
 $user = $userRepo->findById((int)$authUser['id']);
 
+// If the user doesn't exist anymore, log them out
 if (!$user) {
     session_start();
     session_unset();
@@ -15,38 +20,51 @@ if (!$user) {
     exit;
 }
 
+// Variables for errors and success message
 $errors = [];
 $success = '';
 
+// Check if the form was submitted
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Verify the CSRF token
     csrf_verify_or_die();
 
-    $currentPassword = $_POST['current_password'] ?? '';
-    $newPassword = $_POST['new_password'] ?? '';
-    $confirmPassword = $_POST['confirm_password'] ?? '';
+    // Get the passwords from the form
+    $currentPassword = isset($_POST['current_password']) ? $_POST['current_password'] : '';
+    $newPassword = isset($_POST['new_password']) ? $_POST['new_password'] : '';
+    $confirmPassword = isset($_POST['confirm_password']) ? $_POST['confirm_password'] : '';
 
+    // Make sure all fields are filled in
     if ($currentPassword === '' || $newPassword === '' || $confirmPassword === '') {
         $errors[] = 'All password fields are required.';
     }
 
+    // Check if the current password is correct
     if (!password_verify($currentPassword, $user->password_hash)) {
         $errors[] = 'Current password is incorrect.';
     }
 
+    // Check if the new password is long enough
     if (strlen($newPassword) < 8) {
         $errors[] = 'New password must be at least 8 characters.';
     }
 
+    // Check if the new password and confirmation match
     if ($newPassword !== $confirmPassword) {
         $errors[] = 'New password and confirmation do not match.';
     }
 
+    // Make sure the new password is different from the current one
     if ($currentPassword === $newPassword) {
         $errors[] = 'New password must be different from current password.';
     }
 
+    // If there are no errors, update the password
     if (empty($errors)) {
+        // Hash the new password
         $newHash = password_hash($newPassword, PASSWORD_DEFAULT);
+
+        // Save the new password hash to the database
         $ok = $userRepo->updatePasswordHash((int)$user->id, $newHash);
 
         if ($ok) {

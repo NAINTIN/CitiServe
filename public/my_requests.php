@@ -1,8 +1,12 @@
 <?php
+// Include the auth helper and DocumentRequestRepository
 require_once __DIR__ . '/../app/helpers/auth.php';
 require_once __DIR__ . '/../app/repositories/DocumentRequestRepository.php';
 
+// Make sure the user is logged in
 $user = require_login();
+
+// Get all document requests for this user
 $requestRepo = new DocumentRequestRepository();
 $requests = $requestRepo->getByUserId((int)$user['id']);
 ?>
@@ -38,8 +42,20 @@ $requests = $requestRepo->getByUserId((int)$user['id']);
                     <td><?= (int)$r['id'] ?></td>
                     <td><?= htmlspecialchars($r['service_name']) ?></td>
                     <td><?= htmlspecialchars($r['status']) ?></td>
-                    <td><?= htmlspecialchars($r['purpose'] ?? '') ?></td>
-                    <td><?= htmlspecialchars($r['payment_reference'] ?? '') ?></td>
+                    <td><?php
+                        if (isset($r['purpose'])) {
+                            echo htmlspecialchars($r['purpose']);
+                        } else {
+                            echo '';
+                        }
+                    ?></td>
+                    <td><?php
+                        if (isset($r['payment_reference'])) {
+                            echo htmlspecialchars($r['payment_reference']);
+                        } else {
+                            echo '';
+                        }
+                    ?></td>
                     <td>
                         <?php if (!empty($r['payment_proof_path'])): ?>
                             <a href="/CitiServe/public/<?= htmlspecialchars($r['payment_proof_path']) ?>" target="_blank">View</a>

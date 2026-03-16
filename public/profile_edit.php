@@ -1,12 +1,17 @@
 <?php
+// Include helpers and repository
 require_once __DIR__ . '/../app/helpers/auth.php';
 require_once __DIR__ . '/../app/helpers/csrf.php';
 require_once __DIR__ . '/../app/repositories/UserRepository.php';
 
+// Make sure the user is logged in
 $authUser = require_login();
+
+// Get the full user info from the database
 $userRepo = new UserRepository();
 $user = $userRepo->findById((int)$authUser['id']);
 
+// If the user doesn't exist anymore, log them out
 if (!$user) {
     session_start();
     session_unset();
@@ -15,20 +20,26 @@ if (!$user) {
     exit;
 }
 
+// Variables for errors and success message
 $errors = [];
 $success = '';
 
+// Set the form fields to the current user values
 $fullName = $user->full_name;
-$address = $user->address ?? '';
-$contactNumber = $user->contact_number ?? '';
+$address = ($user->address !== null) ? $user->address : '';
+$contactNumber = ($user->contact_number !== null) ? $user->contact_number : '';
 
+// Check if the form was submitted
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Verify the CSRF token to prevent cross-site attacks
     csrf_verify_or_die();
 
-    $fullName = trim($_POST['full_name'] ?? '');
-    $address = trim($_POST['address'] ?? '');
-    $contactNumber = trim($_POST['contact_number'] ?? '');
+    // Get the values from the form
+    $fullName = trim(isset($_POST['full_name']) ? $_POST['full_name'] : '');
+    $address = trim(isset($_POST['address']) ? $_POST['address'] : '');
+    $contactNumber = trim(isset($_POST['contact_number']) ? $_POST['contact_number'] : '');
 
+    // Validate the inputs
     if ($fullName === '') {
         $errors[] = 'Full name is required.';
     } elseif (mb_strlen($fullName) > 100) {
@@ -43,16 +54,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $errors[] = 'Contact number must be 20 characters or less.';
     }
 
+    // If there are no errors, update the profile
     if (empty($errors)) {
+        // Convert empty strings to null for the database
+        $addressForDb = ($address !== '') ? $address : null;
+        $contactForDb = ($contactNumber !== '') ? $contactNumber : null;
+
         $ok = $userRepo->updateProfile(
             (int)$user->id,
             $fullName,
-            $address !== '' ? $address : null,
-            $contactNumber !== '' ? $contactNumber : null
+            $addressForDb,
+            $contactForDb
         );
 
         if ($ok) {
             $success = 'Profile updated successfully.';
+            // Reload the user data to show the updated values
             $user = $userRepo->findById((int)$authUser['id']);
         } else {
             $errors[] = 'Failed to update profile.';

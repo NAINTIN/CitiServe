@@ -1,11 +1,16 @@
 <?php
+// Include the auth helper and UserRepository
 require_once __DIR__ . '/../app/helpers/auth.php';
 require_once __DIR__ . '/../app/repositories/UserRepository.php';
 
+// Make sure the user is logged in
 $authUser = require_login();
+
+// Get the full user info from the database
 $userRepo = new UserRepository();
 $user = $userRepo->findById((int)$authUser['id']);
 
+// If the user doesn't exist anymore, log them out
 if (!$user) {
     session_start();
     session_unset();
@@ -48,19 +53,44 @@ if (!$user) {
         </tr>
         <tr>
             <th>Address</th>
-            <td><?= htmlspecialchars($user->address ?? '-') ?></td>
+            <td><?php
+                // Show the address, or a dash if it's empty
+                if ($user->address !== null) {
+                    echo htmlspecialchars($user->address);
+                } else {
+                    echo '-';
+                }
+            ?></td>
         </tr>
         <tr>
             <th>Contact Number</th>
-            <td><?= htmlspecialchars($user->contact_number ?? '-') ?></td>
+            <td><?php
+                if ($user->contact_number !== null) {
+                    echo htmlspecialchars($user->contact_number);
+                } else {
+                    echo '-';
+                }
+            ?></td>
         </tr>
         <tr>
             <th>Created At</th>
-            <td><?= htmlspecialchars($user->created_at ?? '-') ?></td>
+            <td><?php
+                if ($user->created_at !== null) {
+                    echo htmlspecialchars($user->created_at);
+                } else {
+                    echo '-';
+                }
+            ?></td>
         </tr>
         <tr>
             <th>Updated At</th>
-            <td><?= htmlspecialchars($user->updated_at ?? '-') ?></td>
+            <td><?php
+                if ($user->updated_at !== null) {
+                    echo htmlspecialchars($user->updated_at);
+                } else {
+                    echo '-';
+                }
+            ?></td>
         </tr>
     </table>
 </body>

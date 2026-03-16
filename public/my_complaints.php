@@ -1,8 +1,12 @@
 <?php
+// Include the auth helper and ComplaintRepository
 require_once __DIR__ . '/../app/helpers/auth.php';
 require_once __DIR__ . '/../app/repositories/ComplaintRepository.php';
 
+// Make sure the user is logged in
 $user = require_login();
+
+// Get all complaints for this user
 $repo = new ComplaintRepository();
 $rows = $repo->getByUserId((int)$user['id']);
 ?>
@@ -40,8 +44,20 @@ $rows = $repo->getByUserId((int)$user['id']);
                     <td><?= htmlspecialchars($r['category_name']) ?></td>
                     <td><?= htmlspecialchars($r['title']) ?></td>
                     <td><?= htmlspecialchars($r['description']) ?></td>
-                    <td><?= htmlspecialchars($r['location'] ?? '') ?></td>
-                    <td><?= ((int)$r['is_anonymous'] === 1) ? 'Yes' : 'No' ?></td>
+                    <td><?php
+                        if (isset($r['location'])) {
+                            echo htmlspecialchars($r['location']);
+                        } else {
+                            echo '';
+                        }
+                    ?></td>
+                    <td><?php
+                        if ((int)$r['is_anonymous'] === 1) {
+                            echo 'Yes';
+                        } else {
+                            echo 'No';
+                        }
+                    ?></td>
                     <td><strong><?= htmlspecialchars($r['status']) ?></strong></td>
                     <td><?= htmlspecialchars($r['created_at']) ?></td>
                 </tr>

@@ -1,8 +1,12 @@
 <?php
+// Include the auth helper and DocumentServiceRepository
 require_once __DIR__ . '/../app/helpers/auth.php';
 require_once __DIR__ . '/../app/repositories/DocumentServiceRepository.php';
 
+// Make sure the user is logged in
 $user = require_login();
+
+// Get all active document services from the database
 $serviceRepo = new DocumentServiceRepository();
 $services = $serviceRepo->getAllActive();
 ?>
@@ -39,7 +43,14 @@ $services = $serviceRepo->getAllActive();
                 <tr>
                     <td><?= (int)$s['id'] ?></td>
                     <td><?= htmlspecialchars($s['name']) ?></td>
-                    <td><?= htmlspecialchars($s['description'] ?? '') ?></td>
+                    <td><?php
+                        // Show description or empty string if not set
+                        if (isset($s['description'])) {
+                            echo htmlspecialchars($s['description']);
+                        } else {
+                            echo '';
+                        }
+                    ?></td>
                     <td><?= htmlspecialchars($s['price']) ?></td>
                     <td><?= htmlspecialchars($s['processing_time_days']) ?></td>
                     <td>

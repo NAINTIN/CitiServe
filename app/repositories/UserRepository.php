@@ -53,8 +53,11 @@ class UserRepository
     public function create($data)
     {
         $sql = '
-            INSERT INTO users (full_name, email, password_hash, role, address, contact_number)
-            VALUES (?, ?, ?, ?, ?, ?)
+            INSERT INTO users (
+                full_name, email, password_hash, role, address, contact_number,
+                is_verified, residency_verification_status, residency_proof_path
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         ';
         $stmt = $this->db->prepare($sql);
 
@@ -65,8 +68,32 @@ class UserRepository
         $role = isset($data['role']) ? $data['role'] : 'resident';
         $address = isset($data['address']) ? $data['address'] : null;
         $contactNumber = isset($data['contact_number']) ? $data['contact_number'] : null;
+        $isVerified = 0;
+        if (isset($data['is_verified'])) {
+            $isVerified = (int)((bool)$data['is_verified']);
+        } elseif ($role !== 'resident') {
+            $isVerified = 1;
+        }
 
-        $stmt->execute([$fullName, $email, $passwordHash, $role, $address, $contactNumber]);
+        $verificationStatus = 'not_submitted';
+        if (isset($data['residency_verification_status'])) {
+            $verificationStatus = $data['residency_verification_status'];
+        } elseif ($role !== 'resident') {
+            $verificationStatus = 'approved';
+        }
+        $proofPath = isset($data['residency_proof_path']) ? $data['residency_proof_path'] : null;
+
+        $stmt->execute([
+            $fullName,
+            $email,
+            $passwordHash,
+            $role,
+            $address,
+            $contactNumber,
+            $isVerified,
+            $verificationStatus,
+            $proofPath
+        ]);
 
         // Return the ID of the newly created user
         return (int)$this->db->lastInsertId();
@@ -96,5 +123,30 @@ class UserRepository
         ';
         $stmt = $this->db->prepare($sql);
         return $stmt->execute([$newHash, $id]);
+    }
+
+    // Save/replace a resident's uploaded proof and set status to pending review
+    public function submitResidencyProof($id, $proofPath)
+    {
+        $sql = '
+            UPDATE users
+            SET residency_proof_path = ?, residency_verification_status = ?, is_verified = 0, updated_at = NOW()
+            WHERE id = ?
+        ';
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute([$proofPath, 'pending', $id]);
+    }
+
+    // Get admin IDs for notification fan-out
+    public function getAdminIds()
+    {
+        $sql = "SELECT id FROM users WHERE role = 'admin'";
+        $rows = $this->db->query($sql)->fetchAll();
+
+        $ids = [];
+        foreach ($rows as $row) {
+            $ids[] = (int)$row['id'];
+        }
+        return $ids;
     }
 }

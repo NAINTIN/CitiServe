@@ -12,6 +12,19 @@ require_once __DIR__ . '/../../app/repositories/NotificationRepository.php';
 
 define('RESIDENCY_PROOF_STORAGE_PREFIX', 'storage/residency_proofs/');
 
+function users_has_residency_verification_columns($db)
+{
+    $sql = "
+        SELECT COUNT(*) AS cnt
+        FROM information_schema.COLUMNS
+        WHERE TABLE_SCHEMA = DATABASE()
+          AND TABLE_NAME = 'users'
+          AND COLUMN_NAME IN ('is_verified', 'residency_verification_status', 'residency_proof_path')
+    ";
+    $row = $db->query($sql)->fetch();
+    return isset($row['cnt']) && (int)$row['cnt'] === 3;
+}
+
 // Make sure the user is an admin or staff
 $admin = require_admin();
 
@@ -21,6 +34,7 @@ $db = Database::getInstance()->getConnection();
 // These are the valid roles a user can have
 $allowedRoles = ['resident', 'staff', 'admin'];
 $notifRepo = new NotificationRepository();
+$hasResidencyVerificationColumns = users_has_residency_verification_columns($db);
 
 // Variables for success and error messages
 $message = '';
@@ -40,7 +54,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['verification_action'])) {
         $action = trim((string)$_POST['verification_action']);
 
-        if ($userId <= 0 || ($action !== 'accept' && $action !== 'reject')) {
+        if (!$hasResidencyVerificationColumns) {
+            $error = 'Residency verification columns are missing in your database. Please import the latest schema.';
+        } elseif ($userId <= 0 || ($action !== 'accept' && $action !== 'reject')) {
             $error = 'Invalid verification action.';
         } else {
             try {
@@ -160,11 +176,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 // Get all users to display in the table
-$users = $db->query("
-    SELECT id, full_name, email, role, is_verified, residency_verification_status, residency_proof_path, created_at
-    FROM users
-    ORDER BY created_at DESC
-")->fetchAll();
+if ($hasResidencyVerificationColumns) {
+    $users = $db->query("
+        SELECT id, full_name, email, role, is_verified, residency_verification_status, residency_proof_path, created_at
+        FROM users
+        ORDER BY created_at DESC
+    ")->fetchAll();
+} else {
+    $users = $db->query("
+        SELECT id, full_name, email, role, 0 AS is_verified, 'not_submitted' AS residency_verification_status, '' AS residency_proof_path, created_at
+        FROM users
+        ORDER BY created_at DESC
+    ")->fetchAll();
+}
 ?>
 <!doctype html>
 <html>
@@ -186,6 +210,12 @@ $users = $db->query("
 
     <?php if ($error): ?>
         <p style="color: red;"><?= htmlspecialchars($error) ?></p>
+    <?php endif; ?>
+
+    <?php if (!$hasResidencyVerificationColumns): ?>
+        <p style="color: #b36b00;">
+            Residency verification fields are not available in the current database schema. Role management still works.
+        </p>
     <?php endif; ?>
 
     <?php if (empty($users)): ?>

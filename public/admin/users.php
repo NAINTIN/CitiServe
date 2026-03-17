@@ -11,6 +11,9 @@ require_once __DIR__ . '/../../app/core/Database.php';
 require_once __DIR__ . '/../../app/repositories/NotificationRepository.php';
 
 define('RESIDENCY_PROOF_STORAGE_PREFIX', 'storage/residency_proofs/');
+define('DEFAULT_IS_VERIFIED', 0);
+define('DEFAULT_VERIFICATION_STATUS', 'not_submitted');
+define('DEFAULT_RESIDENCY_PROOF_PATH', '');
 
 function users_has_residency_verification_columns($db)
 {
@@ -183,11 +186,13 @@ if ($hasResidencyVerificationColumns) {
         ORDER BY created_at DESC
     ")->fetchAll();
 } else {
-    $users = $db->query("
-        SELECT id, full_name, email, role, 0 AS is_verified, 'not_submitted' AS residency_verification_status, '' AS residency_proof_path, created_at
+    $stmtUsers = $db->prepare("
+        SELECT id, full_name, email, role, ? AS is_verified, ? AS residency_verification_status, ? AS residency_proof_path, created_at
         FROM users
         ORDER BY created_at DESC
-    ")->fetchAll();
+    ");
+    $stmtUsers->execute([DEFAULT_IS_VERIFIED, DEFAULT_VERIFICATION_STATUS, DEFAULT_RESIDENCY_PROOF_PATH]);
+    $users = $stmtUsers->fetchAll();
 }
 ?>
 <!doctype html>
@@ -214,7 +219,7 @@ if ($hasResidencyVerificationColumns) {
 
     <?php if (!$hasResidencyVerificationColumns): ?>
         <p style="color: #b36b00;">
-            Residency verification fields are not available in the current database schema. Role management still works.
+            <strong>Warning:</strong> Residency verification fields are not available in the current database schema. Role management still works.
         </p>
     <?php endif; ?>
 

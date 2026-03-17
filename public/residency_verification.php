@@ -65,7 +65,8 @@ $effectiveMaxLabel = max_size_label($effectiveMaxBytes);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $contentLen = isset($_SERVER['CONTENT_LENGTH']) ? (int)$_SERVER['CONTENT_LENGTH'] : 0;
-    if ($contentLen > 0 && $postMax > 0 && $contentLen > $postMax && empty($_POST) && empty($_FILES)) {
+    $isPostMaxExceeded = $postMax > 0 && $contentLen > $postMax && empty($_POST) && empty($_FILES);
+    if ($isPostMaxExceeded) {
         $errors[] = 'Uploaded data is too large for server limit. Please upload a file up to ' . $effectiveMaxLabel . '.';
     } else {
         csrf_verify_or_die();
@@ -142,9 +143,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                         }
                                     } catch (Throwable $e) {
                                         if (is_file($dest)) {
-                                            @unlink($dest);
+                                            if (!unlink($dest)) {
+                                                error_log('Failed to remove uploaded residency proof after DB error: ' . basename($dest));
+                                            }
                                         }
-                                        $errors[] = 'Failed to submit proof. Please check your database schema and try again.';
+                                        error_log('Residency proof submit failed: ' . $e->getMessage());
+                                        $errors[] = 'Failed to submit proof due to a system error. Please contact support.';
                                     }
                                 }
                             }

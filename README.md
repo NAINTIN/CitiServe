@@ -72,6 +72,13 @@ Importing this file will automatically create all required tables and insert som
   - `resident`
   - `staff`
   - `admin`
+- `is_verified` – Resident verification flag (`0` = unverified, `1` = verified).
+- `residency_verification_status` – Proof workflow status:
+  - `not_submitted`
+  - `pending`
+  - `approved`
+  - `rejected`
+- `residency_proof_path` – Uploaded proof-of-residency image path.
 - `address` – Address of the resident.
 - `contact_number` – Contact number.
 - `created_at`, `updated_at` – Timestamps.
@@ -153,6 +160,7 @@ This table is used in the **Resident Interface** (request history) and **Baranga
 - `is_active` – Whether the category is active (1) or not (0).
 
 Residents select from these categories when submitting complaints.
+Only verified residents can submit complaints.
 
 ---
 

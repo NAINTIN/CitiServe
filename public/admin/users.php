@@ -8,6 +8,7 @@ error_reporting(E_ALL);
 require_once __DIR__ . '/../../app/helpers/auth.php';
 require_once __DIR__ . '/../../app/helpers/csrf.php';
 require_once __DIR__ . '/../../app/core/Database.php';
+require_once __DIR__ . '/../../app/repositories/NotificationRepository.php';
 
 // Make sure the user is an admin or staff
 $admin = require_admin();
@@ -17,6 +18,7 @@ $db = Database::getInstance()->getConnection();
 
 // These are the valid roles a user can have
 $allowedRoles = ['resident', 'staff', 'admin'];
+$notifRepo = new NotificationRepository();
 
 // Variables for success and error messages
 $message = '';
@@ -33,53 +35,123 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $userId = (int)$_POST['user_id'];
     }
 
-    $newRole = '';
-    if (isset($_POST['new_role'])) {
-        $newRole = trim($_POST['new_role']);
-    }
+    if (isset($_POST['verification_action'])) {
+        $action = trim((string)$_POST['verification_action']);
 
-    // Validate the input
-    if ($userId <= 0 || !in_array($newRole, $allowedRoles, true)) {
-        $error = 'Invalid role update.';
-    } else {
-        // Don't let admins remove their own admin role
-        if ($userId === (int)$admin['id'] && $newRole !== 'admin') {
-            $error = 'You cannot remove your own admin role.';
+        if ($userId <= 0 || ($action !== 'accept' && $action !== 'reject')) {
+            $error = 'Invalid verification action.';
         } else {
             try {
-                // Start a transaction
                 $db->beginTransaction();
 
-                // Look up the user we want to change
-                $stmtOld = $db->prepare("SELECT id, role, full_name, email FROM users WHERE id = ? LIMIT 1");
-                $stmtOld->execute([$userId]);
-                $target = $stmtOld->fetch();
+                $stmtUser = $db->prepare("
+                    SELECT id, full_name, role, is_verified, residency_verification_status
+                    FROM users
+                    WHERE id = ?
+                    LIMIT 1
+                ");
+                $stmtUser->execute([$userId]);
+                $target = $stmtUser->fetch();
 
-                if (!$target) {
-                    throw new Exception('User not found.');
+                if (!$target || $target['role'] !== 'resident') {
+                    throw new Exception('Resident not found.');
                 }
 
-                $oldRole = $target['role'];
+                if ($target['residency_verification_status'] !== 'pending') {
+                    throw new Exception('Only pending submissions can be reviewed.');
+                }
 
-                // Check if the role is actually changing
-                if ($oldRole === $newRole) {
-                    $message = "No changes made. User already has role '{$newRole}'.";
+                if ($action === 'accept') {
+                    $stmtUpdate = $db->prepare("
+                        UPDATE users
+                        SET is_verified = 1, residency_verification_status = 'approved', updated_at = NOW()
+                        WHERE id = ?
+                    ");
+                    $stmtUpdate->execute([$userId]);
+
+                    $notifRepo->create(
+                        $userId,
+                        'Residency proof approved',
+                        'Your proof of residency was approved. You can now submit complaints.',
+                        '/CitiServe/public/complaint_create.php'
+                    );
+
+                    $message = "Approved residency proof for {$target['full_name']}.";
                 } else {
-                    // Update the user's role
-                    $stmt = $db->prepare("UPDATE users SET role = ?, updated_at = NOW() WHERE id = ?");
-                    $stmt->execute([$newRole, $userId]);
+                    $stmtUpdate = $db->prepare("
+                        UPDATE users
+                        SET is_verified = 0, residency_verification_status = 'rejected', updated_at = NOW()
+                        WHERE id = ?
+                    ");
+                    $stmtUpdate->execute([$userId]);
 
-                    $message = "Updated role for {$target['full_name']} ({$target['email']}) from '{$oldRole}' to '{$newRole}'.";
+                    $notifRepo->create(
+                        $userId,
+                        'Residency proof rejected',
+                        'Your proof of residency was rejected. Please submit a clearer/valid proof.',
+                        '/CitiServe/public/residency_verification.php'
+                    );
+
+                    $message = "Rejected residency proof for {$target['full_name']}.";
                 }
 
-                // Commit the transaction
                 $db->commit();
             } catch (Throwable $e) {
-                // If something went wrong, undo everything
                 if ($db->inTransaction()) {
                     $db->rollBack();
                 }
-                $error = 'Failed to update role.';
+                $error = 'Failed to review residency proof.';
+            }
+        }
+    } else {
+        $newRole = '';
+        if (isset($_POST['new_role'])) {
+            $newRole = trim($_POST['new_role']);
+        }
+
+        // Validate the input
+        if ($userId <= 0 || !in_array($newRole, $allowedRoles, true)) {
+            $error = 'Invalid role update.';
+        } else {
+            // Don't let admins remove their own admin role
+            if ($userId === (int)$admin['id'] && $newRole !== 'admin') {
+                $error = 'You cannot remove your own admin role.';
+            } else {
+                try {
+                    // Start a transaction
+                    $db->beginTransaction();
+
+                    // Look up the user we want to change
+                    $stmtOld = $db->prepare("SELECT id, role, full_name, email FROM users WHERE id = ? LIMIT 1");
+                    $stmtOld->execute([$userId]);
+                    $target = $stmtOld->fetch();
+
+                    if (!$target) {
+                        throw new Exception('User not found.');
+                    }
+
+                    $oldRole = $target['role'];
+
+                    // Check if the role is actually changing
+                    if ($oldRole === $newRole) {
+                        $message = "No changes made. User already has role '{$newRole}'.";
+                    } else {
+                        // Update the user's role
+                        $stmt = $db->prepare("UPDATE users SET role = ?, updated_at = NOW() WHERE id = ?");
+                        $stmt->execute([$newRole, $userId]);
+
+                        $message = "Updated role for {$target['full_name']} ({$target['email']}) from '{$oldRole}' to '{$newRole}'.";
+                    }
+
+                    // Commit the transaction
+                    $db->commit();
+                } catch (Throwable $e) {
+                    // If something went wrong, undo everything
+                    if ($db->inTransaction()) {
+                        $db->rollBack();
+                    }
+                    $error = 'Failed to update role.';
+                }
             }
         }
     }
@@ -87,7 +159,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 // Get all users to display in the table
 $users = $db->query("
-    SELECT id, full_name, email, role, created_at
+    SELECT id, full_name, email, role, is_verified, residency_verification_status, residency_proof_path, created_at
     FROM users
     ORDER BY created_at DESC
 ")->fetchAll();
@@ -123,8 +195,11 @@ $users = $db->query("
                 <th>Full Name</th>
                 <th>Email</th>
                 <th>Current Role</th>
+                <th>Verification</th>
+                <th>Proof</th>
                 <th>Created At</th>
                 <th>Change Role</th>
+                <th>Review Proof</th>
             </tr>
             <?php foreach ($users as $u): ?>
                 <tr>
@@ -132,6 +207,26 @@ $users = $db->query("
                     <td><?= htmlspecialchars($u['full_name']) ?></td>
                     <td><?= htmlspecialchars($u['email']) ?></td>
                     <td><strong><?= htmlspecialchars($u['role']) ?></strong></td>
+                    <td>
+                        <?php if ($u['role'] === 'resident'): ?>
+                            <?= ((int)$u['is_verified'] === 1) ? 'Verified' : 'Unverified' ?>
+                            (<?= htmlspecialchars($u['residency_verification_status']) ?>)
+                        <?php else: ?>
+                            -
+                        <?php endif; ?>
+                    </td>
+                    <td>
+                        <?php
+                        $proofPath = isset($u['residency_proof_path']) ? (string)$u['residency_proof_path'] : '';
+                        if ($u['role'] === 'resident' && $proofPath !== '' && strpos($proofPath, 'uploads/residency_proofs/') === 0):
+                            $proofUrl = '/CitiServe/public/' . ltrim($proofPath, '/');
+                        ?>
+                            <a href="<?= htmlspecialchars($proofUrl) ?>" target="_blank">View proof</a><br>
+                            <img src="<?= htmlspecialchars($proofUrl) ?>" alt="Residency proof" style="max-width:120px;max-height:120px;">
+                        <?php else: ?>
+                            -
+                        <?php endif; ?>
+                    </td>
                     <td><?= htmlspecialchars($u['created_at']) ?></td>
                     <td>
                         <form method="post" style="margin:0;">
@@ -152,6 +247,24 @@ $users = $db->query("
                             </select>
                             <button type="submit">Update</button>
                         </form>
+                    </td>
+                    <td>
+                        <?php if ($u['role'] === 'resident' && $u['residency_verification_status'] === 'pending'): ?>
+                            <form method="post" style="margin:0 0 6px 0;">
+                                <?= csrf_field() ?>
+                                <input type="hidden" name="user_id" value="<?= (int)$u['id'] ?>">
+                                <input type="hidden" name="verification_action" value="accept">
+                                <button type="submit">Accept</button>
+                            </form>
+                            <form method="post" style="margin:0;">
+                                <?= csrf_field() ?>
+                                <input type="hidden" name="user_id" value="<?= (int)$u['id'] ?>">
+                                <input type="hidden" name="verification_action" value="reject">
+                                <button type="submit">Reject</button>
+                            </form>
+                        <?php else: ?>
+                            -
+                        <?php endif; ?>
                     </td>
                 </tr>
             <?php endforeach; ?>

@@ -43,9 +43,10 @@ $categories = $repo->getActiveCategories();
 // Variables for errors and success message
 $errors = [];
 $success = '';
+$isVerifiedResident = ((int)$user['is_verified'] === 1);
 
 // Check if the form was submitted
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && $isVerifiedResident) {
 
     // Check if the uploaded data is too large (server limit)
     $contentLen = 0;
@@ -233,7 +234,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
     <?php endif; ?>
 
-    <?php if (empty($categories)): ?>
+    <?php if (!$isVerifiedResident): ?>
+        <p style="color: red;">
+            Your account is not verified yet. You must submit proof of residency before filing a complaint.
+            <a href="/CitiServe/public/residency_verification.php">Submit proof of residency</a>
+        </p>
+    <?php endif; ?>
+
+    <?php if (!$isVerifiedResident): ?>
+        <p>Complaint submission is locked until your residency proof is approved.</p>
+    <?php elseif (empty($categories)): ?>
         <p style="color:red;">No complaint categories available. Please contact admin.</p>
     <?php else: ?>
         <form method="post" enctype="multipart/form-data">

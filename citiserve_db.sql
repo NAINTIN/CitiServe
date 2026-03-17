@@ -45,9 +45,6 @@ CREATE TABLE IF NOT EXISTS `users` (
   `role` enum('resident','staff','admin') NOT NULL DEFAULT 'resident',
   `address` text DEFAULT NULL,
   `contact_number` varchar(20) DEFAULT NULL,
-  `is_verified` tinyint(1) NOT NULL DEFAULT 0,
-  `residency_verification_status` enum('not_submitted','pending','approved','rejected') NOT NULL DEFAULT 'not_submitted',
-  `residency_proof_path` varchar(255) DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   PRIMARY KEY (`id`),
@@ -58,10 +55,10 @@ CREATE TABLE IF NOT EXISTS `users` (
 -- Dumping data for table `users`
 --
 
-INSERT IGNORE INTO `users` (`id`, `full_name`, `email`, `password_hash`, `role`, `address`, `contact_number`, `is_verified`, `residency_verification_status`, `residency_proof_path`, `created_at`, `updated_at`) VALUES
-(1, 'Dan Deniel V. Belaro', 'danndenielbelaro@gmail.com', '$2y$12$UegDuWyBvBpUG/hVL4LsPeFOCQY9FbtKdlqsvg6KP/dwXWxQ/zpUK', 'resident', 'blok 1 lot 4', '945855940404044', 0, 'not_submitted', NULL, '2026-03-14 07:58:33', '2026-03-14 09:57:10'),
-(2, 'testing the database', 'thechosenone@gmail.com', '$2y$12$VXWioTizKE5Vz7PTG378Yuxm/TcwsEPnXZfbOJEUR2lI.2JWDTG2G', 'resident', NULL, NULL, 0, 'not_submitted', NULL, '2026-03-14 08:18:38', '2026-03-14 08:18:38'),
-(3, 'admin_citi', 'admin@citiserve.local', '$2y$12$HLaUZerW/3VWIB9GqJzGwuNYf2Gdyq6sbXt7KmhhZu/tpgDh0MOiy', 'admin', NULL, NULL, 1, 'approved', NULL, '2026-03-14 08:56:45', '2026-03-14 08:57:44');
+INSERT IGNORE INTO `users` (`id`, `full_name`, `email`, `password_hash`, `role`, `address`, `contact_number`, `created_at`, `updated_at`) VALUES
+(1, 'Dan Deniel V. Belaro', 'danndenielbelaro@gmail.com', '$2y$12$UegDuWyBvBpUG/hVL4LsPeFOCQY9FbtKdlqsvg6KP/dwXWxQ/zpUK', 'resident', 'blok 1 lot 4', '945855940404044', '2026-03-14 07:58:33', '2026-03-14 09:57:10'),
+(2, 'testing the database', 'thechosenone@gmail.com', '$2y$12$VXWioTizKE5Vz7PTG378Yuxm/TcwsEPnXZfbOJEUR2lI.2JWDTG2G', 'resident', NULL, NULL, '2026-03-14 08:18:38', '2026-03-14 08:18:38'),
+(3, 'admin_citi', 'admin@citiserve.local', '$2y$12$HLaUZerW/3VWIB9GqJzGwuNYf2Gdyq6sbXt7KmhhZu/tpgDh0MOiy', 'admin', NULL, NULL, '2026-03-14 08:56:45', '2026-03-14 08:57:44');
 
 -- --------------------------------------------------------
 

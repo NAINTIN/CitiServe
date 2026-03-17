@@ -51,16 +51,6 @@ if (!$user) {
             <th>Role</th>
             <td><?= htmlspecialchars($user->role) ?></td>
         </tr>
-        <?php if ($user->role === 'resident'): ?>
-        <tr>
-            <th>Verification</th>
-            <td>
-                <?= ((int)$user->is_verified === 1) ? 'Verified' : 'Unverified' ?>
-                (<?= htmlspecialchars($user->residency_verification_status) ?>)
-                - <a href="/CitiServe/public/residency_verification.php">Manage</a>
-            </td>
-        </tr>
-        <?php endif; ?>
         <tr>
             <th>Address</th>
             <td><?php

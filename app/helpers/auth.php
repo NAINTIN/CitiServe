@@ -37,9 +37,7 @@ function require_login()
         'id' => $user->id,
         'full_name' => $user->full_name,
         'email' => $user->email,
-        'role' => $user->role,
-        'is_verified' => (int)$user->is_verified,
-        'residency_verification_status' => $user->residency_verification_status
+        'role' => $user->role
     ];
 
     return $userInfo;

@@ -36,9 +36,6 @@ if (!empty($_SESSION['user_id'])) {
     <p>
         Welcome, <?= htmlspecialchars($user->full_name) ?>
         (<?= htmlspecialchars($user->email) ?>) - Role: <?= htmlspecialchars($user->role) ?>
-        <?php if ($user->role === 'resident'): ?>
-            - Verification: <?= ((int)$user->is_verified === 1) ? 'Verified' : 'Unverified' ?>
-        <?php endif; ?>
     </p>
     <p>
         <a href="/CitiServe/public/notifications.php">Notifications (<?= (int)$unreadCount ?>)</a> |
@@ -71,7 +68,6 @@ if (!empty($_SESSION['user_id'])) {
         <li><a href="/CitiServe/public/services.php">Document Services</a></li>
         <li><a href="/CitiServe/public/request_create.php">Submit Document Request</a></li>
         <li><a href="/CitiServe/public/my_requests.php">My Requests</a></li>
-        <li><a href="/CitiServe/public/residency_verification.php">Residency Verification</a></li>
         <li><a href="/CitiServe/public/complaint_create.php">Submit Complaint</a></li>
         <li><a href="/CitiServe/public/my_complaints.php">My Complaints</a></li>
     <?php endif; ?>

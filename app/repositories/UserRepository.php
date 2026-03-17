@@ -68,8 +68,19 @@ class UserRepository
         $role = isset($data['role']) ? $data['role'] : 'resident';
         $address = isset($data['address']) ? $data['address'] : null;
         $contactNumber = isset($data['contact_number']) ? $data['contact_number'] : null;
-        $isVerified = isset($data['is_verified']) ? (int)((bool)$data['is_verified']) : (($role === 'resident') ? 0 : 1);
-        $verificationStatus = isset($data['residency_verification_status']) ? $data['residency_verification_status'] : (($role === 'resident') ? 'not_submitted' : 'approved');
+        $isVerified = 0;
+        if (isset($data['is_verified'])) {
+            $isVerified = (int)((bool)$data['is_verified']);
+        } elseif ($role !== 'resident') {
+            $isVerified = 1;
+        }
+
+        $verificationStatus = 'not_submitted';
+        if (isset($data['residency_verification_status'])) {
+            $verificationStatus = $data['residency_verification_status'];
+        } elseif ($role !== 'resident') {
+            $verificationStatus = 'approved';
+        }
         $proofPath = isset($data['residency_proof_path']) ? $data['residency_proof_path'] : null;
 
         $stmt->execute([

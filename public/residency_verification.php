@@ -5,6 +5,10 @@ require_once __DIR__ . '/../app/helpers/csrf.php';
 require_once __DIR__ . '/../app/repositories/UserRepository.php';
 require_once __DIR__ . '/../app/repositories/NotificationRepository.php';
 
+define('RESIDENCY_PROOF_MAX_SIZE_BYTES', 5 * 1024 * 1024);
+define('RESIDENCY_PROOF_STORAGE_RELATIVE_DIR', 'storage/residency_proofs');
+define('RESIDENCY_PROOF_FILENAME_RANDOM_BYTES', 16);
+
 // Make sure the user is a resident
 $authUser = require_resident();
 $userRepo = new UserRepository();
@@ -43,7 +47,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $size = isset($_FILES['residency_proof']['size']) ? (int)$_FILES['residency_proof']['size'] : 0;
                 $tmp = isset($_FILES['residency_proof']['tmp_name']) ? $_FILES['residency_proof']['tmp_name'] : '';
 
-                if ($size <= 0 || $size > 5 * 1024 * 1024 || $tmp === '' || !is_uploaded_file($tmp)) {
+                if ($size <= 0 || $size > RESIDENCY_PROOF_MAX_SIZE_BYTES || $tmp === '' || !is_uploaded_file($tmp)) {
                     $errors[] = 'Please upload a valid image file up to 5MB.';
                 } else {
                     $finfo = new finfo(FILEINFO_MIME_TYPE);
@@ -56,9 +60,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     if (!isset($allowedMimeToExt[$mime])) {
                         $errors[] = 'Proof must be a JPG or PNG photo.';
                     } else {
-                        $uploadDir = __DIR__ . '/uploads/residency_proofs';
+                        $uploadDir = __DIR__ . '/../' . RESIDENCY_PROOF_STORAGE_RELATIVE_DIR;
                         if (!is_dir($uploadDir)) {
-                            $created = mkdir($uploadDir, 0775, true);
+                            $created = mkdir($uploadDir, 0750, true);
                             if (!$created && !is_dir($uploadDir)) {
                                 $errors[] = 'Failed to create upload directory.';
                             }
@@ -70,13 +74,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                         if (empty($errors)) {
                             $ext = $allowedMimeToExt[$mime];
-                            $safeName = bin2hex(random_bytes(16)) . '.' . $ext;
+                            $safeName = bin2hex(random_bytes(RESIDENCY_PROOF_FILENAME_RANDOM_BYTES)) . '.' . $ext;
                             $dest = rtrim($uploadDir, '/\\') . DIRECTORY_SEPARATOR . $safeName;
 
                             if (!move_uploaded_file($tmp, $dest)) {
                                 $errors[] = 'Failed to save uploaded proof file.';
                             } else {
-                                $relativePath = 'uploads/residency_proofs/' . $safeName;
+                                $relativePath = RESIDENCY_PROOF_STORAGE_RELATIVE_DIR . '/' . $safeName;
                                 $saved = $userRepo->submitResidencyProof((int)$user->id, $relativePath);
 
                                 if (!$saved) {

@@ -10,6 +10,8 @@ require_once __DIR__ . '/../../app/helpers/csrf.php';
 require_once __DIR__ . '/../../app/core/Database.php';
 require_once __DIR__ . '/../../app/repositories/NotificationRepository.php';
 
+define('RESIDENCY_PROOF_STORAGE_PREFIX', 'storage/residency_proofs/');
+
 // Make sure the user is an admin or staff
 $admin = require_admin();
 
@@ -218,11 +220,11 @@ $users = $db->query("
                     <td>
                         <?php
                         $proofPath = isset($u['residency_proof_path']) ? (string)$u['residency_proof_path'] : '';
-                        if ($u['role'] === 'resident' && $proofPath !== '' && strpos($proofPath, 'uploads/residency_proofs/') === 0):
-                            $proofUrl = '/CitiServe/public/' . ltrim($proofPath, '/');
+                        if ($u['role'] === 'resident' && $proofPath !== '' && strpos($proofPath, RESIDENCY_PROOF_STORAGE_PREFIX) === 0):
+                            $proofUrl = '/CitiServe/public/admin/view_residency_proof.php?user_id=' . (int)$u['id'];
                         ?>
                             <a href="<?= htmlspecialchars($proofUrl) ?>" target="_blank">View proof</a><br>
-                            <img src="<?= htmlspecialchars($proofUrl) ?>" alt="Residency proof" style="max-width:120px;max-height:120px;">
+                            <img src="<?= htmlspecialchars($proofUrl) ?>" alt="Residency proof for <?= htmlspecialchars($u['full_name']) ?>" style="max-width:120px;max-height:120px;">
                         <?php else: ?>
                             -
                         <?php endif; ?>

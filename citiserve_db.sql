@@ -21,6 +21,17 @@ SET time_zone = "+00:00";
 -- Database: `citiserve_db`
 --
 
+SET FOREIGN_KEY_CHECKS = 0;
+
+DROP TABLE IF EXISTS `complaint_evidence`;
+DROP TABLE IF EXISTS `complaints`;
+DROP TABLE IF EXISTS `document_requests`;
+DROP TABLE IF EXISTS `notifications`;
+DROP TABLE IF EXISTS `status_history`;
+DROP TABLE IF EXISTS `complaint_categories`;
+DROP TABLE IF EXISTS `document_services`;
+DROP TABLE IF EXISTS `users`;
+
 -- --------------------------------------------------------
 
 --
@@ -387,6 +398,8 @@ ALTER TABLE `notifications`
 --
 ALTER TABLE `status_history`
   ADD CONSTRAINT `fk_status_history_changed_by` FOREIGN KEY (`changed_by`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+
+SET FOREIGN_KEY_CHECKS = 1;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

@@ -8,6 +8,8 @@ error_reporting(E_ALL);
 require_once __DIR__ . '/../app/helpers/auth.php';
 require_once __DIR__ . '/../app/helpers/csrf.php';
 require_once __DIR__ . '/../app/repositories/ComplaintRepository.php';
+require_once __DIR__ . '/../app/repositories/UserRepository.php';
+require_once __DIR__ . '/../app/repositories/NotificationRepository.php';
 
 // This function converts PHP ini values like "8M" or "2G" into bytes
 function bytes_from_ini($value)
@@ -39,6 +41,8 @@ $user = require_resident();
 // Create a ComplaintRepository and get the available categories
 $repo = new ComplaintRepository();
 $categories = $repo->getActiveCategories();
+$userRepo = new UserRepository();
+$notificationRepo = new NotificationRepository();
 
 // Variables for errors and success message
 $errors = [];
@@ -191,6 +195,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'description' => $description,
                 'location' => $locationForDb,
             ]);
+
+              if ($complaintId > 0) {
+                $admins = $userRepo->getByRole('admin');
+                foreach ($admins as $admin) {
+                    $notificationRepo->create(
+                        (int)$admin['id'],
+                        'New Complaint',
+                        'A resident submitted a complaint.',
+                        '/CitiServe/public/admin/complaints.php'
+                    );
+                }
+            }
+
+            
 
             // If evidence was uploaded, add it to the complaint
             if ($evidenceRelativePath !== null) {

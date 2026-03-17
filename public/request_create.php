@@ -1,8 +1,8 @@
 <?php
 // Don't show errors on the page (for security), but still log them
-ini_set('display_errors', 0);
-ini_set('display_startup_errors', 0);
 error_reporting(E_ALL);
+ini_set('log_errors', 1);
+ini_set('error_log', __DIR__ . '/../storage/request_create_error.log');
 
 // Include all the files we need
 require_once __DIR__ . '/../app/helpers/auth.php';
@@ -10,6 +10,8 @@ require_once __DIR__ . '/../app/helpers/csrf.php';
 require_once __DIR__ . '/../app/repositories/DocumentServiceRepository.php';
 require_once __DIR__ . '/../app/repositories/DocumentRequestRepository.php';
 require_once __DIR__ . '/../app/helpers/upload.php';
+require_once __DIR__ . '/../app/repositories/UserRepository.php';
+require_once __DIR__ . '/../app/repositories/NotificationRepository.php';
 
 // This function converts PHP ini values like "8M" or "2G" into bytes
 // We need this to check if the uploaded file is too big
@@ -42,6 +44,8 @@ $user = require_resident();
 // Get the list of available services and create a request repository
 $serviceRepo = new DocumentServiceRepository();
 $requestRepo = new DocumentRequestRepository();
+$notificationRepo = new NotificationRepository();
+$userRepo = new UserRepository();
 $services = $serviceRepo->getAllActive();
 
 // Variables for errors and success message
@@ -105,6 +109,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
 
+        
+
         // If there are no errors, create the document request
         if (empty($errors)) {
             // Set purpose to null if empty
@@ -119,6 +125,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'purpose' => $purpose,
                 'payment_proof_path' => $paymentProofPath,
             ]);
+
+            if ($requestId > 0) {
+        $admins = $userRepo->getByRole('admin');
+        foreach ($admins as $admin) {
+            $notificationRepo->create(
+                (int)$admin['id'],
+                'New Document Request',
+                'A resident submitted a document request.',
+                '/CitiServe/public/admin/requests.php'
+            );
+        }
+    }
 
             $success = "Request submitted successfully. Request #{$requestId}";
             $_POST = [];

@@ -16,6 +16,14 @@ class UserRepository
         $this->db = Database::getInstance()->getConnection();
     }
 
+    public function getByRole($role)
+    {
+        $sql = 'SELECT id, full_name, email, role FROM users WHERE role = ? ORDER BY id ASC';
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([$role]);
+        return $stmt->fetchAll();
+    }
+
     // Find a user by their email address
     // Returns a User object if found, or null if not found
     public function findByEmail($email)

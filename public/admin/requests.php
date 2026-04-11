@@ -8,17 +8,13 @@ error_reporting(E_ALL);
 // Include all the files we need
 require_once __DIR__ . '/../../app/helpers/auth.php';
 require_once __DIR__ . '/../../app/helpers/csrf.php';
-require_once __DIR__ . '/../../app/repositories/DocumentRequestRepository.php';
-require_once __DIR__ . '/../../app/repositories/NotificationRepository.php';
-require_once __DIR__ . '/../../app/core/Database.php';
+require_once __DIR__ . '/../../app/core/CitiServeData.php';
 
 // Make sure the user is an admin or staff
 $admin = require_admin();
 
-// Create repositories and get the database connection
-$requestRepo = new DocumentRequestRepository();
-$notifRepo = new NotificationRepository();
-$db = Database::getInstance()->getConnection();
+$data = new CitiServeData();
+$db = $data->getPdo();
 
 // These are all the valid request statuses
 $allowedStatuses = ['received', 'pending', 'claimable', 'rejected', 'released'];
@@ -53,7 +49,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = 'Invalid request.';
     } else {
         // Find the current request
-        $current = $requestRepo->findById($requestId);
+        $current = $data->findDocumentRequestById($requestId);
 
         if (!$current) {
             $error = 'Request not found.';
@@ -64,7 +60,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $db->beginTransaction();
             try {
                 // 1) Update the request status
-                $requestRepo->updateStatus($requestId, $newStatus);
+                $data->updateDocumentRequestStatus($requestId, $newStatus);
 
                 // 2) Save the status change in the history table
                 $sql = "
@@ -89,7 +85,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 // 3) Send a notification to the resident
                 if (!empty($current['user_id'])) {
-                    $notifRepo->create(
+                    $data->createNotification(
                         (int)$current['user_id'],
                         'Document Request Update',
                         "Your request #{$requestId} status is now '{$newStatus}'.",
@@ -115,7 +111,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 // Get all document requests to display in the table
-$rows = $requestRepo->getAllWithUsers();
+$rows = $data->getAllDocumentRequestsWithUsers();
 ?>
 <!doctype html>
 <html>
@@ -177,8 +173,8 @@ $rows = $requestRepo->getAllWithUsers();
                         }
                     ?></td>
                     <td><?php
-                        if (isset($r['notes'])) {
-                            echo htmlspecialchars($r['notes']);
+                        if (isset($r['purpose'])) {
+                            echo htmlspecialchars($r['purpose']);
                         } else {
                             echo '';
                         }

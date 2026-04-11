@@ -1,12 +1,10 @@
 <?php
-// Include the UserRepository to look up users
-require_once __DIR__ . '/../app/repositories/UserRepository.php';
+require_once __DIR__ . '/../app/core/CitiServeData.php';
 
 // Start the session
 session_start();
 
-// Create a UserRepository
-$repo = new UserRepository();
+$data = new CitiServeData();
 
 // Variables to store error message and the email they typed
 $error = '';
@@ -24,7 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = 'Email and password are required.';
     } else {
         // Try to find the user by email
-        $user = $repo->findByEmail($email);
+        $user = $data->findUserByEmail($email);
 
         // Check if user exists and password is correct
         if ($user && password_verify($password, $user->password_hash)) {

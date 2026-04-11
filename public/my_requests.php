@@ -1,14 +1,12 @@
 <?php
-// Include the auth helper and DocumentRequestRepository
 require_once __DIR__ . '/../app/helpers/auth.php';
-require_once __DIR__ . '/../app/repositories/DocumentRequestRepository.php';
+require_once __DIR__ . '/../app/core/CitiServeData.php';
 
 // Make sure the user is logged in
 $user = require_login();
 
-// Get all document requests for this user
-$requestRepo = new DocumentRequestRepository();
-$requests = $requestRepo->getByUserId((int)$user['id']);
+$data = new CitiServeData();
+$requests = $data->getDocumentRequestsByUserId((int)$user['id']);
 ?>
 <!doctype html>
 <html>

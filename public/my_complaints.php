@@ -1,14 +1,12 @@
 <?php
-// Include the auth helper and ComplaintRepository
 require_once __DIR__ . '/../app/helpers/auth.php';
-require_once __DIR__ . '/../app/repositories/ComplaintRepository.php';
+require_once __DIR__ . '/../app/core/CitiServeData.php';
 
 // Make sure the user is logged in
 $user = require_login();
 
-// Get all complaints for this user
-$repo = new ComplaintRepository();
-$rows = $repo->getByUserId((int)$user['id']);
+$data = new CitiServeData();
+$rows = $data->getComplaintsByUserId((int)$user['id']);
 ?>
 <!doctype html>
 <html>

@@ -7,11 +7,8 @@ ini_set('error_log', __DIR__ . '/../storage/request_create_error.log');
 // Include all the files we need
 require_once __DIR__ . '/../app/helpers/auth.php';
 require_once __DIR__ . '/../app/helpers/csrf.php';
-require_once __DIR__ . '/../app/repositories/DocumentServiceRepository.php';
-require_once __DIR__ . '/../app/repositories/DocumentRequestRepository.php';
+require_once __DIR__ . '/../app/core/CitiServeData.php';
 require_once __DIR__ . '/../app/helpers/upload.php';
-require_once __DIR__ . '/../app/repositories/UserRepository.php';
-require_once __DIR__ . '/../app/repositories/NotificationRepository.php';
 
 // This function converts PHP ini values like "8M" or "2G" into bytes
 // We need this to check if the uploaded file is too big
@@ -41,12 +38,8 @@ function bytes_from_ini($value)
 // Make sure the user is a resident (only residents can create requests)
 $user = require_resident();
 
-// Get the list of available services and create a request repository
-$serviceRepo = new DocumentServiceRepository();
-$requestRepo = new DocumentRequestRepository();
-$notificationRepo = new NotificationRepository();
-$userRepo = new UserRepository();
-$services = $serviceRepo->getAllActive();
+$data = new CitiServeData();
+$services = $data->getAllActiveDocumentServices();
 
 // Variables for errors and success message
 $errors = [];
@@ -119,7 +112,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $purpose = $notes;
             }
 
-            $requestId = $requestRepo->create([
+            $requestId = $data->createDocumentRequest([
                 'user_id' => (int)$user['id'],
                 'document_service_id' => $serviceId,
                 'purpose' => $purpose,
@@ -127,9 +120,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ]);
 
             if ($requestId > 0) {
-        $admins = $userRepo->getByRole('admin');
+        $admins = $data->getUsersByRole('admin');
         foreach ($admins as $admin) {
-            $notificationRepo->create(
+            $data->createNotification(
                 (int)$admin['id'],
                 'New Document Request',
                 'A resident submitted a document request.',

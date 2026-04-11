@@ -1,14 +1,12 @@
 <?php
-// Include the auth helper and UserRepository
 require_once __DIR__ . '/../app/helpers/auth.php';
-require_once __DIR__ . '/../app/repositories/UserRepository.php';
+require_once __DIR__ . '/../app/core/CitiServeData.php';
 
 // Make sure the user is logged in
 $authUser = require_login();
 
-// Get the full user info from the database
-$userRepo = new UserRepository();
-$user = $userRepo->findById((int)$authUser['id']);
+$data = new CitiServeData();
+$user = $data->findUserById((int)$authUser['id']);
 
 // If the user doesn't exist anymore, log them out
 if (!$user) {

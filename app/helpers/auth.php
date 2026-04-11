@@ -1,6 +1,5 @@
 <?php
-// Include the UserRepository so we can look up users from the database
-require_once __DIR__ . '/../repositories/UserRepository.php';
+require_once __DIR__ . '/../core/CitiServeData.php';
 
 // This function checks if the user is logged in.
 // If not logged in, it redirects them to the login page.
@@ -19,10 +18,9 @@ function require_login()
         exit;
     }
 
-    // Try to find the user in the database using their session user_id
-    $repo = new UserRepository();
+    $data = new CitiServeData();
     $userId = (int)$_SESSION['user_id'];
-    $user = $repo->findById($userId);
+    $user = $data->findUserById($userId);
 
     // If the user doesn't exist in the database anymore, log them out
     if (!$user) {

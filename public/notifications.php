@@ -1,14 +1,12 @@
 <?php
-// Include helpers and repository
 require_once __DIR__ . '/../app/helpers/auth.php';
 require_once __DIR__ . '/../app/helpers/csrf.php';
-require_once __DIR__ . '/../app/repositories/NotificationRepository.php';
+require_once __DIR__ . '/../app/core/CitiServeData.php';
 
 // Make sure the user is logged in
 $user = require_login();
 
-// Create a NotificationRepository to work with notifications
-$repo = new NotificationRepository();
+$data = new CitiServeData();
 
 // Check if the form was submitted (POST request)
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -17,7 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // Check if the user clicked "Mark all as read"
     if (isset($_POST['mark_all_read'])) {
-        $repo->markAllAsRead((int)$user['id']);
+        $data->markAllNotificationsAsRead((int)$user['id']);
         header('Location: /CitiServe/public/notifications.php');
         exit;
     }
@@ -26,7 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['mark_read_id'])) {
         $id = (int)$_POST['mark_read_id'];
         if ($id > 0) {
-            $repo->markAsRead($id, (int)$user['id']);
+            $data->markNotificationAsRead($id, (int)$user['id']);
         }
         header('Location: /CitiServe/public/notifications.php');
         exit;
@@ -34,7 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 // Get all notifications for this user
-$rows = $repo->getByUser((int)$user['id']);
+$rows = $data->getNotificationsByUser((int)$user['id']);
 ?>
 <!doctype html>
 <html>

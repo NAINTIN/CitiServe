@@ -1,15 +1,13 @@
 <?php
-// Include helpers and repository
 require_once __DIR__ . '/../app/helpers/auth.php';
 require_once __DIR__ . '/../app/helpers/csrf.php';
-require_once __DIR__ . '/../app/repositories/UserRepository.php';
+require_once __DIR__ . '/../app/core/CitiServeData.php';
 
 // Make sure the user is logged in
 $authUser = require_login();
 
-// Get the full user info from the database
-$userRepo = new UserRepository();
-$user = $userRepo->findById((int)$authUser['id']);
+$data = new CitiServeData();
+$user = $data->findUserById((int)$authUser['id']);
 
 // If the user doesn't exist anymore, log them out
 if (!$user) {
@@ -60,7 +58,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $addressForDb = ($address !== '') ? $address : null;
         $contactForDb = ($contactNumber !== '') ? $contactNumber : null;
 
-        $ok = $userRepo->updateProfile(
+        $ok = $data->updateUserProfile(
             (int)$user->id,
             $fullName,
             $addressForDb,
@@ -70,7 +68,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($ok) {
             $success = 'Profile updated successfully.';
             // Reload the user data to show the updated values
-            $user = $userRepo->findById((int)$authUser['id']);
+            $user = $data->findUserById((int)$authUser['id']);
         } else {
             $errors[] = 'Failed to update profile.';
         }

@@ -1,20 +1,18 @@
 <?php
-require_once __DIR__ . '/../app/repositories/UserRepository.php';
-require_once __DIR__ . '/../app/repositories/NotificationRepository.php';
+require_once __DIR__ . '/../app/core/CitiServeData.php';
 
 session_start();
 
-$repo = new UserRepository();
+$data = new CitiServeData();
 $user = null;
 $unreadCount = 0;
 
 if (!empty($_SESSION['user_id'])) {
-    $user = $repo->findById((int)$_SESSION['user_id']);
+    $user = $data->findUserById((int)$_SESSION['user_id']);
 
     if ($user) {
         try {
-            $notifRepo = new NotificationRepository();
-            $unreadCount = $notifRepo->unreadCount((int)$user->id);
+            $unreadCount = $data->unreadNotificationsCount((int)$user->id);
         } catch (Throwable $e) {
             $unreadCount = 0;
         }

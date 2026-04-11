@@ -7,15 +7,13 @@ error_reporting(E_ALL);
 // Include all the files we need
 require_once __DIR__ . '/../../app/helpers/auth.php';
 require_once __DIR__ . '/../../app/helpers/csrf.php';
-require_once __DIR__ . '/../../app/repositories/ComplaintRepository.php';
-require_once __DIR__ . '/../../app/core/Database.php';
+require_once __DIR__ . '/../../app/core/CitiServeData.php';
 
 // Make sure the user is an admin or staff
 $admin = require_admin();
 
-// Create a ComplaintRepository and get the database connection
-$repo = new ComplaintRepository();
-$db = Database::getInstance()->getConnection();
+$data = new CitiServeData();
+$db = $data->getPdo();
 
 // These are all the valid complaint statuses
 $allowedStatuses = ['submitted', 'under_review', 'in_progress', 'resolved', 'rejected'];
@@ -50,7 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = 'Invalid complaint status update request.';
     } else {
         // Find the current complaint
-        $current = $repo->findById($complaintId);
+        $current = $data->findComplaintById($complaintId);
 
         if (!$current) {
             $error = 'Complaint not found.';
@@ -61,7 +59,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $db->beginTransaction();
             try {
                 // Update the complaint status
-                $repo->updateStatus($complaintId, $newStatus);
+                $data->updateComplaintStatus($complaintId, $newStatus);
 
                 // Save the status change in the history table
                 $sql = "
@@ -99,7 +97,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 // Get all complaints to display in the table
-$rows = $repo->getAll();
+$rows = $data->getAllComplaints();
 ?>
 <!doctype html>
 <html>
@@ -139,7 +137,7 @@ $rows = $repo->getAll();
                 <?php
                     // Try to get the evidence files for this complaint
                     try {
-                        $evidence = $repo->getEvidenceByComplaintId((int)$r['id']);
+                        $evidence = $data->getEvidenceByComplaintId((int)$r['id']);
                     } catch (Throwable $e) {
                         $evidence = [];
                     }

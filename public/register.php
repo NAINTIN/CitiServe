@@ -1,12 +1,10 @@
 <?php
-// Include the UserRepository so we can create new users
-require_once __DIR__ . '/../app/repositories/UserRepository.php';
+require_once __DIR__ . '/../app/core/CitiServeData.php';
 
 // Start the session (we need it to log in the user after registration)
 session_start();
 
-// Create a UserRepository to interact with the users table
-$repo = new UserRepository();
+$data = new CitiServeData();
 
 // This array will hold any error messages
 $errors = [];
@@ -44,7 +42,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // If there are no errors so far, try to create the account
     if (empty($errors)) {
         // Check if the email is already taken
-        $existingUser = $repo->findByEmail($email);
+        $existingUser = $data->findUserByEmail($email);
 
         if ($existingUser) {
             $errors[] = 'Email already registered.';
@@ -53,7 +51,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $hash = password_hash($password, PASSWORD_DEFAULT);
 
             // Create the user in the database
-            $userId = $repo->create([
+            $userId = $data->createUser([
                 'full_name' => $full_name,
                 'email' => $email,
                 'password_hash' => $hash

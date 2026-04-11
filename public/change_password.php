@@ -1,15 +1,13 @@
 <?php
-// Include helpers and repository
 require_once __DIR__ . '/../app/helpers/auth.php';
 require_once __DIR__ . '/../app/helpers/csrf.php';
-require_once __DIR__ . '/../app/repositories/UserRepository.php';
+require_once __DIR__ . '/../app/core/CitiServeData.php';
 
 // Make sure the user is logged in
 $authUser = require_login();
 
-// Get the full user info from the database
-$userRepo = new UserRepository();
-$user = $userRepo->findById((int)$authUser['id']);
+$data = new CitiServeData();
+$user = $data->findUserById((int)$authUser['id']);
 
 // If the user doesn't exist anymore, log them out
 if (!$user) {
@@ -65,7 +63,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $newHash = password_hash($newPassword, PASSWORD_DEFAULT);
 
         // Save the new password hash to the database
-        $ok = $userRepo->updatePasswordHash((int)$user->id, $newHash);
+        $ok = $data->updateUserPasswordHash((int)$user->id, $newHash);
 
         if ($ok) {
             $success = 'Password changed successfully.';

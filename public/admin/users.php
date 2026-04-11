@@ -7,13 +7,13 @@ error_reporting(E_ALL);
 // Include all the files we need
 require_once __DIR__ . '/../../app/helpers/auth.php';
 require_once __DIR__ . '/../../app/helpers/csrf.php';
-require_once __DIR__ . '/../../app/core/Database.php';
+require_once __DIR__ . '/../../app/core/CitiServeData.php';
 
 // Make sure the user is an admin or staff
 $admin = require_admin();
 
-// Get the database connection
-$db = Database::getInstance()->getConnection();
+$data = new CitiServeData();
+$db = $data->getPdo();
 
 // These are the valid roles a user can have
 $allowedRoles = ['resident', 'staff', 'admin'];

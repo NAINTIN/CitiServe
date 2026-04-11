@@ -1,14 +1,12 @@
 <?php
-// Include the auth helper and DocumentServiceRepository
 require_once __DIR__ . '/../app/helpers/auth.php';
-require_once __DIR__ . '/../app/repositories/DocumentServiceRepository.php';
+require_once __DIR__ . '/../app/core/CitiServeData.php';
 
 // Make sure the user is logged in
 $user = require_login();
 
-// Get all active document services from the database
-$serviceRepo = new DocumentServiceRepository();
-$services = $serviceRepo->getAllActive();
+$data = new CitiServeData();
+$services = $data->getAllActiveDocumentServices();
 ?>
 <!doctype html>
 <html>

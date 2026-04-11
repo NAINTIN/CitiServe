@@ -7,9 +7,7 @@ error_reporting(E_ALL);
 // Include all the files we need
 require_once __DIR__ . '/../app/helpers/auth.php';
 require_once __DIR__ . '/../app/helpers/csrf.php';
-require_once __DIR__ . '/../app/repositories/ComplaintRepository.php';
-require_once __DIR__ . '/../app/repositories/UserRepository.php';
-require_once __DIR__ . '/../app/repositories/NotificationRepository.php';
+require_once __DIR__ . '/../app/core/CitiServeData.php';
 
 // This function converts PHP ini values like "8M" or "2G" into bytes
 function bytes_from_ini($value)
@@ -38,11 +36,8 @@ function bytes_from_ini($value)
 // Make sure the user is a resident
 $user = require_resident();
 
-// Create a ComplaintRepository and get the available categories
-$repo = new ComplaintRepository();
-$categories = $repo->getActiveCategories();
-$userRepo = new UserRepository();
-$notificationRepo = new NotificationRepository();
+$data = new CitiServeData();
+$categories = $data->getActiveComplaintCategories();
 
 // Variables for errors and success message
 $errors = [];
@@ -187,7 +182,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $locationForDb = $location;
             }
 
-            $complaintId = $repo->create([
+            $complaintId = $data->createComplaint([
                 'user_id' => (int)$user['id'],
                 'category_id' => $categoryId,
                 'is_anonymous' => $isAnonymous,
@@ -197,9 +192,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ]);
 
               if ($complaintId > 0) {
-                $admins = $userRepo->getByRole('admin');
+                $admins = $data->getUsersByRole('admin');
                 foreach ($admins as $admin) {
-                    $notificationRepo->create(
+                    $data->createNotification(
                         (int)$admin['id'],
                         'New Complaint',
                         'A resident submitted a complaint.',
@@ -212,13 +207,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             // If evidence was uploaded, add it to the complaint
             if ($evidenceRelativePath !== null) {
-                $repo->addEvidence($complaintId, $evidenceRelativePath, $evidenceOriginalName);
+                $data->addComplaintEvidence($complaintId, $evidenceRelativePath, $evidenceOriginalName);
             }
 
             $success = "Complaint submitted successfully. Complaint #{$complaintId}";
             $_POST = [];
             // Reload categories in case they changed
-            $categories = $repo->getActiveCategories();
+            $categories = $data->getActiveComplaintCategories();
         }
     }
 }

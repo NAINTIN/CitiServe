@@ -32,28 +32,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Log-In</title>
-    <link rel="stylesheet" href="../frontend/login_register/login.css">
+    <link rel="stylesheet" href="/CitiServe/frontend/login_register/login.css">
     <link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@300;400;600;700;900&display=swap" rel="stylesheet">
-    <script src="../frontend/login_register/login.js" defer></script>
+    <script src="/CitiServe/frontend/login_register/login.js" defer></script>
 </head>
 <body>
   
 <!-- LEFT BACKGROUND SLIDER -->
 <div class="login-left" id="leftSlide">
   <a href="/CitiServe/public/index.php" class="back-text">
-    <span class="mainpage-arrow"><</span>
+    <span class="mainpage-arrow">&lt;</span>
     <span class="text">Back to Main Page</span>
   </a>
 
-   <div class="login-arrow login-left-arrow" id="prevSlide"><</div>
-<div class="login-arrow login-right-arrow" id="nextSlide">></div>
+  <div class="login-arrow login-left-arrow" id="prevSlide">&lt;</div>
+  <div class="login-arrow login-right-arrow" id="nextSlide">&gt;</div>
 </div>
 
 <div class="login-container">
   
   <!-- Logo -->
   <div class="logo">
-    <img src="../frontend/login_register/images/login-logo.png" alt="CitiSen">
+    <img src="/CitiServe/frontend/login_register/images/login-logo.png" alt="CitiSen">
   </div>
   <!-- Title -->
   <h1>Welcome back,<br><span>CitiSen!</span></h1>
@@ -63,17 +63,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <!-- Toggle -->
   <div class="toggle">
     <button id="resBtn" class="active" type="button">
-      <img id="resIcon" src="../frontend/login_register/images/resident-icon.png" alt=""> Resident
+      <img id="resIcon" src="/CitiServe/frontend/login_register/images/resident-icon.png" alt=""> Resident
     </button>
     <button id="bsBtn" type="button">
-      <img id="bsIcon" src="../frontend/login_register/images/barangaystaff-icon.png" alt=""> Barangay Staff
+      <img id="bsIcon" src="/CitiServe/frontend/login_register/images/barangaystaff-icon.png" alt=""> Barangay Staff
     </button>
   </div>
   <!-- Email -->
   <div class="input-group">
     <label>Email Address</label>
     <div class="input">
-      <img src="../frontend/login_register/images/ic_round-email.png" alt="">
+      <img src="/CitiServe/frontend/login_register/images/ic_round-email.png" alt="">
       <input type="email" name="email" placeholder="Enter your email" value="<?= htmlspecialchars($email, ENT_QUOTES) ?>">
     </div>
   </div>
@@ -81,12 +81,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <div class="input-group">
     <label>Password</label>
     <div class="input">
-      <img src="../frontend/login_register/images/pass.icon.png" alt="">
+      <img src="/CitiServe/frontend/login_register/images/pass.icon.png" alt="">
       <input type="password" id="pass" name="password" placeholder="Enter your password">
-      <img src="../frontend/login_register/images/eye.png" class="eye" id="eye" alt="">
+      <img src="/CitiServe/frontend/login_register/images/eye.png" class="eye" id="eye" alt="">
     </div>
     <div class="error-msg" id="errorMsg" style="display:<?= $error ? 'flex' : 'none' ?>;">
-      <img src="../frontend/login_register/images/awa.png" alt="error"> <?= htmlspecialchars($error, ENT_QUOTES) ?>
+      <img src="/CitiServe/frontend/login_register/images/awa.png" alt="error"> <?= htmlspecialchars($error, ENT_QUOTES) ?>
     </div>
     <a href="#" class="forgot">Forgot your password?</a>
   </div>
@@ -104,19 +104,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <!-- Footer -->
   <p class="footer-text">Join the digital barangay–faster than waiting in line</p>
 </div>
+
 <div class="privacy-modal" id="privacyModal">
   <div class="privacy-box">
-   <button class="close-btn" id="closePrivacy">✕</button>
-    <img src="../frontend/login_register/images/login-flower.png" class="flower" alt="flower">
-   <div class="privacy-header"></div>
+    <button class="close-btn" id="closePrivacy">✕</button>
+    <img src="/CitiServe/frontend/login_register/images/login-flower.png" class="flower" alt="flower">
+    <div class="privacy-header"></div>
 
     <h2 class="policy-title">Privacy Policy</h2>
     <p class="date">Effective April 1, 2026</p>
 
     <div class="privacy-content">
-      <p>
-        CitiServe values the privacy and security of user information. This Privacy Policy explains how personal data is collected, used, and protected within the system.
-      </p>
+      <p>CitiServe values the privacy and security of user information. This Privacy Policy explains how personal data is collected, used, and protected within the system.</p>
 
       <h4>1. Information Collected</h4>
       <ul>
@@ -169,16 +168,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <div class="terms-modal" id="termsModal">
   <div class="terms-box">
     <button class="close-btn-terms" id="closeTerms">✕</button>
-    <img src="../frontend/login_register/images/login-flower1.png" class="flower-terms" alt="flower">
+    <img src="/CitiServe/frontend/login_register/images/login-flower1.png" class="flower-terms" alt="flower">
     <div class="terms-header"></div>
 
     <h2 class="terms-title">Terms of Service</h2>
     <p class="date-terms">Effective April 1, 2026</p>
 
     <div class="terms-content">
-      <p>
-        Welcome to CitiServe – Barangay Kalayaan. By accessing and using this platform, you agree to comply with the following terms and conditions.
-      </p>
+      <p>Welcome to CitiServe – Barangay Kalayaan. By accessing and using this platform, you agree to comply with the following terms and conditions.</p>
 
       <h4>1. Purpose of the System</h4>
       <p>CitiServe is an online service platform developed to help residents of Barangay Kalayaan, Angono, Rizal request barangay documents and submit complaints in a more convenient and organized manner.</p>

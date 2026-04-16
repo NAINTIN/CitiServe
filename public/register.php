@@ -67,27 +67,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CitiServe – Create Account</title>
   <link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../frontend/login_register/register.css">
-   <script src="../frontend/login_register/register.js" defer></script>
+  <link rel="stylesheet" href="/CitiServe/frontend/login_register/register.css">
+  <script src="/CitiServe/frontend/login_register/register.js" defer></script>
 </head>
 <body>
 
 <!-- LEFT BACKGROUND SLIDER -->
 <div class="left" id="leftSlide">
   <a href="/CitiServe/public/index.php" class="back-text">
-    <span class="register-arrow"><</span>
+    <span class="register-arrow">&lt;</span>
     <span class="text">Back to Main Page</span>
   </a>
 
-   <div class="arrow left-arrow" id="prevSlide"><</div>
-<div class="arrow right-arrow" id="nextSlide">></div>
+  <div class="arrow left-arrow" id="prevSlide">&lt;</div>
+  <div class="arrow right-arrow" id="nextSlide">&gt;</div>
 </div>
 
 <div class="login-container">
   
   <!-- Logo -->
   <div class="logo">
-    <img src="../frontend/login_register/images/login-logo.png" alt="CitiSen">
+    <img src="/CitiServe/frontend/login_register/images/login-logo.png" alt="CitiSen">
   </div>
   
 <form method="post" action="" enctype="multipart/form-data">
@@ -99,14 +99,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <div class="field">
       <label>First Name <span class="req">*</span></label>
       <div class="input-wrap">
-        <img class="field-icon" src="../frontend/login_register/images/register-person (1).png" alt="">
+        <img class="field-icon" src="/CitiServe/frontend/login_register/images/register-person (1).png" alt="">
         <input class="field-icon" type="text" name="first_name" placeholder="Ex. Juan" value="<?= htmlspecialchars($old['first_name'], ENT_QUOTES) ?>">
       </div>
     </div>
     <div class="field">
       <label>Last Name <span class="req">*</span></label>
       <div class="input-wrap">
-     <input class="no-icon" type="text" name="last_name" placeholder="Ex. Dela Cruz" data-no-error-img value="<?= htmlspecialchars($old['last_name'], ENT_QUOTES) ?>">
+        <input class="no-icon" type="text" name="last_name" placeholder="Ex. Dela Cruz" data-no-error-img value="<?= htmlspecialchars($old['last_name'], ENT_QUOTES) ?>">
       </div>
     </div>
   </div>
@@ -115,7 +115,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <div class="field">
     <label>Address (Brgy. Kalayaan, Angono, Rizal) <span class="req">*</span></label>
     <div class="input-wrap">
-      <img class="field-icon" src="../frontend/login_register/images/register-location.png" alt="">
+      <img class="field-icon" src="/CitiServe/frontend/login_register/images/register-location.png" alt="">
       <input type="text" name="address" placeholder="Street Name, Building, House No." value="<?= htmlspecialchars($old['address'], ENT_QUOTES) ?>">
     </div>
   </div>
@@ -124,7 +124,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <div class="field">
     <label>Email Address <span class="req">*</span></label>
     <div class="input-wrap">
-      <img class="field-icon" src="../frontend/login_register/images/ic_round-email.png" alt="">
+      <img class="field-icon" src="/CitiServe/frontend/login_register/images/ic_round-email.png" alt="">
       <input type="email" name="email" placeholder="your@email.com" value="<?= htmlspecialchars($old['email'], ENT_QUOTES) ?>">
     </div>
   </div>
@@ -133,11 +133,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <div class="field">
     <label>Password <span class="req">*</span></label>
     <div class="input-wrap">
-      <img class="field-icon" src="../frontend/login_register/images/pass.icon.png" alt="">
+      <img class="field-icon" src="/CitiServe/frontend/login_register/images/pass.icon.png" alt="">
       <input type="password" id="passInput" name="password" placeholder="Min. 8 characters">
       <input type="hidden" id="passwordConfirmInput" name="password_confirm" value="">
       <button class="eye-btn" id="eyeBtn" type="button">
-        <img id="eyeIcon" src="../frontend/login_register/images/eye.png" alt="Toggle visibility">
+        <img id="eyeIcon" src="/CitiServe/frontend/login_register/images/eye.png" alt="Toggle visibility">
       </button>
     </div>
   </div>
@@ -147,11 +147,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <label>Proof of Residency <span class="label-note">(Upload Valid ID / Proof of Billing)</span></label>
     <div class="file-row">
       <div class="file-name">
-        <img src="../frontend/login_register/images/nofilechosen.png" alt="" id="fileStatusIcon">
+        <img src="/CitiServe/frontend/login_register/images/nofilechosen.png" alt="" id="fileStatusIcon">
         <span id="fileName">No File Chosen</span>
       </div>
       <button class="choose-btn" id="chooseBtn" type="button">
-        <img src="../frontend/login_register/images/choosefile.png" alt="">
+        <img src="/CitiServe/frontend/login_register/images/choosefile.png" alt="">
         Choose File
       </button>
       <input type="file" id="fileInput" name="proof_file" accept="image/*,.pdf">
@@ -160,9 +160,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
   <!-- Terms -->
   <label class="terms-row">
-  <input type="checkbox" id="termsCheck" name="terms_check">
-  I agree to the <a href="#" id="regTermsLink">Terms and Conditions</a> and <a href="#" id="regPrivacyLink">Privacy Policy</a> of CitiServe
-</label>
+    <input type="checkbox" id="termsCheck" name="terms_check">
+    I agree to the <a href="#" id="regTermsLink">Terms and Conditions</a> and <a href="#" id="regPrivacyLink">Privacy Policy</a> of CitiServe
+  </label>
 
   <button class="create-btn" type="button">Create Account</button>
 
@@ -176,21 +176,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <div class="confirm-modal" id="confirmModal">
   <div class="confirm-box">
-    <!-- 🔥 icon beside text -->
     <div class="confirm-top">
-      <img src="../frontend/login_register/images/reg-u-sure.png" alt="" class="confirm-icon">
+      <img src="/CitiServe/frontend/login_register/images/reg-u-sure.png" alt="" class="confirm-icon">
       <div class="confirm-text">
         <h2 class="confirm-title">Create Account?</h2>
         <p class="confirm-subtitle">Please review your information before proceeding. Once your account is created, some details may not be editable.</p>
       </div>
     </div>
-    <!-- buttons -->
     <div class="confirm-btns">
       <button class="confirm-cancel" id="confirmCancel" type="button">
-        <img src="../frontend/login_register/images/reg-cancel.png" alt="Cancel">
+        <img src="/CitiServe/frontend/login_register/images/reg-cancel.png" alt="Cancel">
       </button>
       <button class="confirm-create" id="confirmCreate" type="submit">
-        <img src="../frontend/login_register/images/reg-create.png" alt="Create Account">
+        <img src="/CitiServe/frontend/login_register/images/reg-create.png" alt="Create Account">
       </button>
     </div>
   </div>

@@ -1,81 +1,70 @@
 <?php
 require_once __DIR__ . '/../app/core/CitiServeData.php';
 
+// Start the session
 session_start();
 
+$data = new CitiServeData();
+
+// Variables to store error message and the email they typed
 $error = '';
 $email = '';
 
+// Check if the form was submitted
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+
+    // Get the email and password from the form
     $email = trim(isset($_POST['email']) ? $_POST['email'] : '');
     $password = isset($_POST['password']) ? $_POST['password'] : '';
 
+    // Make sure both fields are filled in
     if ($email === '' || $password === '') {
         $error = 'Email and password are required.';
     } else {
-        $data = new CitiServeData();
+        // Try to find the user by email
         $user = $data->findUserByEmail($email);
 
+        // Check if user exists and password is correct
         if ($user && password_verify($password, $user->password_hash)) {
+            // Password is correct! Save the user ID in the session
             $_SESSION['user_id'] = $user->id;
+
+            // Redirect to the home page
             header('Location: /CitiServe/public/index.php');
             exit;
         } else {
+            // Wrong email or password
             $error = 'Invalid email or password.';
         }
     }
 }
 ?>
 <!doctype html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Login | CitiServe</title>
-    <link rel="stylesheet" href="assets/css/auth.css">
-</head>
+<html>
+<head><meta charset="utf-8"><title>Login</title></head>
 <body>
+<h2>Login</h2>
 
-<main class="auth-page">
-    <section class="auth-hero auth-hero-login">
-        <div class="auth-hero-content">
-            <p class="auth-kicker">CitiServe</p>
-            <h1>Welcome back</h1>
-            <p>Log in to manage your requests, complaints, and account updates from any device size.</p>
-        </div>
-    </section>
+<?php if ($error): ?>
+    <div style="color:red"><?=htmlspecialchars($error)?></div>
+<?php endif; ?>
 
-    <section class="auth-panel">
-        <div class="auth-card">
-            <h2>Log in</h2>
-            <p class="auth-subtext">Use your registered email and password.</p>
+<form method="post" action="">
+    <div>
+        <label>Email<br>
+            <input type="email" name="email" value="<?=htmlspecialchars($email)?>">
+        </label>
+    </div>
+    <div>
+        <label>Password<br>
+            <input type="password" name="password">
+        </label>
+    </div>
+    <div>
+        <button type="submit">Login</button>
+    </div>
+</form>
 
-            <?php if ($error): ?>
-                <div class="auth-alert auth-alert-error"><?= htmlspecialchars($error) ?></div>
-            <?php endif; ?>
-
-            <form method="post" action="" class="auth-form" novalidate>
-                <label for="email">Email</label>
-                <input id="email" type="email" name="email" value="<?= htmlspecialchars($email) ?>" required autocomplete="email">
-
-                <label for="password">Password</label>
-                <div class="auth-password-wrap">
-                    <input id="password" type="password" name="password" required autocomplete="current-password">
-                    <button type="button" class="auth-toggle-password" data-target="password" aria-label="Toggle password visibility">Show</button>
-                </div>
-
-                <button type="submit" class="auth-button">Log in</button>
-            </form>
-
-            <p class="auth-links">
-                No account yet? <a href="/CitiServe/public/register.php">Create one</a>
-            </p>
-            <p class="auth-links">
-                <a href="/CitiServe/public/index.php">Back to home</a>
-            </p>
-        </div>
-    </section>
-</main>
-<script src="assets/js/auth.js" defer></script>
+<p>No account? <a href="register.php">Register</a></p>
 </body>
 </html>

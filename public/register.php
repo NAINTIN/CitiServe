@@ -39,8 +39,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($accept_terms !== '1') {
         $errors[] = 'You must agree to the Terms and Privacy Policy.';
     }
-    if ($contact_number !== '' && !preg_match('/^[0-9+\-\s()]{7,20}$/', $contact_number)) {
-        $errors[] = 'Contact number format is invalid.';
+    if ($contact_number !== '') {
+        if (!preg_match('/^\+?[0-9\s\-()]+$/', $contact_number)) {
+            $errors[] = 'Contact number format is invalid.';
+        } else {
+            $digitsOnly = preg_replace('/\D/', '', $contact_number);
+            if (strlen($digitsOnly) < 7 || strlen($digitsOnly) > 15) {
+                $errors[] = 'Contact number format is invalid.';
+            }
+        }
     }
 
     if (empty($errors)) {
@@ -136,7 +143,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
 
                 <label class="auth-checkbox-row">
-                    <input type="checkbox" name="accept_terms" value="1" <?= $old['accept_terms'] === '1' ? 'checked' : '' ?>>
+                    <input type="checkbox" name="accept_terms" value="1" required <?= $old['accept_terms'] === '1' ? 'checked' : '' ?>>
                     <span>I agree to the Terms and Privacy Policy.</span>
                 </label>
 

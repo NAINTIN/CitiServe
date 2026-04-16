@@ -62,7 +62,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'email' => $email,
                 'password_hash' => $hash,
                 'address' => $address,
-                'contact_number' => $contact_number ?: null,
+                'contact_number' => $contact_number !== '' ? $contact_number : null,
             ]);
 
             $_SESSION['user_id'] = $userId;
@@ -141,7 +141,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
 
                 <label class="auth-checkbox-row">
-                    <input type="checkbox" name="accept_terms" value="1" required <?= $old['accept_terms'] === '1' ? 'checked' : '' ?>>
+                    <input id="accept_terms" type="checkbox" name="accept_terms" value="1" required <?= $old['accept_terms'] === '1' ? 'checked' : '' ?>>
                     <span>I agree to the Terms and Privacy Policy.</span>
                 </label>
 

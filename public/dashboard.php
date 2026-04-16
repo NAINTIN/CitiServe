@@ -18,7 +18,7 @@ if (!$sessionUser) {
 
 
 // ═══════════════════════════════════════════════════════════════════
-// DATA  —  replace with DB query later
+// TODO: Replace placeholder dashboard data with DB-backed values in a follow-up task.
 // ═══════════════════════════════════════════════════════════════════
 
 $user = [
@@ -27,7 +27,6 @@ $user = [
   'barangay'   => 'Barangay Kalayaan, Angono, Rizal',
   'verified'   => true,
   'avatar'     => '',
-  'initials'   => 'JD',
 ];
 
 $stats = [
@@ -192,7 +191,9 @@ $complaintIcons = [
   ],
 ];
 
-$unreadCount   = count(array_filter($notifications, fn($n) => !$n['read']));
+$unreadCount   = count(array_filter($notifications, function ($n) {
+  return !$n['read'];
+}));
 $hasNotif      = $unreadCount > 0;
 $notifSections = ['new' => [], 'today' => [], 'earlier' => []];
 foreach ($notifications as $n) {

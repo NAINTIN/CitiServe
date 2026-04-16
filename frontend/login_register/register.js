@@ -1,9 +1,14 @@
+const scriptElement = document.currentScript || document.querySelector('script[src*="register.js"]');
+const scriptUrl = scriptElement ? scriptElement.src : window.location.href;
+const assetsBaseUrl = new URL('images/', scriptUrl);
+const assetPath = (fileName) => new URL(fileName, assetsBaseUrl).href;
+
 /* BACKGROUND SLIDES */
 const slides = [
-  "images/Slide 1.png",
-  "images/Slide 2.png",
-  "images/Slide 3.png",
-  "images/Slide 4.png"
+  assetPath("Slide 1.png"),
+  assetPath("Slide 2.png"),
+  assetPath("Slide 3.png"),
+  assetPath("Slide 4.png")
 ];
 
 let i = 0;
@@ -74,11 +79,11 @@ const eyeIcon   = document.getElementById('eyeIcon');
 eyeBtn.addEventListener('click', () => {
   if (passInput.type === 'password') {
     passInput.type = 'text';
-    eyeIcon.src = 'images/eyeclosed.png';
+    eyeIcon.src = assetPath('eyeclosed.png');
     eyeBtn.style.opacity = '0.7';
   } else {
     passInput.type = 'password';
-    eyeIcon.src = 'images/eye.png';
+    eyeIcon.src = assetPath('eye.png');
     eyeBtn.style.opacity = '0.35';
   }
 });
@@ -116,7 +121,7 @@ allRequiredInputs.forEach(input => {
 
   const wrap = input.closest('.input-wrap');
   const errorImg = document.createElement('img');
-  errorImg.src = 'images/reg-field-required.png';
+  errorImg.src = assetPath('reg-field-required.png');
   errorImg.classList.add('required-error');
   errorImg.style.display = 'none';
   errorImg.style.position = 'absolute';
@@ -131,7 +136,7 @@ allRequiredInputs.forEach(input => {
 
 // File error img
 const fileErrorImg = document.createElement('img');
-fileErrorImg.src = 'images/reg-field-required.png';
+fileErrorImg.src = assetPath('reg-field-required.png');
 fileErrorImg.classList.add('required-error');
 fileErrorImg.style.display = 'none';
 fileErrorImg.style.position = 'absolute';
@@ -228,7 +233,7 @@ regTermsLink.onclick = function(e) {
   regTermsModal.style.display = "flex";
 
   regPreviousBg = left.style.backgroundImage;
-  left.style.backgroundImage = `url('images/login-bg.png')`;
+  left.style.backgroundImage = `url('${assetPath('login-bg.png')}')`;
 
   clearInterval(slideInterval);
 
@@ -273,7 +278,7 @@ regPrivacyLink.onclick = function(e) {
   if (!regTermsModal.style.display || regTermsModal.style.display === "none") {
     regPreviousBg = left.style.backgroundImage;
   }
-  left.style.backgroundImage = `url('images/login-bg.png')`;
+  left.style.backgroundImage = `url('${assetPath('login-bg.png')}')`;
 
   clearInterval(slideInterval);
 

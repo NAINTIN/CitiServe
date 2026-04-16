@@ -1,9 +1,14 @@
+const scriptElement = document.currentScript || document.querySelector('script[src*="login.js"]');
+const scriptUrl = scriptElement ? scriptElement.src : window.location.href;
+const assetsBaseUrl = new URL('images/', scriptUrl);
+const assetPath = (fileName) => new URL(fileName, assetsBaseUrl).href;
+
 /* BACKGROUND SLIDES */
 const slides = [
-  "images/Slide 1.png",
-  "images/Slide 2.png",
-  "images/Slide 3.png",
-  "images/Slide 4.png"
+  assetPath("Slide 1.png"),
+  assetPath("Slide 2.png"),
+  assetPath("Slide 3.png"),
+  assetPath("Slide 4.png")
 ];
 
 let i = 0;
@@ -73,15 +78,15 @@ const bsIcon = document.getElementById("bsIcon");
 function setResident() {
   resBtn.classList.add("active");
   bsBtn.classList.remove("active");
-  resIcon.src = "images/resident-icon.png";
-  bsIcon.src = "images/barangaystaff-icon.png";
+  resIcon.src = assetPath("resident-icon.png");
+  bsIcon.src = assetPath("barangaystaff-icon.png");
 }
 
 function setBarangayStaff() {
   bsBtn.classList.add("active");
   resBtn.classList.remove("active");
-  bsIcon.src = "images/barangaystaff-toggle.png";
-  resIcon.src = "images/resident-toggle.png";
+  bsIcon.src = assetPath("barangaystaff-toggle.png");
+  resIcon.src = assetPath("resident-toggle.png");
 }
 
 resBtn.onmouseenter = setResident;
@@ -95,10 +100,10 @@ const pass = document.getElementById("pass");
 eye.onclick = () => {
   if (pass.type === "password") {
     pass.type = "text";
-    eye.src = "images/eyeclosed.png";
+    eye.src = assetPath("eyeclosed.png");
   } else {
     pass.type = "password";
-    eye.src = "images/eye.png";
+    eye.src = assetPath("eye.png");
   }
 };
 
@@ -135,7 +140,7 @@ const privacyModal = document.getElementById("privacyModal");
 const closeBtn = document.getElementById("closePrivacy");
 const privacyLink = document.getElementById("privacyLink");
 
-const privacyBg = "images/login-bg.png";
+const privacyBg = assetPath("login-bg.png");
 
 let previousBg = "";
 let isModalOpen = false;
@@ -195,7 +200,7 @@ const termsModal = document.getElementById("termsModal");
 const closeTermsBtn = document.getElementById("closeTerms");
 const termsLink = document.getElementById("termsLink");
 
-const termsBg = "images/login-bg.png";
+const termsBg = assetPath("login-bg.png");
 
 let isTermsOpen = false;
 

@@ -54,7 +54,7 @@ $upcomingRequestIcons = [
   'Barangay ID'                 => '/CitiServe/frontend/dashboard/images/barangay_id.png',
   'Barangay Permit (Construction)' => '/CitiServe/frontend/dashboard/images/barangay_permit.png',
   'Certificate of Indigency'    => '/CitiServe/frontend/dashboard/images/cert_indigency.png',
-  'Certificate of Residency'    => '/CitiServe/frontend/dashboard/images/cert_recidency.png',
+  'Certificate of Residency'    => '/CitiServe/frontend/dashboard/images/cert_residency.png',
   'Solo Parent Certificate'     => '/CitiServe/frontend/dashboard/images/cert_soloparent.png',
 ];
 
@@ -108,7 +108,7 @@ $requestIcons = [
   'Barangay ID'                    => '/CitiServe/frontend/dashboard/images/barangay_id.png',
   'Barangay Permit (Construction)' => '/CitiServe/frontend/dashboard/images/barangay_permit.png',
   'Certificate of Indigency'       => '/CitiServe/frontend/dashboard/images/cert_indigency.png',
-  'Certificate of Residency'       => '/CitiServe/frontend/dashboard/images/cert_recidency.png',
+  'Certificate of Residency'       => '/CitiServe/frontend/dashboard/images/cert_residency.png',
   'Solo Parent Certificate'        => '/CitiServe/frontend/dashboard/images/cert_soloparent.png',
 ];
 

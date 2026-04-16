@@ -40,13 +40,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $errors[] = 'You must agree to the Terms and Privacy Policy.';
     }
     if ($contact_number !== '') {
-        if (!preg_match('/^\+?[0-9\s\-()]+$/', $contact_number)) {
+        $hasValidCharacters = preg_match('/^\+?[0-9\s\-()]+$/', $contact_number) === 1;
+        $digitsOnly = preg_replace('/\D/', '', $contact_number);
+        $hasValidDigitLength = strlen($digitsOnly) >= 7 && strlen($digitsOnly) <= 15;
+        if (!$hasValidCharacters || !$hasValidDigitLength) {
             $errors[] = 'Contact number format is invalid.';
-        } else {
-            $digitsOnly = preg_replace('/\D/', '', $contact_number);
-            if (strlen($digitsOnly) < 7 || strlen($digitsOnly) > 15) {
-                $errors[] = 'Contact number format is invalid.';
-            }
         }
     }
 
@@ -64,7 +62,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'email' => $email,
                 'password_hash' => $hash,
                 'address' => $address,
-                'contact_number' => $contact_number !== '' ? $contact_number : null,
+                'contact_number' => $contact_number ?: null,
             ]);
 
             $_SESSION['user_id'] = $userId;

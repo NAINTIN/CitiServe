@@ -1,4 +1,8 @@
-const scriptElement = document.currentScript || Array.from(document.scripts).find((script) => /(?:^|\/)login\.js(?:\?|#|$)/.test(script.src || ''));
+const scriptElement = document.currentScript || Array.from(document.scripts).find((script) => {
+  if (!script.src) return false;
+  const pathname = new URL(script.src, window.location.href).pathname;
+  return pathname.endsWith('/frontend/login_register/login.js') || pathname.endsWith('/login.js');
+});
 if (!scriptElement || !scriptElement.src) {
   throw new Error('Unable to resolve login.js script URL for asset loading.');
 }

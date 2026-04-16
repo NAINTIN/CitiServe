@@ -1,6 +1,8 @@
-const scriptElement = document.currentScript || Array.from(document.scripts).find((script) => script.src && script.src.includes('/login_register/login.js'));
-const fallbackScriptPath = window.location.pathname.includes('/public/') ? '../frontend/login_register/login.js' : 'login.js';
-const scriptUrl = scriptElement && scriptElement.src ? scriptElement.src : new URL(fallbackScriptPath, window.location.href).href;
+const scriptElement = document.currentScript || Array.from(document.scripts).find((script) => /(?:^|\/)login\.js(?:\?|#|$)/.test(script.src || ''));
+if (!scriptElement || !scriptElement.src) {
+  throw new Error('Unable to resolve login.js script URL for asset loading.');
+}
+const scriptUrl = scriptElement.src;
 const assetsBaseUrl = new URL('images/', scriptUrl);
 const assetPath = (fileName) => new URL(fileName, assetsBaseUrl).href;
 

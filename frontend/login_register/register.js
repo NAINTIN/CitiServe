@@ -1,10 +1,10 @@
 const scriptElement = document.currentScript || Array.from(document.scripts).find((script) => {
   if (!script.src) return false;
   const pathname = new URL(script.src, window.location.href).pathname;
-  return pathname.endsWith('/frontend/login_register/register.js') || pathname.endsWith('/register.js');
+  return pathname.endsWith('/frontend/login_register/register.js');
 });
 if (!scriptElement || !scriptElement.src) {
-  throw new Error('Unable to resolve register.js script URL for asset loading.');
+  throw new Error('Unable to resolve register.js URL for assets. Ensure it is loaded from frontend/login_register/register.js via a src attribute.');
 }
 const scriptUrl = scriptElement.src;
 const assetsBaseUrl = new URL('images/', scriptUrl);

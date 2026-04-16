@@ -20,9 +20,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['user_id'] = $user->id;
             header('Location: /CitiServe/public/index.php');
             exit;
+        } else {
+            $error = 'Invalid email or password.';
         }
-
-        $error = 'Invalid email or password.';
     }
 }
 ?>

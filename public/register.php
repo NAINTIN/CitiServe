@@ -19,7 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $full_name = trim($first_name . ' ' . $last_name);
     $email = trim(isset($_POST['email']) ? $_POST['email'] : '');
     $password = isset($_POST['password']) ? $_POST['password'] : '';
-    $password_confirm = isset($_POST['password_confirm']) ? $_POST['password_confirm'] : $password;
+    $password_confirm = isset($_POST['password_confirm']) ? $_POST['password_confirm'] : '';
 
     $old['first_name'] = $first_name;
     $old['last_name'] = $last_name;
@@ -135,6 +135,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <div class="input-wrap">
       <img class="field-icon" src="../frontend/login_register/images/pass.icon.png" alt="">
       <input type="password" id="passInput" name="password" placeholder="Min. 8 characters">
+      <input type="hidden" id="passwordConfirmInput" name="password_confirm" value="">
       <button class="eye-btn" id="eyeBtn" type="button">
         <img id="eyeIcon" src="../frontend/login_register/images/eye.png" alt="Toggle visibility">
       </button>
@@ -281,7 +282,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   </div>
 </div>
 
-<script src="../frontend/login_register/register.js" defer></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    var form = document.querySelector('form[method="post"]');
+    var passInput = document.getElementById('passInput');
+    var passwordConfirmInput = document.getElementById('passwordConfirmInput');
+    if (!form || !passInput || !passwordConfirmInput) return;
+    form.addEventListener('submit', function () {
+      passwordConfirmInput.value = passInput.value;
+    });
+  });
+</script>
 <?php if ($errors): ?>
 <script>
   alert(<?= json_encode(implode("\n", $errors)) ?>);

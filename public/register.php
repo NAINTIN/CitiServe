@@ -54,7 +54,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ]);
 
             $_SESSION['user_id'] = $userId;
-            header('Location: /CitiServe/public/index.php');
+            header('Location: /CitiServe/public/dashboard.php');
             exit;
         }
     }

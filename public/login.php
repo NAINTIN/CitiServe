@@ -18,7 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if ($user && password_verify($password, $user->password_hash)) {
             $_SESSION['user_id'] = $user->id;
-            header('Location: /CitiServe/public/index.php');
+            header('Location: /CitiServe/public/dashboard.php');
             exit;
         } else {
             $error = 'Invalid email or password.';

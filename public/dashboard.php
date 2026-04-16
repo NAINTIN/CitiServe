@@ -330,7 +330,7 @@ foreach ($notifications as $n) {
       <div class="profile-avatar">
         <img src="<?= !empty($user['avatar']) ? htmlspecialchars($user['avatar']) : '/CitiServe/frontend/dashboard/images/profile_icon.png' ?>" alt="Profile">
       </div>
-      <span class="profile-name"><?= htmlspecialchars($user['first_name']) ?> D.</span>
+      <span class="profile-name"><?= htmlspecialchars($user['first_name']) ?></span>
       <span class="profile-chevron"><img src="/CitiServe/frontend/dashboard/images/profile_dropdown.png" alt=""></span>
     </div>
 

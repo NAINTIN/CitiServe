@@ -91,34 +91,7 @@ $primaryStartHref = $user
     </div>
     </section>
 
-    <section class="portal-quick-links">
-        <?php if ($user): ?>
-            <p>Welcome, <strong><?= htmlspecialchars($user->full_name) ?></strong> (<?= htmlspecialchars($user->role) ?>)</p>
-        <?php else: ?>
-            <p>You are not logged in.</p>
-        <?php endif; ?>
-
-        <ul>
-            <li><a href="/CitiServe/public/register.php">Register</a></li>
-            <li><a href="/CitiServe/public/login.php">Login</a></li>
-            <li><a href="/CitiServe/public/notifications.php">My Notifications (<?= (int)$unreadCount ?>)</a></li>
-            <li><a href="/CitiServe/public/profile.php">My Profile</a></li>
-            <li><a href="/CitiServe/public/profile_edit.php">Edit Profile</a></li>
-            <li><a href="/CitiServe/public/change_password.php">Change Password</a></li>
-            <?php if ($isStaffAdmin): ?>
-                <li><a href="/CitiServe/public/admin/requests.php">Customer Requests</a></li>
-                <li><a href="/CitiServe/public/admin/complaints.php">Customer Complaints</a></li>
-                <li><a href="/CitiServe/public/admin/users.php">Manage User Roles</a></li>
-            <?php else: ?>
-                <li><a href="/CitiServe/public/services.php">Document Services</a></li>
-                <li><a href="/CitiServe/public/request_create.php">Submit Document Request</a></li>
-                <li><a href="/CitiServe/public/my_requests.php">My Requests</a></li>
-                <li><a href="/CitiServe/public/complaint_create.php">Submit Complaint</a></li>
-                <li><a href="/CitiServe/public/my_complaints.php">My Complaints</a></li>
-            <?php endif; ?>
-        </ul>
-    </section>
-
+    
 
     <!-- ================= SERVICES ================= -->
     <section id="services" class="services-section">

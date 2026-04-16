@@ -3,8 +3,6 @@ require_once __DIR__ . '/../app/core/CitiServeData.php';
 
 session_start();
 
-$data = new CitiServeData();
-
 $error = '';
 $email = '';
 
@@ -15,6 +13,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($email === '' || $password === '') {
         $error = 'Email and password are required.';
     } else {
+        $data = new CitiServeData();
         $user = $data->findUserByEmail($email);
 
         if ($user && password_verify($password, $user->password_hash)) {
@@ -33,7 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Login | CitiServe</title>
-    <link rel="stylesheet" href="/CitiServe/public/assets/css/auth.css">
+    <link rel="stylesheet" href="assets/css/auth.css">
 </head>
 <body>
 
@@ -77,6 +76,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
     </section>
 </main>
-<script src="/CitiServe/public/assets/js/auth.js" defer></script>
+<script src="assets/js/auth.js" defer></script>
 </body>
 </html>

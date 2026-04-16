@@ -3,8 +3,6 @@ require_once __DIR__ . '/../app/core/CitiServeData.php';
 
 session_start();
 
-$data = new CitiServeData();
-
 $errors = [];
 $old = ['full_name' => '', 'email' => '', 'address' => '', 'contact_number' => '', 'accept_terms' => '0'];
 
@@ -46,6 +44,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     if (empty($errors)) {
+        $data = new CitiServeData();
         $existingUser = $data->findUserByEmail($email);
 
         if ($existingUser) {
@@ -74,7 +73,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Register | CitiServe</title>
-    <link rel="stylesheet" href="/CitiServe/public/assets/css/auth.css">
+    <link rel="stylesheet" href="assets/css/auth.css">
 </head>
 <body>
 <main class="auth-page">
@@ -153,6 +152,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
     </section>
 </main>
-<script src="/CitiServe/public/assets/js/auth.js" defer></script>
+<script src="assets/js/auth.js" defer></script>
 </body>
 </html>

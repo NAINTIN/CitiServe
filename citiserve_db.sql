@@ -25,8 +25,8 @@ SET FOREIGN_KEY_CHECKS = 0;
 
 DROP TABLE IF EXISTS `complaint_evidence`;
 DROP TABLE IF EXISTS `complaints`;
-DROP TABLE IF EXISTS `document_requests`;
 DROP TABLE IF EXISTS `document_request_files`;
+DROP TABLE IF EXISTS `document_requests`;
 DROP TABLE IF EXISTS `notifications`;
 DROP TABLE IF EXISTS `status_history`;
 DROP TABLE IF EXISTS `complaint_categories`;

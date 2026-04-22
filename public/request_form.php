@@ -209,6 +209,18 @@ function h($value)
         <button type="submit">Continue to Payment</button>
     </form>
 
+    <?php
+    $conditionalWires = [];
+    foreach ($definition['fields'] as $field) {
+        if (!empty($field['required_if'])) {
+            $conditionalWires[] = [
+                'source' => (string)$field['required_if']['field'],
+                'equals' => (string)$field['required_if']['equals'],
+                'target' => (string)$field['name'],
+            ];
+        }
+    }
+    ?>
     <script>
         (function () {
             function toggleConditional(sourceField, expectedValue, targetField) {
@@ -236,8 +248,10 @@ function h($value)
                 toggleConditional(sourceField, expectedValue, targetField);
             }
 
-            wire('business_nature', 'others', 'business_nature_other');
-            wire('solo_parent_reason', 'others', 'solo_parent_reason_other');
+            var wires = <?= json_encode($conditionalWires, JSON_UNESCAPED_UNICODE) ?>;
+            for (var i = 0; i < wires.length; i++) {
+                wire(wires[i].source, wires[i].equals, wires[i].target);
+            }
         })();
     </script>
 </body>

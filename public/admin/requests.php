@@ -13,7 +13,7 @@ $admin = require_admin();
 $data = new CitiServeData();
 $db = $data->getPdo();
 
-$allowedStatuses = ['claimable', 'rejected'];
+$allowedStatuses = ['received', 'pending', 'claimable', 'rejected', 'released'];
 $message = '';
 $error = '';
 

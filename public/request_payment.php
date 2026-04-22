@@ -67,7 +67,10 @@ function h($v)
     return htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8');
 }
 
-function fake_qr_html($seed)
+/**
+ * Render a deterministic QR-like placeholder grid from a seed string.
+ */
+function placeholder_qr_html($seed)
 {
     $hash = hash('sha256', $seed);
     $index = 0;
@@ -77,7 +80,7 @@ function fake_qr_html($seed)
         for ($c = 0; $c < 16; $c++) {
             $char = hexdec($hash[$index % strlen($hash)]);
             $color = ($char % 2 === 0) ? '#000' : '#fff';
-            $html .= '<td style="width:12px;height:12px;background:' . $color . ';border:1px solid #ddd;"></td>';
+            $html .= '<td style="width:12px;height:12px;background:' . htmlspecialchars($color, ENT_QUOTES, 'UTF-8') . ';border:1px solid #ddd;"></td>';
             $index++;
         }
         $html .= '</tr>';
@@ -114,7 +117,7 @@ function fake_qr_html($seed)
     <?php endif; ?>
 
     <h3>Scan / Pay (Sample QR)</h3>
-    <?= fake_qr_html($draft['service_name'] . '|' . $user['id']) ?>
+    <?= placeholder_qr_html($draft['service_name'] . '|' . $user['id']) ?>
 
     <form method="post" enctype="multipart/form-data" style="margin-top:12px;">
         <?= csrf_field() ?>

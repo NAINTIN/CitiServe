@@ -8,6 +8,16 @@ To access the system go to localhost/CitiServe/public
 
 Before Pushing Please export citiserve_db then put it in the Citiserve folder so if you made any changes we can just import it back and forth
 
+Document request flow pages:
+- `/public/request_select.php` (step 1 select)
+- `/public/request_form.php` (step 2 dynamic form + required uploads)
+- `/public/request_payment.php` (step 3 payment + proof)
+- `/public/request_confirm.php` (step 4 confirm/cancel)
+- `/public/request_success.php` (step 5 submission summary)
+
+If your DB is older, run migration:
+- `database/migrations/003_document_request_flow.sql`
+
 
 ## Local database configuration - IMPORTANT!!!!!!!! This is how you can see it when you clone this repo
 PLEASE READ NUMBER 3 IN THE OVERVIEW TO IMPORT THE DATABASE FIRST THEN YOU CAN FOLLOW THIS STEP

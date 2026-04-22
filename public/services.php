@@ -52,7 +52,7 @@ $services = $data->getAllActiveDocumentServices();
                     <td><?= htmlspecialchars($s['price']) ?></td>
                     <td><?= htmlspecialchars($s['processing_time_days']) ?></td>
                     <td>
-                        <a href="/CitiServe/public/request_create.php?service_id=<?= (int)$s['id'] ?>">
+                        <a href="/CitiServe/public/request_select.php?service_id=<?= (int)$s['id'] ?>">
                             Request
                         </a>
                     </td>

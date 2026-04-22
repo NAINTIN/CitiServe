@@ -25,6 +25,7 @@ SET FOREIGN_KEY_CHECKS = 0;
 
 DROP TABLE IF EXISTS `complaint_evidence`;
 DROP TABLE IF EXISTS `complaints`;
+DROP TABLE IF EXISTS `document_request_files`;
 DROP TABLE IF EXISTS `document_requests`;
 DROP TABLE IF EXISTS `notifications`;
 DROP TABLE IF EXISTS `status_history`;
@@ -127,8 +128,10 @@ CREATE TABLE `document_requests` (
   `document_service_id` int(10) UNSIGNED NOT NULL,
   `purpose` text DEFAULT NULL,
   `status` enum('received','pending','claimable','rejected','released') NOT NULL DEFAULT 'received',
+  `payment_method` varchar(100) DEFAULT NULL,
   `payment_reference` varchar(100) DEFAULT NULL,
   `payment_proof_path` varchar(255) DEFAULT NULL,
+  `form_data_json` longtext DEFAULT NULL,
   `claimed_at` datetime DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
@@ -138,11 +141,34 @@ CREATE TABLE `document_requests` (
 -- Dumping data for table `document_requests`
 --
 
-INSERT INTO `document_requests` (`id`, `user_id`, `document_service_id`, `purpose`, `status`, `payment_reference`, `payment_proof_path`, `claimed_at`, `created_at`, `updated_at`) VALUES
-(1, 1, 1, 'maingay kapitbahay', 'claimable', NULL, NULL, NULL, '2026-03-14 08:54:24', '2026-03-14 10:25:43'),
-(2, 3, 3, 'asdsadsad', 'received', NULL, 'uploads/payment_proofs/69d887c73e6ae864e25822be32fc04e2.jpg', NULL, '2026-03-14 10:34:03', '2026-03-14 10:34:03'),
-(3, 1, 3, 'safsaf', 'received', NULL, 'uploads/payment_proofs/badc990a15872a38d89229edb3a7fac4.jpg', NULL, '2026-03-14 10:58:13', '2026-03-14 10:58:13'),
-(4, 4, 1, 'mag nonotif to', 'rejected', NULL, NULL, NULL, '2026-03-17 06:20:36', '2026-03-17 06:21:06');
+INSERT INTO `document_requests` (`id`, `user_id`, `document_service_id`, `purpose`, `status`, `payment_method`, `payment_reference`, `payment_proof_path`, `form_data_json`, `claimed_at`, `created_at`, `updated_at`) VALUES
+(1, 1, 2, 'Employment requirement', 'claimable', 'GCash', 'GCASH-REF-1001', 'uploads/payment_proofs/69d887c73e6ae864e25822be32fc04e2.jpg', '{"first_name":"Dan","middle_name":"Deniel","last_name":"Belaro","purpose_of_clearance":"Employment"}', NULL, '2026-03-14 08:54:24', '2026-03-14 10:25:43'),
+(2, 3, 6, 'Scholarship requirement', 'received', 'Maya', 'MAYA-REF-1002', 'uploads/payment_proofs/69d887c73e6ae864e25822be32fc04e2.jpg', '{"first_name":"Admin","last_name":"Citi","purpose_of_request":"School"}', NULL, '2026-03-14 10:34:03', '2026-03-14 10:34:03'),
+(3, 1, 5, 'Medical assistance', 'received', 'GrabPay', 'GRABPAY-REF-1003', 'uploads/payment_proofs/badc990a15872a38d89229edb3a7fac4.jpg', '{"first_name":"Dan","last_name":"Belaro","purpose":"Medical assistance"}', NULL, '2026-03-14 10:58:13', '2026-03-14 10:58:13'),
+(4, 4, 1, 'Business renewal', 'rejected', 'Union Bank of the Philippines', 'UBP-REF-1004', NULL, '{"business_name":"Jasmin Store","business_nature":"retail"}', NULL, '2026-03-17 06:20:36', '2026-03-17 06:21:06');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `document_request_files`
+--
+
+CREATE TABLE `document_request_files` (
+  `id` int(10) UNSIGNED NOT NULL,
+  `document_request_id` int(10) UNSIGNED NOT NULL,
+  `file_type` varchar(100) NOT NULL,
+  `file_path` varchar(255) NOT NULL,
+  `original_name` varchar(255) DEFAULT NULL,
+  `uploaded_at` timestamp NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `document_request_files`
+--
+
+INSERT INTO `document_request_files` (`id`, `document_request_id`, `file_type`, `file_path`, `original_name`, `uploaded_at`) VALUES
+(1, 1, 'valid_id', 'uploads/request_files/sample_valid_id.jpg', 'sample_valid_id.jpg', '2026-03-14 08:54:24'),
+(2, 1, 'proof_of_address', 'uploads/request_files/sample_proof_of_address.pdf', 'sample_proof_of_address.pdf', '2026-03-14 08:54:24');
 
 -- --------------------------------------------------------
 
@@ -166,9 +192,13 @@ CREATE TABLE `document_services` (
 --
 
 INSERT INTO `document_services` (`id`, `name`, `description`, `price`, `processing_time_days`, `is_active`, `created_at`, `updated_at`) VALUES
-(1, 'Barangay Clearance', 'General clearance', 50.00, 1, 1, '2026-03-14 08:53:18', '2026-03-14 08:53:18'),
-(2, 'Certificate of Residency', 'Proof of residency', 30.00, 1, 1, '2026-03-14 08:53:18', '2026-03-14 08:53:18'),
-(3, 'Business Permit Endorsement', 'For permit processing', 100.00, 3, 1, '2026-03-14 08:53:18', '2026-03-14 08:53:18');
+(1, 'Barangay Business Clearance', 'Required for business permit processing', 150.00, 3, 1, '2026-03-14 08:53:18', '2026-03-14 08:53:18'),
+(2, 'Barangay Clearance', 'General barangay clearance', 50.00, 1, 1, '2026-03-14 08:53:18', '2026-03-14 08:53:18'),
+(3, 'Barangay ID', 'Official barangay resident ID', 75.00, 1, 1, '2026-03-14 08:53:18', '2026-03-14 08:53:18'),
+(4, 'Barangay Permit (Construction)', 'Permit for construction and related activities', 200.00, 3, 1, '2026-03-14 08:53:18', '2026-03-14 08:53:18'),
+(5, 'Certificate of Indigency', 'Certification for assistance and support programs', 0.00, 1, 1, '2026-03-14 08:53:18', '2026-03-14 08:53:18'),
+(6, 'Certificate of Residency', 'Proof of barangay residency', 30.00, 1, 1, '2026-03-14 08:53:18', '2026-03-14 08:53:18'),
+(7, 'Solo Parent Certificate', 'Certification for solo parent benefits', 50.00, 2, 1, '2026-03-14 08:53:18', '2026-03-14 08:53:18');
 
 -- --------------------------------------------------------
 
@@ -284,6 +314,13 @@ ALTER TABLE `document_requests`
   ADD KEY `fk_document_requests_service` (`document_service_id`);
 
 --
+-- Indexes for table `document_request_files`
+--
+ALTER TABLE `document_request_files`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_document_request_files_request_id` (`document_request_id`);
+
+--
 -- Indexes for table `document_services`
 --
 ALTER TABLE `document_services`
@@ -340,10 +377,16 @@ ALTER TABLE `document_requests`
   MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
+-- AUTO_INCREMENT for table `document_request_files`
+--
+ALTER TABLE `document_request_files`
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+
+--
 -- AUTO_INCREMENT for table `document_services`
 --
 ALTER TABLE `document_services`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT for table `notifications`
@@ -386,6 +429,12 @@ ALTER TABLE `complaint_evidence`
 ALTER TABLE `document_requests`
   ADD CONSTRAINT `fk_document_requests_service` FOREIGN KEY (`document_service_id`) REFERENCES `document_services` (`id`),
   ADD CONSTRAINT `fk_document_requests_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `document_request_files`
+--
+ALTER TABLE `document_request_files`
+  ADD CONSTRAINT `fk_document_request_files_request` FOREIGN KEY (`document_request_id`) REFERENCES `document_requests` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `notifications`

@@ -236,7 +236,7 @@ foreach ($notifications as $n) {
       <span class="nav-text">Document Requests</span>
       <span class="nav-chevron">⏷</span>
       <div class="nav-dropdown">
-        <a href="/CitiServe/public/request_create.php" class="nav-dropdown-item">Request Document</a>
+        <a href="/CitiServe/public/request_select.php" class="nav-dropdown-item">Request Document</a>
         <a href="/CitiServe/public/my_requests.php"      class="nav-dropdown-item">My Requests</a>
       </div>
     </div>
@@ -378,7 +378,7 @@ foreach ($notifications as $n) {
         </div>
 
         <div class="action-btns">
-          <a href="/CitiServe/public/request_create.php" class="action-btn1">
+          <a href="/CitiServe/public/request_select.php" class="action-btn1">
             <img src="/CitiServe/frontend/dashboard/images/main_request_document.png" alt="Request Document">
           </a>
           <a href="/CitiServe/public/complaint_create.php" class="action-btn2">

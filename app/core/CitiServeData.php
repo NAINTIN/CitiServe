@@ -71,18 +71,40 @@ class CitiServeData
         return $this->db->query($sql)->fetchAll();
     }
 
+    public function findDocumentServiceById($id)
+    {
+        $stmt = $this->db->prepare('SELECT id, name, description, price, processing_time_days, is_active FROM document_services WHERE id = ? LIMIT 1');
+        $stmt->execute([$id]);
+        return $stmt->fetch() ?: null;
+    }
+
     public function createDocumentRequest($data)
     {
-        $sql = "INSERT INTO document_requests (user_id, document_service_id, purpose, status, payment_reference, payment_proof_path) VALUES (?, ?, ?, 'received', ?, ?)";
+        $sql = "INSERT INTO document_requests (user_id, document_service_id, purpose, status, payment_method, payment_reference, payment_proof_path, form_data_json) VALUES (?, ?, ?, 'received', ?, ?, ?, ?)";
         $stmt = $this->db->prepare($sql);
         $stmt->execute([
             $data['user_id'],
             $data['document_service_id'],
             isset($data['purpose']) ? $data['purpose'] : null,
+            isset($data['payment_method']) ? $data['payment_method'] : null,
             isset($data['payment_reference']) ? $data['payment_reference'] : null,
             isset($data['payment_proof_path']) ? $data['payment_proof_path'] : null,
+            isset($data['form_data_json']) ? $data['form_data_json'] : null,
         ]);
         return (int)$this->db->lastInsertId();
+    }
+
+    public function addDocumentRequestFile($requestId, $fileType, $filePath, $originalName = null)
+    {
+        $stmt = $this->db->prepare('INSERT INTO document_request_files (document_request_id, file_type, file_path, original_name) VALUES (?, ?, ?, ?)');
+        return $stmt->execute([(int)$requestId, (string)$fileType, (string)$filePath, $originalName]);
+    }
+
+    public function getDocumentRequestFilesByRequestId($requestId)
+    {
+        $stmt = $this->db->prepare('SELECT id, document_request_id, file_type, file_path, original_name, uploaded_at FROM document_request_files WHERE document_request_id = ? ORDER BY id ASC');
+        $stmt->execute([(int)$requestId]);
+        return $stmt->fetchAll();
     }
 
     public function getDocumentRequestsByUserId($userId)
@@ -92,11 +114,12 @@ class CitiServeData
                 dr.id,
                 dr.status,
                 dr.purpose,
+                dr.payment_method,
                 dr.payment_reference,
                 dr.payment_proof_path,
                 dr.created_at,
                 ds.name AS service_name,
-                ds.price,
+                ds.price AS fee,
                 ds.processing_time_days
             FROM document_requests dr
             INNER JOIN document_services ds ON ds.id = dr.document_service_id
@@ -116,11 +139,14 @@ class CitiServeData
                 dr.user_id,
                 dr.status,
                 dr.purpose,
+                dr.payment_method,
                 dr.payment_reference,
                 dr.payment_proof_path,
+                dr.form_data_json,
                 dr.created_at,
                 dr.updated_at,
                 ds.name AS service_name,
+                ds.price AS fee,
                 u.full_name,
                 u.email
             FROM document_requests dr
@@ -133,7 +159,33 @@ class CitiServeData
 
     public function findDocumentRequestById($id)
     {
-        $stmt = $this->db->prepare('SELECT id, user_id, status FROM document_requests WHERE id = ? LIMIT 1');
+        $stmt = $this->db->prepare('SELECT id, user_id, status, document_service_id, payment_method, payment_reference, payment_proof_path, form_data_json, created_at FROM document_requests WHERE id = ? LIMIT 1');
+        $stmt->execute([$id]);
+        return $stmt->fetch() ?: null;
+    }
+
+    public function getDocumentRequestByIdWithService($id)
+    {
+        $stmt = $this->db->prepare("
+            SELECT
+                dr.id,
+                dr.user_id,
+                dr.document_service_id,
+                dr.status,
+                dr.purpose,
+                dr.payment_method,
+                dr.payment_reference,
+                dr.payment_proof_path,
+                dr.form_data_json,
+                dr.created_at,
+                dr.updated_at,
+                ds.name AS service_name,
+                ds.price AS fee
+            FROM document_requests dr
+            INNER JOIN document_services ds ON ds.id = dr.document_service_id
+            WHERE dr.id = ?
+            LIMIT 1
+        ");
         $stmt->execute([$id]);
         return $stmt->fetch() ?: null;
     }

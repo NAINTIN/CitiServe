@@ -16,90 +16,103 @@ if (!$sessionUser) {
   exit;
 }
 
-
-// ═══════════════════════════════════════════════════════════════════
-// TODO: Replace placeholder dashboard data with DB-backed values in a follow-up task.
-// ═══════════════════════════════════════════════════════════════════
+$db = $data->getPdo();
+$isAdminPortal = ($sessionUser->role === 'admin' || $sessionUser->role === 'staff');
+$userId = (int)$sessionUser->id;
 
 $user = [
-  'first_name' => trim(explode(' ', $sessionUser->full_name)[0]),
-  'full_name'  => $sessionUser->full_name,
+  'first_name' => trim(explode(' ', (string)$sessionUser->full_name)[0]),
+  'full_name'  => (string)$sessionUser->full_name,
   'barangay'   => 'Barangay Kalayaan, Angono, Rizal',
   'verified'   => true,
   'avatar'     => '',
 ];
 
+$requestCreateLink = $isAdminPortal ? '/CitiServe/public/admin/requests.php' : '/CitiServe/public/request_select.php';
+$requestListLink = $isAdminPortal ? '/CitiServe/public/admin/requests.php' : '/CitiServe/public/my_requests.php';
+$complaintCreateLink = $isAdminPortal ? '/CitiServe/public/admin/complaints.php' : '/CitiServe/public/complaint_create.php';
+$complaintListLink = $isAdminPortal ? '/CitiServe/public/admin/complaints.php' : '/CitiServe/public/my_complaints.php';
+$greetingPortalText = $isAdminPortal ? 'Admin/Staff Portal' : 'Resident Portal';
+$profileRoleText = $isAdminPortal ? ucfirst((string)$sessionUser->role) : 'Resident';
+
+$whereScope = $isAdminPortal ? '' : ' AND user_id = :user_id';
+$params = $isAdminPortal ? [] : ['user_id' => $userId];
+
+$stmt = $db->prepare("SELECT COUNT(*) FROM document_requests WHERE status IN ('ready', 'claimable')" . $whereScope);
+$stmt->execute($params);
+$readyToClaim = (int)$stmt->fetchColumn();
+
+$stmt = $db->prepare("SELECT COUNT(*) FROM document_requests WHERE status IN ('active', 'pending', 'received')" . $whereScope);
+$stmt->execute($params);
+$activeRequests = (int)$stmt->fetchColumn();
+
+$stmt = $db->prepare("SELECT COUNT(*) FROM complaints WHERE status IN ('active', 'open', 'submitted', 'under_review', 'in_progress')" . $whereScope);
+$stmt->execute($params);
+$activeComplaints = (int)$stmt->fetchColumn();
+
+$stmt = $db->prepare('SELECT COUNT(*) FROM notifications WHERE is_read = 0 AND user_id = :user_id');
+$stmt->execute(['user_id' => $userId]);
+$unreadCount = (int)$stmt->fetchColumn();
+
 $stats = [
-  'ready_to_claim'    => 0,
-  'active_requests'   => 0,
-  'active_complaints' => 0,
+  'ready_to_claim' => $readyToClaim,
+  'active_requests' => $activeRequests,
+  'active_complaints' => $activeComplaints,
 ];
 
-$recentRequests   = [];
-$recentComplaints = [];
-$announcement     = ['id' => 1, 'img' => '/CitiServe/frontend/dashboard/images/announcement_stack.png'];
+$requestSql = 'SELECT dr.id, dr.created_at, ds.name AS service_name FROM document_requests dr INNER JOIN document_services ds ON ds.id = dr.document_service_id' . ($isAdminPortal ? '' : ' WHERE dr.user_id = :user_id') . ' ORDER BY dr.created_at DESC, dr.id DESC LIMIT 3';
+$stmt = $db->prepare($requestSql);
+$stmt->execute($params);
+$recentRequestRows = $stmt->fetchAll();
 
-/* ================================ UPCOMING CALENDAR ================================ */
-$upcomingRequest = [
-  'title' => 'Barangay ID',
-  'date'  => '8 April, 2026',
-  'time'  => '02:00 PM',
-  'type'  => 'Document'
-];
-
-$upcomingRequestIcons = [
-  'Barangay Business Clearance' => '/CitiServe/frontend/dashboard/images/business_clearance.png',
-  'Barangay Clearance'          => '/CitiServe/frontend/dashboard/images/barangay_clearance.png',
-  'Barangay ID'                 => '/CitiServe/frontend/dashboard/images/barangay_id.png',
-  'Barangay Permit (Construction)' => '/CitiServe/frontend/dashboard/images/barangay_permit.png',
-  'Certificate of Indigency'    => '/CitiServe/frontend/dashboard/images/cert_indigency.png',
-  'Certificate of Residency'    => '/CitiServe/frontend/dashboard/images/cert_residency.png',
-  'Solo Parent Certificate'     => '/CitiServe/frontend/dashboard/images/cert_soloparent.png',
-];
-
-$upcomingRequestIcon = '/CitiServe/frontend/dashboard/images/barangay_clearance.png';
-
-if (!empty($upcomingRequest['title']) && isset($upcomingRequestIcons[$upcomingRequest['title']])) {
-  $upcomingRequestIcon = $upcomingRequestIcons[$upcomingRequest['title']];
+$recentRequests = [];
+foreach ($recentRequestRows as $r) {
+  $createdAt = !empty($r['created_at']) ? strtotime((string)$r['created_at']) : time();
+  $recentRequests[] = [
+    'title' => (string)$r['service_name'],
+    'date' => date('d F, Y', $createdAt),
+    'time' => date('h:i A', $createdAt),
+  ];
 }
 
-/* ============================ RECENT REQUESTS/COMPLAINTS =========================== */
+$complaintSql = 'SELECT c.id, c.created_at, cc.name AS category_name FROM complaints c INNER JOIN complaint_categories cc ON cc.id = c.category_id' . ($isAdminPortal ? '' : ' WHERE c.user_id = :user_id') . ' ORDER BY c.created_at DESC, c.id DESC LIMIT 3';
+$stmt = $db->prepare($complaintSql);
+$stmt->execute($params);
+$recentComplaintRows = $stmt->fetchAll();
 
-$recentRequests = [
-  [
-    'title' => 'Barangay ID',
-    'date'  => '08 April, 2026',
-    'time'  => '02:00 PM',
-  ],
-  [
-    'title' => 'Barangay Business Clearance',
-    'date'  => '09 April, 2026',
-    'time'  => '09:30 AM',
-  ],
-  [
-    'title' => 'Certificate of Indigency',
-    'date'  => '10 April, 2026',
-    'time'  => '01:15 PM',
-  ],
+$complaintTitleMap = [
+  'road/infrastructure' => 'Road / Infrastructure',
+  'garbage/sanitation' => 'Garbage / Sanitation',
+  'noise disturbance' => 'Noise Disturbance',
+  'traffic/parking' => 'Traffic / Parking',
+  'environmental/tree/animal concerns' => 'Environmental / Tree / Animal',
+  'water/electricity/utilities' => 'Water / Electricity / Utilities',
+  'community/social issues' => 'Community / Social Issues',
+  'other' => 'Other Concerns',
 ];
 
-$recentComplaints = [
-  [
-    'title' => 'Environmental / Tree / Animal',
-    'date'  => '08 April, 2026',
-    'time'  => '10:00 AM',
-  ],
-  [
-    'title' => 'Garbage / Sanitation',
-    'date'  => '09 April, 2026',
-    'time'  => '03:20 PM',
-  ],
-  [
-    'title' => 'Noise Disturbance',
-    'date'  => '10 April, 2026',
-    'time'  => '07:45 PM',
-  ],
-];
+$recentComplaints = [];
+foreach ($recentComplaintRows as $c) {
+  $createdAt = !empty($c['created_at']) ? strtotime((string)$c['created_at']) : time();
+  $rawName = strtolower((string)$c['category_name']);
+  $recentComplaints[] = [
+    'title' => isset($complaintTitleMap[$rawName]) ? $complaintTitleMap[$rawName] : (string)$c['category_name'],
+    'date' => date('d F, Y', $createdAt),
+    'time' => date('h:i A', $createdAt),
+  ];
+}
+
+$announcement = ['id' => 1, 'img' => '/CitiServe/frontend/dashboard/images/announcement_stack.png'];
+
+$upcomingRequest = [];
+if (!empty($recentRequests)) {
+  $upcomingRequest = [
+    'title' => $recentRequests[0]['title'],
+    'date' => $recentRequests[0]['date'],
+    'time' => $recentRequests[0]['time'],
+    'type' => 'Document',
+  ];
+}
 
 $requestIcons = [
   'Barangay Business Clearance'    => '/CitiServe/frontend/dashboard/images/business_clearance.png',
@@ -110,6 +123,11 @@ $requestIcons = [
   'Certificate of Residency'       => '/CitiServe/frontend/dashboard/images/cert_residency.png',
   'Solo Parent Certificate'        => '/CitiServe/frontend/dashboard/images/cert_soloparent.png',
 ];
+
+$upcomingRequestIcon = '/CitiServe/frontend/dashboard/images/barangay_clearance.png';
+if (!empty($upcomingRequest['title']) && isset($requestIcons[$upcomingRequest['title']])) {
+  $upcomingRequestIcon = $requestIcons[$upcomingRequest['title']];
+}
 
 $complaintIcons = [
   'Road / Infrastructure'               => '/CitiServe/frontend/dashboard/images/road.png',
@@ -123,86 +141,62 @@ $complaintIcons = [
   'Anonymous Report'                    => '/CitiServe/frontend/dashboard/images/anonymous.png',
 ];
 
+date_default_timezone_set('Asia/Manila');
+$hour = (int) date('G');
+if ($hour >= 5 && $hour < 12) {
+  $greeting = 'Good morning!';
+} elseif ($hour >= 12 && $hour < 17) {
+  $greeting = 'Good afternoon!';
+} else {
+  $greeting = 'Good evening!';
+}
 
-  /* ================================ GREETING ================================ */
-  date_default_timezone_set('Asia/Manila');
-  $hour = (int) date('G');
-    if ($hour >= 5 && $hour < 12) {
-      $greeting = 'Good morning!';
-    } elseif ($hour >= 12 && $hour < 17) {
-      $greeting = 'Good afternoon!';
-    } else {
-      $greeting = 'Good evening!';
-    }
+$stmt = $db->prepare('SELECT id, title, message, link, is_read, created_at FROM notifications WHERE user_id = :user_id AND is_read = 0 ORDER BY created_at DESC, id DESC LIMIT 10');
+$stmt->execute(['user_id' => $userId]);
+$notificationRows = $stmt->fetchAll();
 
-  /* ================================ NOTIFICATION ================================ */
+$notifications = [];
+$nowTs = time();
+foreach ($notificationRows as $n) {
+  $combined = strtolower((string)$n['title'] . ' ' . (string)$n['message']);
+  $category = 'announcement';
+  if (strpos($combined, 'complaint') !== false) {
+    $category = 'complaint';
+  } elseif (strpos($combined, 'document') !== false || strpos($combined, 'request') !== false) {
+    $category = 'document';
+  }
 
-  $notifications = [
-  /* ─────────── NEW ─────────── */
-  [
-    'id'         => 1,
-    'section'    => 'new',
-    'category'   => 'document',
-    'type'       => 'submitted',
-    'message'    => 'Your <strong>Barangay Clearance</strong> request has been submitted.',
-    'time_label' => '1m',
-    'read'       => false,
-    'link'       => '/CitiServe/public/my_requests.php',
+  $createdTs = !empty($n['created_at']) ? strtotime((string)$n['created_at']) : $nowTs;
+  if ($createdTs === false) {
+    $createdTs = $nowTs;
+  }
+
+  $age = max(0, $nowTs - $createdTs);
+  $timeLabel = $age < 3600 ? max(1, (int)floor($age / 60)) . 'm' : ($age < 86400 ? (int)floor($age / 3600) . 'h' : (int)floor($age / 86400) . 'd');
+  $section = $age < 3600 ? 'new' : ($age < 86400 ? 'today' : 'earlier');
+
+  $notifications[] = [
+    'id' => (int)$n['id'],
+    'section' => $section,
+    'category' => $category,
+    'type' => 'generated',
+    'message' => (string)$n['message'],
+    'time_label' => $timeLabel,
+    'read' => ((int)$n['is_read'] === 1),
+    'link' => '/CitiServe/public/notifications.php?open=' . (int)$n['id'],
     'main_icon'  => '/CitiServe/frontend/dashboard/images/citiserve_notif.png',
-    'badge_icon' => '/CitiServe/frontend/dashboard/images/document_notif.png',
-  ],
-  /* ─────────── TODAY ─────────── */
-  [
-    'id'         => 2,
-    'section'    => 'today',
-    'category'   => 'announcement',
-    'type'       => 'fb_announcement',
-    'message'    => 'New announcement from Barangay Kalayaan. <strong>Click to view.</strong>',
-    'time_label' => '3h',
-    'read'       => false,
-    'link'       => 'https://www.facebook.com/share/p/18HBDUBBBX/',
-    'main_icon'  => '/CitiServe/frontend/dashboard/images/kalayaan_notif.png',
-    'badge_icon' => '/CitiServe/frontend/dashboard/images/important_notif.png',
-  ],
-  [
-    'id'         => 3,
-    'section'    => 'today',
-    'category'   => 'complaint',
-    'type'       => 'submitted',
-    'message'    => 'Your complaint has been submitted.',
-    'time_label' => '6h',
-    'read'       => false,
-    'link'       => '/CitiServe/public/my_complaints.php',
-    'main_icon'  => '/CitiServe/frontend/dashboard/images/citiserve_notif.png',
-    'badge_icon' => '/CitiServe/frontend/dashboard/images/complaint_notif.png',
-  ],
-  /* ─────────── EARLIER ─────────── */
-  [
-    'id'         => 4,
-    'section'    => 'earlier',
-    'category'   => 'account',
-    'type'       => 'fully_verified',
-    'message'    => 'Your account has been successfully verified. <strong>You may now access all services.</strong>',
-    'time_label' => '1d',
-    'read'       => false,
-    'link'       => '/CitiServe/public/profile.php',
-    'main_icon'  => '/CitiServe/frontend/dashboard/images/citiserve_notif.png',
-    'badge_icon' => '/CitiServe/frontend/dashboard/images/verified_notif.png',
-  ],
-];
+    'badge_icon' => $category === 'complaint'
+      ? '/CitiServe/frontend/dashboard/images/complaint_notif.png'
+      : '/CitiServe/frontend/dashboard/images/document_notif.png',
+  ];
+}
 
-$unreadCount   = count(array_filter($notifications, function ($n) {
-  return !$n['read'];
-}));
-$hasNotif      = $unreadCount > 0;
+$hasNotif = $unreadCount > 0;
 $notifSections = ['new' => [], 'today' => [], 'earlier' => []];
 foreach ($notifications as $n) {
   $notifSections[$n['section']][] = $n;
 }
 ?>
-
-
-
 
 <!DOCTYPE html>
 <html lang="en">
@@ -236,8 +230,8 @@ foreach ($notifications as $n) {
       <span class="nav-text">Document Requests</span>
       <span class="nav-chevron">⏷</span>
       <div class="nav-dropdown">
-        <a href="/CitiServe/public/request_select.php" class="nav-dropdown-item">Request Document</a>
-        <a href="/CitiServe/public/my_requests.php"      class="nav-dropdown-item">My Requests</a>
+        <a href="<?= htmlspecialchars($requestCreateLink) ?>" class="nav-dropdown-item">Request Document</a>
+        <a href="<?= htmlspecialchars($requestListLink) ?>"      class="nav-dropdown-item">My Requests</a>
       </div>
     </div>
 
@@ -245,8 +239,8 @@ foreach ($notifications as $n) {
       <span class="nav-text">Complaint Management</span>
       <span class="nav-chevron">⏷</span>
       <div class="nav-dropdown">
-        <a href="/CitiServe/public/complaint_create.php" class="nav-dropdown-item">Submit Complaint</a>
-        <a href="/CitiServe/public/my_complaints.php"    class="nav-dropdown-item">My Complaints</a>
+        <a href="<?= htmlspecialchars($complaintCreateLink) ?>" class="nav-dropdown-item">Submit Complaint</a>
+        <a href="<?= htmlspecialchars($complaintListLink) ?>"    class="nav-dropdown-item">My Complaints</a>
       </div>
     </div>
   </div>
@@ -303,7 +297,7 @@ foreach ($notifications as $n) {
                 </div>
 
                 <div class="notif-text">
-                  <div class="notif-msg"><?= $n['message'] ?></div>
+                  <div class="notif-msg"><?= htmlspecialchars((string)$n['message']) ?></div>
                   <div class="notif-time"><?= htmlspecialchars($n['time_label']) ?></div>
                 </div>
 
@@ -337,7 +331,7 @@ foreach ($notifications as $n) {
     <div class="profile-panel" id="profilePanel">
       <div class="profile-panel-top">
         <div class="profile-panel-fullname"><?= htmlspecialchars($user['full_name']) ?></div>
-        <div class="profile-panel-subtext">Resident • Brgy. Kalayaan</div>
+        <div class="profile-panel-subtext"><?= htmlspecialchars($profileRoleText) ?> • Brgy. Kalayaan</div>
       </div>
 
       <a href="/CitiServe/public/profile.php" class="profile-panel-item">
@@ -369,7 +363,7 @@ foreach ($notifications as $n) {
             <img src="/CitiServe/frontend/dashboard/images/welcome_emoji.png" alt="👋" class="greeting-emoji">
           </div>
           <div class="greeting-name">Welcome, <?= htmlspecialchars($user['full_name']) ?></div>
-          <div class="greeting-sub"><?= htmlspecialchars($user['barangay']) ?> — Resident Portal</div>
+          <div class="greeting-sub"><?= htmlspecialchars($user['barangay']) ?> — <?= htmlspecialchars($greetingPortalText) ?></div>
           <span class="badge-verified">
             <img src="<?= $user['verified'] ? '/CitiServe/frontend/dashboard/images/full_verification.png' : '/CitiServe/frontend/dashboard/images/basic_verification.png' ?>"
               class="badge-img"
@@ -378,10 +372,10 @@ foreach ($notifications as $n) {
         </div>
 
         <div class="action-btns">
-          <a href="/CitiServe/public/request_select.php" class="action-btn1">
+          <a href="<?= htmlspecialchars($requestCreateLink) ?>" class="action-btn1">
             <img src="/CitiServe/frontend/dashboard/images/main_request_document.png" alt="Request Document">
           </a>
-          <a href="/CitiServe/public/complaint_create.php" class="action-btn2">
+          <a href="<?= htmlspecialchars($complaintCreateLink) ?>" class="action-btn2">
             <img src="/CitiServe/frontend/dashboard/images/main_submit_complaint.png" alt="Submit Complaint">
           </a>
         </div>
@@ -400,7 +394,7 @@ foreach ($notifications as $n) {
 
         <div class="stat-row">
           <div class="stat-card featured">
-            <a href="/CitiServe/public/my_requests.php" class="stat-arrow">
+            <a href="<?= htmlspecialchars($requestListLink) ?>" class="stat-arrow">
               <img src="/CitiServe/frontend/dashboard/images/dashboard_arrow1.png" alt="Go">
             </a>
             <div class="stat-label">Ready<br>to Claim</div>
@@ -408,7 +402,7 @@ foreach ($notifications as $n) {
           </div>
 
           <div class="stat-card">
-            <a href="/CitiServe/public/my_requests.php" class="stat-arrow">
+            <a href="<?= htmlspecialchars($requestListLink) ?>" class="stat-arrow">
               <img src="/CitiServe/frontend/dashboard/images/dashboard_arrow.png" alt="Go">
             </a>
             <div class="stat-label">Active<br>Requests</div>
@@ -416,7 +410,7 @@ foreach ($notifications as $n) {
           </div>
 
           <div class="stat-card">
-            <a href="/CitiServe/public/my_complaints.php" class="stat-arrow">
+            <a href="<?= htmlspecialchars($complaintListLink) ?>" class="stat-arrow">
               <img src="/CitiServe/frontend/dashboard/images/dashboard_arrow.png" alt="Go">
             </a>
             <div class="stat-label">Active<br>Complaints</div>
@@ -443,7 +437,7 @@ foreach ($notifications as $n) {
                   <img src="/CitiServe/frontend/dashboard/images/recent_request.png" class="panel-icon" alt="">
                   Recent Requests
                 </div>
-                <a href="/CitiServe/public/my_requests.php" class="panel-viewall1">
+                <a href="<?= htmlspecialchars($requestListLink) ?>" class="panel-viewall1">
                   <img src="/CitiServe/frontend/dashboard/images/viewall_pink.png" alt="View all">
                 </a>
               </div>
@@ -485,7 +479,7 @@ foreach ($notifications as $n) {
                   <img src="/CitiServe/frontend/dashboard/images/recent_complaint.png" class="panel-icon" alt="">
                   Recent Complaints
                 </div>
-                <a href="/CitiServe/public/my_complaints.php" class="panel-viewall2">
+                <a href="<?= htmlspecialchars($complaintListLink) ?>" class="panel-viewall2">
                   <img src="/CitiServe/frontend/dashboard/images/viewall_yellow.png" alt="View all">
                 </a>
               </div>

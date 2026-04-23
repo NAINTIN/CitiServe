@@ -70,14 +70,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 );
             }
 
-            $admins = $data->getUsersByRole('admin');
-            foreach ($admins as $admin) {
-                $data->createNotification(
-                    (int)$admin['id'],
-                    'New Document Request',
-                    'A resident submitted a document request.',
-                    '/CitiServe/public/admin/requests.php'
-                );
+            try {
+                $admins = $data->getUsersByRole('admin');
+                foreach ($admins as $admin) {
+                    try {
+                        $data->createNotification(
+                            (int)$admin['id'],
+                            'New Document Request Submitted',
+                            'A resident submitted a document request.',
+                            '/CitiServe/public/admin/requests.php'
+                        );
+                    } catch (Throwable $notificationError) {
+                        error_log('REQUEST ADMIN NOTIFICATION ERROR: ' . $notificationError->getMessage());
+                    }
+                }
+            } catch (Throwable $adminLookupError) {
+                error_log('REQUEST ADMIN LOOKUP ERROR: ' . $adminLookupError->getMessage());
             }
 
             $db->commit();

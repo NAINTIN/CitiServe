@@ -142,7 +142,7 @@ document.addEventListener('DOMContentLoaded', function () {
       seePrev.addEventListener('click', function (e) {
         e.stopPropagation();
         applyPendingRead();
-        window.location.href = 'notifications.php';
+        window.location.href = '/CitiServe/public/notifications.php';
       });
     }
 

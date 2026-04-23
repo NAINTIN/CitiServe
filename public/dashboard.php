@@ -297,7 +297,7 @@ foreach ($notifications as $n) {
                 </div>
 
                 <div class="notif-text">
-                  <div class="notif-msg"><?= $n['message'] ?></div>
+                  <div class="notif-msg"><?= htmlspecialchars((string)$n['message']) ?></div>
                   <div class="notif-time"><?= htmlspecialchars($n['time_label']) ?></div>
                 </div>
 

@@ -209,7 +209,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
-    $redirectTarget = '/CitiServe/public/complaint.php';
+    $redirectTarget = '/CitiServe/public/complaint_create.php';
     if (!empty($_POST['return_to'])) {
         $returnTo = (string)$_POST['return_to'];
         if (strpos($returnTo, '/CitiServe/public/complaint_form.php') === 0 || strpos($returnTo, '/CitiServe/public/anonymous_complaint_form.php') === 0) {
@@ -419,7 +419,7 @@ $complaintCategories[] = [
                 </div>
 
                 <div class="notif-text">
-                  <div class="notif-msg"><?= $n['message'] ?></div>
+                  <div class="notif-msg"><?= htmlspecialchars((string)$n['message']) ?></div>
                   <div class="notif-time"><?= htmlspecialchars($n['time_label']) ?></div>
                 </div>
 

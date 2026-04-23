@@ -151,7 +151,7 @@ document.addEventListener('DOMContentLoaded', function () {
       seePrev.addEventListener('click', function (e) {
         e.stopPropagation();
         applyPendingRead();
-        window.location.href = 'notifications.php';
+        window.location.href = '/CitiServe/public/notifications.php';
       });
     }
 
@@ -228,7 +228,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
   if (anonContinue) {
     anonContinue.addEventListener("click", () => {
-      window.location.href = "anonymous_complaint_form.php?category=anonymous_report";
+      var btn = document.getElementById('anonymousBtn');
+      var target = btn ? btn.getAttribute('data-anonymous-link') : '';
+      if (!target) { target = '/CitiServe/public/anonymous_complaint_form.php'; }
+      window.location.href = target;
     });
   }
 

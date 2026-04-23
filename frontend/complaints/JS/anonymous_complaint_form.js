@@ -142,7 +142,7 @@ document.addEventListener('DOMContentLoaded', function () {
       seePrev.addEventListener('click', function (e) {
         e.stopPropagation();
         applyPendingRead();
-        window.location.href = 'notifications.php';
+        window.location.href = '/CitiServe/public/notifications.php';
       });
     }
 
@@ -200,7 +200,7 @@ document.addEventListener('DOMContentLoaded', function () {
   /* =========================================================
      CHARACTER COUNTER
      ========================================================= */
-  var description = document.querySelector('textarea[name="complaint_description"]');
+  var description = document.querySelector('textarea[name="description"]');
   var charCount = document.getElementById('charCount');
 
   if (description && charCount) {
@@ -466,9 +466,7 @@ document.addEventListener('DOMContentLoaded', function () {
   if (confirmSubmitBtn && complaintForm) {
   confirmSubmitBtn.addEventListener('click', function () {
     closeModal(submitModal);
-    window.location.href = 'complaint_receipt.php?category=' + encodeURIComponent(
-    document.querySelector('input[name="category_key"]').value
-    );
+    complaintForm.submit();
   });
 }
 

@@ -92,6 +92,7 @@ $statusImage     = '/CitiServe/frontend/complaints/images/complaint_received.png
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Complaint Submitted – CitiServe</title>
+  <base href="/CitiServe/frontend/complaints/">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -241,7 +242,7 @@ $statusImage     = '/CitiServe/frontend/complaints/images/complaint_received.png
 
           <div class="detail-row">
             <span class="detail-label">Category</span>
-            <span class="detail-value"><?= htmlspecialchars($currentCategory['value']) ?></span>
+            <span class="detail-value"><?= htmlspecialchars($displayCategory) ?></span>
           </div>
           <div class="detail-row">
             <span class="detail-label">Submission Type</span>

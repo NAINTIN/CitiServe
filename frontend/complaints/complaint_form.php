@@ -298,7 +298,7 @@ foreach ($notifications as $n) {
 
     <div class="form-layout">
       <div class="form-main">
-        <form action="" method="POST" enctype="multipart/form-data" id="complaintForm" novalidate>
+        <form action="/CitiServe/public/complaint_create.php" method="POST" enctype="multipart/form-data" id="complaintForm" novalidate>
 
           <input type="hidden" name="category_key" value="<?= htmlspecialchars($categoryKey) ?>">
           <input type="hidden" name="category_label" value="<?= htmlspecialchars($currentCategory['value']) ?>">

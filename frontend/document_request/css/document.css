@@ -1,0 +1,247 @@
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+}
+
+body{
+  font-family:'Epilogue', sans-serif;
+  background:#FFFFFF;
+  padding: 0;
+}
+
+.content-area {
+  background: #F5F5F5;
+  border-radius: 20px;
+  padding: 24px 30px;
+  margin: 10px 0;
+  min-height: calc(100vh - 90px);
+  margin: 20px 35px 28px 35px;
+}
+
+/* BREADCRUMB */
+.form-breadcrumb {
+  margin-bottom: 14px;
+  font-size: 13.6px;
+  color: #6B7280; 
+  font-weight: 500;
+}
+
+.form-breadcrumb a {
+  color: #6B7280;
+  text-decoration: none;
+}
+
+.form-breadcrumb a:hover {
+  color: #E8265E;
+  text-decoration: none;
+}
+
+.form-active {
+  color: #E8265E;  
+}
+
+.form-sep {
+  color: #6B7280;
+  margin: 0 10px; 
+  font-weight: 600;
+}
+
+.page-header h1{
+  font-size:32px;
+  font-weight:700;
+  margin-bottom: 11px;
+}
+.page-header p{
+  font-size:14px;
+  color:#6B7280;
+  margin-bottom: 25px;
+}
+
+/* REMINDERS IMAGE */ 
+.reminders{ 
+    margin:15px 0 1px; 
+    position:relative; 
+} 
+
+.reminders img{
+    width:100%; 
+    border-radius:14px; 
+}
+
+/* GRID */
+.grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:20px;
+  padding: 20px 0;
+}
+
+/* CARD */
+.card{
+  height: 330px;
+  border-radius:8px;
+  background-size:100% 100%;
+  background-position:center;
+  background-repeat:no-repeat;
+  transition:0.3s;
+
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.10));
+}
+
+.card:hover{
+  filter: drop-shadow(0 0 0.5px #E8265E)
+          drop-shadow(0 0 0.5px #E8265E)
+          drop-shadow(0 0 0.5px #E8265E);
+
+    transform: translateY(-1px); /* moves the button up */
+    transition: transform 0.3s ease;
+}
+.card:hover .card-title{
+  color:#E8265E;
+}
+
+
+
+
+.card-content{
+  height:100%;
+  padding:18px;
+  display:flex;
+  flex-direction:column;
+}
+
+.card-main{
+  flex-grow:1;
+}
+
+.card-top{
+  display:flex;
+  gap:14px;
+  margin-top:20px;
+  height: 51px; /* KEY FIX */
+}
+
+.card-top div{
+  margin-top:1px; /* 🔥 pushes title + desc DOWN */
+}
+
+.card-icon{
+  width:48px;
+  height:48px;
+
+  position:relative;
+  top:1px;
+}
+
+.card-title{
+  font-size:16px;
+  font-weight:700;
+  margin-bottom:7px;
+}
+
+.card-desc{
+  font-size:11.5px;
+  color:rgba(0,0,0,0.5);
+  
+  display:-webkit-box;
+  -webkit-line-clamp:2;
+  -webkit-box-orient:vertical;
+  overflow:hidden;
+  line-height: 16px;
+}
+
+.divider{
+  height:1px;
+  background:#E5E7EB;
+  margin:20px -18px;
+
+}
+
+/* CARD META FIX: align ul with values and space bullets */
+.card-meta {
+  font-size: 11.8px;
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px; /* space between rows */
+}
+
+.card-meta span {
+  display: flex;
+  align-items: flex-start; /* align top of value with label */
+}
+
+.card-meta span b {
+  min-width: 110px; /* aligns all labels */
+  color: rgba(0,0,0,0.5);
+  font-weight: 400;
+}
+
+.card-meta span .price{
+  color: #15803D; /* for price only, you can override for processing separately */
+  font-weight: 600;
+}
+
+.card-meta span ul {
+  list-style-position: inside; /* keeps bullet aligned horizontally */
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 7px; /* space between bullets */
+  font-size: 11px;
+}
+
+.card-meta span ul li {
+  margin: 0; /* remove default margin */
+  padding-left: 0; 
+}
+
+.view-btn{
+  width:100%;
+  margin-top:30px;
+  cursor:pointer;
+}
+
+.card:hover .view-btn {
+  transform: translateY(-1px); 
+  transition: transform 0.3s ease;
+}
+
+.footer {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: flex-end;
+  gap: 10px;
+  padding-bottom: 4px;
+  grid-column: 2 / 4;
+}
+
+.footer-logo{
+  height: 42px;
+  width: 42px;
+}
+.form-logo-text {
+  font-size: 10.5px;
+  font-weight: 500;
+}
+
+.logo-pink { 
+  color: #F03871; 
+  font-weight: 700; 
+}
+
+.logo-gray { 
+  color: #6B7280; 
+  font-weight: 600; 
+}
+
+/* RESPONSIVE */
+@media(max-width:900px){
+  .grid{grid-template-columns:repeat(2,1fr);}
+}
+@media(max-width:600px){
+  .grid{grid-template-columns:1fr;}
+}

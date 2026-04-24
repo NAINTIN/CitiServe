@@ -1,0 +1,249 @@
+ * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Epilogue', sans-serif;
+  }
+
+  body {
+    background: #ffffff;
+  }
+
+  /* ── CONTENT AREA ── */
+  .content-area {
+    background: #F5F5F5;;
+    border-radius: 20px;
+    padding: 0px 30px;
+    margin: 10px 0;
+    min-height: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+     margin: 20px 35px 28px 35px;
+  }
+
+  /* ── TICKET WRAPPER ── */
+  .ticket-wrapper {
+    position: relative;
+    width: 100%;
+    max-width: 630px;
+  }
+
+  /* bg image stretches to fill wrapper */
+  .ticket-bg {
+    width: 100%;
+    display: block;
+  }
+
+  /* content sits on top of bg, clipped inside */
+  .ticket-content {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    padding: 38px 70px 36px;
+    overflow: hidden;
+  }
+
+  /* ── HEADER ── */
+  .ticket-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 6px;
+  }
+
+  .success-icon {
+    width: 54px;
+    height: 54px;
+    object-fit: contain;
+    margin-top: 20px;
+    margin-bottom: 10px;
+  }
+
+  .ticket-title {
+    font-size: 22px;
+    font-weight: 600;
+    color: #111;
+    letter-spacing: -0.4px;
+  }
+
+  .ticket-subtitle {
+    font-size: 13px;
+    color: rgb(0,0,0,0.3);
+  }
+
+  /* ── SOLID DIVIDER — below subtitle ── */
+  .divider-solid {
+    width: 100%;
+    height: 1px;
+    background: #E5E7EB;
+    margin: 20px 0 18px;
+  }
+
+  /* ── REFERENCE BOX ── */
+  .ref-box {
+    background: #F9FAFB;
+    border: 1px solid #D1D5DB;
+    border-radius: 10px;
+    padding: 17px 17px;
+    margin-top: -12px;
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+
+  .ref-label {
+    font-size: 12px;
+    color: rgb(0,0,0,0.6);
+    font-weight: 400;
+  }
+
+  .ref-number {
+    font-size: 18px;
+    font-weight: 700;
+    color: #000000;
+    letter-spacing: 0.5px;
+  }
+
+  .ref-hint {
+    font-size: 10.5px;
+    color:rgb(0,0,0,0.4);
+  }
+
+  /* ── DETAIL ROWS ── */
+  .detail-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px 0;
+
+  }
+
+
+  .detail-label { color:rgb(0,0,0,0.5); font-size: 12.2px; }
+  .detail-value { font-weight: 500; color: #000000; text-align: right;  font-size: 12px;}
+  .detail-value.amount { color: #15803D; font-size: 12px; }
+
+  .status-badge {
+    background: #EFF6FF;
+    color: #1D4ED8;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 11px;
+    border-radius: 20px;
+    border: 1px solid #BFDBFE;
+  }
+
+  /* ── DASHED DIVIDER — below Status, bleeds to ticket edges ── */
+  .divider-dashed-wrap {
+    position: relative;
+    margin: 37px 0px;
+    height: 0;
+    border-top: 2px dashed #E5E7EB;
+  }
+
+  /* ── WHAT HAPPENS NEXT ── */
+  .next-title {
+    font-size: 11.7px;
+    font-weight: 600;
+    color: #000000;
+    margin-bottom: 14px;
+  }
+
+  .next-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+
+  .next-icon {
+    width: 28px;
+    height: 28px;
+    object-fit: contain;
+    flex-shrink: 0;
+  }
+
+  .next-text {
+    font-size: 11.6px;
+    line-height: 1.45;
+    color: #000000;
+  }
+
+  /* ── REMINDER — full image ── */
+  .reminder-img {
+    width: 100%;
+    display: block;
+    margin: 8px 0 14px;
+  }
+  
+  .divider-solid1 {
+    width: 100%;
+    height: 1px;
+    background: #E5E7EB;
+    margin: 18px 0 18px;
+  }
+
+  /*BUTTONS */
+  .btn-group {
+    display: flex;
+    gap: 18px;
+  }
+
+  .btn-img {
+    flex: 1;
+    cursor: pointer;
+    border: none;
+    background: none;
+    padding: 0;
+  }
+
+  .btn-img img {
+    width: 100%;
+    height: 45px;
+    object-fit: fill;
+    display: block;
+  }
+
+  .faded-logo {
+  position: absolute;
+  top: 78%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 140px;      
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* para hindi matakpan ng faded logo ang content */
+.ticket-header,
+.divider-dashed-wrap,
+.ref-box,
+.detail-row,
+.divider-solid,
+.next-title,
+.next-item,
+.reminder-img,
+.divider-solid1,
+.btn-group {
+  position: relative;
+  z-index: 1;
+}
+
+.form-logo {
+  position: absolute;   /* ← dito na talaga */
+  bottom: 70px;         /* distance from bottom ng ticket */
+  right: -280px;          /* same as ticket padding */
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.form-logo img { width: 40px; object-fit: contain; }
+.form-logo-text { font-size: 10.5px; font-weight: 500; }
+.logo-pink { color: #F03871; font-weight: 700; }
+.logo-gray { color: #6B7280; font-weight: 600; }

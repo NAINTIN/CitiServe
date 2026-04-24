@@ -1,0 +1,294 @@
+/* RESET */
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:'Epilogue', sans-serif;
+}
+
+body{
+  background:#ffffff;
+  padding:0;
+}
+
+.content-area {
+  background: #F5F5F5;
+  border-radius: 20px;
+  padding: 24px 30px;
+  min-height: calc(100vh - 90px);
+  margin: 20px 35px 28px 35px;
+}
+
+.form-breadcrumb {
+  margin-bottom: 14px;
+  font-size: 13.6px;
+  color: #6B7280; 
+  font-weight: 500;
+}
+
+.form-breadcrumb a {
+  color: #6B7280;
+  text-decoration: none;
+}
+
+.form-breadcrumb a:hover {
+  color: #E8265E;
+  text-decoration: none;
+}
+
+.form-active {
+  color: #E8265E;  
+}
+
+.form-sep {
+  color: #6B7280;
+  margin: 0 10px; 
+  font-weight: 600;
+}
+
+/* WRAPPER */
+.docu-business-clearance-wrapper{
+  display:flex;
+  gap:32px;
+  align-items:flex-start;
+}
+
+/* LEFT */
+.docu-business-clearance-main{
+  flex:1.75;
+}
+
+/* RIGHT */
+.docu-business-clearance-side{
+  flex:0.75;
+  max-width:none;
+}
+
+/* TITLE */
+.docu-business-clearance-title{
+  font-size:32px;
+  margin-bottom:20px;
+}
+
+/* CARD */
+.docu-business-clearance-card{
+  background:#FFFFFF;
+  border-radius:16px;
+  overflow:hidden;
+  margin-bottom:18px;
+  border: none;  
+  box-shadow: 3px 3px 11px rgba(255, 61, 127, 0.15); 
+}
+
+
+/* HEADER */
+.docu-business-clearance-card-bar{
+  background:#F9FAFB;
+  padding:16px 18px;
+  font-weight:550;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  font-size: 15.2px;
+}
+
+.docu-business-clearance-card-bar img{
+  width:20px;
+}
+
+.docu-business-clearance-card-bar1 img{
+  width:15px;
+}
+.docu-business-clearance-card-bar1{
+  background:#F9FAFB;
+  padding:16px 18px;
+  font-weight:550;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  font-size: 15.2px;
+}
+
+/* VARIANTS */
+.docu-business-clearance-pink{
+  background:#F03871;
+  color:#fff;
+}
+
+.docu-business-clearance-gradient{
+  background: linear-gradient(90deg, #f03871 0%, #feca18 100%);
+  color:#fff;
+  justify-content:flex-start;
+  padding: 17.5px;
+  font-weight: 550;
+}
+
+/* BODY */
+.docu-business-clearance-card-body{
+  padding:11.5px 20px; 
+  font-size:13.2px;
+  line-height:1.6;
+  color:#000000;
+}
+
+/* GRID 2 */
+.docu-business-clearance-grid-2{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:16px 40px;
+  padding:21px;
+}
+
+.docu-business-clearance-req-item{
+  display:flex;
+  gap:12px;
+  align-items:flex-start;
+}
+
+.docu-business-clearance-req-item img{
+  width:19px;
+}
+
+/* GRID 3 */
+.docu-business-clearance-grid-3{
+  display:grid;
+  grid-template-columns:auto auto auto;
+  gap:8px 20px;
+  padding:23px;
+}
+
+.docu-business-clearance-grid-3 div{
+  display:flex;
+  gap:8px;
+  align-items:center;
+  font-size:11.5px;
+}
+
+.docu-business-clearance-grid-3 img{
+  width:11px;
+  margin-top:-3px;
+}
+
+
+.docu-business-clearance-bottom-row{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 18px 14px;
+}
+
+.docu-business-clearance-note{
+  padding: 0;  
+  font-size: 11.9px;
+  color: rgba(0, 0, 0, 0.5);
+}
+
+.docu-business-clearance-copyright{
+  font-size: 11.5px;
+  color: rgba(0, 0, 0, 0.5);
+  font-weight: 550;
+  font-size: 10px;
+}
+
+.docu-business-clearance-brand{
+  color: #F03871;
+}
+
+.docu-business-clearance-required{
+  color: #ff0000;
+  font-size: 12.5px;
+}
+
+/* CENTER */
+.docu-business-clearance-center{
+  text-align:center;
+  padding:23px 8px; 
+}
+
+.docu-business-clearance-center h2{
+  color:#15803D;
+  font-size:28px;
+  margin-top: -8px;
+}
+
+.docu-business-clearance-center p {
+  font-size: 11.5px;
+  color:rgba(0, 0, 0, 0.5);
+  margin-top: -11px;
+}
+
+/* PROCESS */
+.docu-business-clearance-bold{
+  display:flex;
+  gap:8px;
+  align-items:center;
+  font-weight:500;
+  margin-bottom:10px;
+}
+
+.docu-business-clearance-bold img{
+  width:20px;
+  height: 20px;
+  align-items: center;
+} 
+
+.docu-business-clearance-card-body.docu-business-clearance-proc {
+  padding: 0px;
+}
+
+.docu-business-clearance-card-body small p{
+  font-size: 11.5px;
+   color:rgba(0, 0, 0, 0.5);
+  line-height: 1.4; 
+  margin-bottom: 8px;
+}
+
+
+/* CLAIM */
+.docu-business-clearance-claim{
+  margin-top:10px;
+}
+
+.docu-business-clearance-claim img{
+  width:100%;
+  border-radius:12px;
+}
+
+/* BUTTONS */
+.docu-business-clearance-btn-group{
+  margin-top:10px;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+
+.docu-business-clearance-btn{
+  border:none;
+  background:none;
+  padding:0;
+  cursor:pointer;
+}
+
+.docu-business-clearance-btn img{
+  width:100%;
+  display:block;
+}
+
+.docu-business-clearance-btn {
+  display: block; /* IMPORTANT */
+}
+
+/* RESPONSIVE */
+@media(max-width:768px){
+  .docu-business-clearance-wrapper{
+    flex-direction:column;
+  }
+
+  .docu-business-clearance-grid-2{
+    grid-template-columns:1fr;
+  }
+
+  .docu-business-clearance-grid-3{
+    grid-template-columns:1fr 1fr;
+  }
+}

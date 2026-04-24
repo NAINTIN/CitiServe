@@ -1,0 +1,152 @@
+/* RESET */
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:'Epilogue', sans-serif;
+}
+
+body{
+  background:#ffffff;
+  padding:0;
+}
+
+.content-area{
+  background:#F5F5F5;
+  border-radius:20px;
+  padding:24px 30px;
+  margin:10px 0px;
+  min-height:calc(100vh - 90px);
+ margin: 20px 35px 28px 35px;
+}
+
+/* BREADCRUMB */
+.form-breadcrumb {
+  margin-bottom: 14px;
+  font-size: 13.6px;
+  color: #6B7280; 
+  font-weight: 500;
+}
+
+.form-breadcrumb a {
+  color: #6B7280;
+  text-decoration: none;
+}
+
+.form-breadcrumb a:hover {
+  color: #E8265E;
+  text-decoration: none;
+}
+
+.form-active {
+  color: #E8265E;  
+}
+
+.form-sep {
+  color: #6B7280;
+  margin: 0 10px; 
+  font-weight: 600;
+}
+
+/* WRAPPER */
+.docu-certificate-of-indigency-wrapper{ display:flex; gap:32px; align-items:flex-start; }
+.docu-certificate-of-indigency-main{ flex:1.75; }
+.docu-certificate-of-indigency-side{ flex:0.75; max-width:none; }
+
+/* TITLE */
+.docu-certificate-of-indigency-title{ font-size:32px; margin-bottom:20px; }
+
+/* CARD */
+.docu-certificate-of-indigency-card{
+  background:#FFFFFF;
+  border-radius:16px;
+  overflow:hidden;
+  margin-bottom:18px;
+  border:none;
+  box-shadow:3px 3px 11px rgba(255,61,127,0.15);
+}
+
+/* HEADER */
+.docu-certificate-of-indigency-card-bar{
+  background:#F9FAFB;
+  padding:16px 18px;
+  font-weight:550;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  font-size:15.2px;
+}
+.docu-certificate-of-indigency-card-bar img{ width:20px; }
+
+.docu-certificate-of-indigency-card-bar1{
+  background:#F9FAFB;
+  padding:16px 18px;
+  font-weight:550;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  font-size:15.2px;
+}
+.docu-certificate-of-indigency-card-bar1 img{ width:15px; }
+
+/* VARIANTS */
+.docu-certificate-of-indigency-pink{ background:#F03871; color:#fff; }
+.docu-certificate-of-indigency-gradient{
+ background:linear-gradient(to right, #ff4d6d, #ffb703);
+  color:#fff;
+  justify-content:flex-start;
+  padding:17.5px;
+  font-weight:550;
+}
+
+/* BODY */
+.docu-certificate-of-indigency-card-body{
+  padding:11.5px 20px;
+  font-size:13.3px;
+  line-height:1.6;
+  color:#000000;
+}
+
+/* GRID 2 */
+.docu-certificate-of-indigency-grid-2{ display:grid; grid-template-columns:1fr 1fr; gap:12px 40px; padding:25px 20px 47px;}
+.docu-certificate-of-indigency-req-item{ display:flex; gap:12px; align-items:flex-start; }
+.docu-certificate-of-indigency-req-item img{ width:19px; }
+
+/* GRID 3 */
+.docu-certificate-of-indigency-grid-3{ display:grid; grid-template-columns:fit-content(40%) fit-content(40%) fit-content(40%); gap:8px 30px; padding:23px; }
+
+.docu-certificate-of-indigency-grid-3 div{ display:flex; gap:8px; align-items:center; font-size:11.5px; }
+.docu-certificate-of-indigency-grid-3 img{ width:11px; margin-top:-3px;}
+
+.docu-certificate-of-indigency-bottom-row{ display:flex; justify-content:space-between; align-items:center; padding:0 18px 14px; }
+.docu-certificate-of-indigency-note{ padding:0; font-size:11.9px; color:rgba(0,0,0,0.5); }
+.docu-certificate-of-indigency-copyright{ font-size:10px; color:rgba(0,0,0,0.5); font-weight:550; }
+.docu-certificate-of-indigency-brand{ color:#F03871; }
+.docu-certificate-of-indigency-required{ color:#ff0000; font-size:12.5px; }
+
+/* CENTER */
+.docu-certificate-of-indigency-center{ text-align:center; padding:21px 8px; }
+.docu-certificate-of-indigency-center h2{ color:#15803D; font-size:28px; margin-top: -8px;}
+.docu-certificate-of-indigency-center p{ font-size:11.5px; color:rgba(0,0,0,0.5); margin-top:-11px; }
+
+/* PROCESS */
+.docu-certificate-of-indigency-bold{ display:flex; gap:8px; align-items:center; font-weight:500; margin-bottom:10px; }
+.docu-certificate-of-indigency-bold img{ width:20px; height:20px; align-items:center; }
+.docu-certificate-of-indigency-card-body.docu-certificate-of-indigency-proc{ padding:0px; }
+.docu-certificate-of-indigency-card-body small p{ font-size:11.5px; color:rgba(0,0,0,0.5); line-height:1.4; margin-bottom:8px; }
+
+/* CLAIM */
+.docu-certificate-of-indigency-claim{ margin-top:10px; }
+.docu-certificate-of-indigency-claim img{ width:100%; border-radius:12px; }
+
+/* BUTTONS */
+.docu-certificate-of-indigency-btn-group{ margin-top:10px; display:flex; flex-direction:column; gap:12px; }
+.docu-certificate-of-indigency-btn{ border:none; background:none; padding:0; cursor:pointer; display:block; }
+.docu-certificate-of-indigency-btn img{ width:100%; display:block; }
+
+/* RESPONSIVE */
+@media(max-width:768px){
+  .docu-certificate-of-indigency-wrapper{ flex-direction:column; }
+  .docu-certificate-of-indigency-grid-2{ grid-template-columns:1fr; }
+  .docu-certificate-of-indigency-grid-3{ grid-template-columns:1fr 1fr; }
+}

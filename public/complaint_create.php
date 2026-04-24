@@ -39,7 +39,7 @@ function complaint_normalize_category($name)
     return trim((string)$v);
 }
 
-$user = require_resident();
+$user = require_verified_resident('complaint submission');
 $data = new CitiServeData();
 $categories = $data->getActiveComplaintCategories();
 $categoryById = [];

@@ -85,3 +85,16 @@ function savePaymentProofScreenshot($file, $targetDirAbs, $targetDirDbPrefix = '
         ]
     );
 }
+
+function saveProofOfIdImage($file, $targetDirAbs, $targetDirDbPrefix = 'uploads/proof_of_id')
+{
+    return saveUploadedFileWithRules(
+        $file,
+        $targetDirAbs,
+        $targetDirDbPrefix,
+        [
+            'image/jpeg' => 'jpg',
+            'image/png' => 'png',
+        ]
+    );
+}

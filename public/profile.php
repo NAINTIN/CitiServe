@@ -71,6 +71,28 @@ if (!$user) {
             ?></td>
         </tr>
         <tr>
+            <th>Verification Status</th>
+            <td>
+                <?php if ((int)$user->is_verified === 1): ?>
+                    <span style="color:green; font-weight:700;">Fully Verified</span>
+                <?php else: ?>
+                    <span style="color:#d97706; font-weight:700;">Not Verified</span><br>
+                    <small>Your account is pending verification or your previous ID was rejected. Please re-upload your ID for review.</small><br>
+                    <a href="/CitiServe/public/profile_edit.php#proof-of-id">Re-upload Proof of ID</a>
+                <?php endif; ?>
+            </td>
+        </tr>
+        <tr>
+            <th>Proof of ID</th>
+            <td>
+                <?php if (!empty($user->proof_of_id)): ?>
+                    <a href="/CitiServe/public/<?= htmlspecialchars((string)$user->proof_of_id) ?>" target="_blank">View Uploaded ID</a>
+                <?php else: ?>
+                    -
+                <?php endif; ?>
+            </td>
+        </tr>
+        <tr>
             <th>Created At</th>
             <td><?php
                 if ($user->created_at !== null) {

@@ -4,7 +4,7 @@ require_once __DIR__ . '/../app/helpers/csrf.php';
 require_once __DIR__ . '/../app/helpers/upload.php';
 require_once __DIR__ . '/../app/helpers/document_request.php';
 
-$user = require_resident();
+$user = require_verified_resident('document request pages');
 
 $draft = isset($_SESSION['document_request_draft']) ? $_SESSION['document_request_draft'] : null;
 if (!$draft || (int)$draft['user_id'] !== (int)$user['id']) {

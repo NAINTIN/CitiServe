@@ -25,6 +25,12 @@ class User
     // User's contact number (optional)
     public $contact_number = null;
 
+    // Verification flag (1 verified, 0 not verified)
+    public $is_verified = 1;
+
+    // Uploaded proof of ID path
+    public $proof_of_id = null;
+
     // When the account was created
     public $created_at = null;
 
@@ -51,6 +57,8 @@ class User
         $user->role = isset($row['role']) ? $row['role'] : 'resident';
         $user->address = isset($row['address']) ? $row['address'] : null;
         $user->contact_number = isset($row['contact_number']) ? $row['contact_number'] : null;
+        $user->is_verified = isset($row['is_verified']) ? (int)$row['is_verified'] : 1;
+        $user->proof_of_id = isset($row['proof_of_id']) ? $row['proof_of_id'] : null;
         $user->created_at = isset($row['created_at']) ? $row['created_at'] : null;
         $user->updated_at = isset($row['updated_at']) ? $row['updated_at'] : null;
 

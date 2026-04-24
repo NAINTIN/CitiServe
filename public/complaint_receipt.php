@@ -2,7 +2,7 @@
 require_once __DIR__ . '/../app/helpers/auth.php';
 require_once __DIR__ . '/../app/core/CitiServeData.php';
 
-$userInfo = require_resident();
+$userInfo = require_verified_resident('complaint submission');
 $data = new CitiServeData();
 $db = $data->getPdo();
 

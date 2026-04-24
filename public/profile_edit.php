@@ -2,6 +2,7 @@
 require_once __DIR__ . '/../app/helpers/auth.php';
 require_once __DIR__ . '/../app/helpers/csrf.php';
 require_once __DIR__ . '/../app/core/CitiServeData.php';
+require_once __DIR__ . '/../app/helpers/upload.php';
 
 // Make sure the user is logged in
 $authUser = require_login();
@@ -36,6 +37,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $fullName = trim(isset($_POST['full_name']) ? $_POST['full_name'] : '');
     $address = trim(isset($_POST['address']) ? $_POST['address'] : '');
     $contactNumber = trim(isset($_POST['contact_number']) ? $_POST['contact_number'] : '');
+    $proofFile = $_FILES['proof_of_id'] ?? null;
 
     // Validate the inputs
     if ($fullName === '') {
@@ -52,6 +54,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $errors[] = 'Contact number must be 20 characters or less.';
     }
 
+    $newProofPath = null;
+    if ($proofFile && isset($proofFile['error']) && (int)$proofFile['error'] !== UPLOAD_ERR_NO_FILE) {
+        $uploadErr = (int)$proofFile['error'];
+        if ($uploadErr === UPLOAD_ERR_INI_SIZE || $uploadErr === UPLOAD_ERR_FORM_SIZE) {
+            $errors[] = 'Proof of ID exceeds the maximum file size (5MB).';
+        } elseif ($uploadErr !== UPLOAD_ERR_OK) {
+            $errors[] = 'Proof of ID upload failed.';
+        } else {
+            try {
+                $newProofPath = saveProofOfIdImage(
+                    $proofFile,
+                    __DIR__ . '/uploads/proof_of_id',
+                    'uploads/proof_of_id'
+                );
+            } catch (Throwable $e) {
+                $errors[] = 'Proof of ID: ' . $e->getMessage();
+            }
+        }
+    }
+
     // If there are no errors, update the profile
     if (empty($errors)) {
         // Convert empty strings to null for the database
@@ -66,7 +88,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         );
 
         if ($ok) {
+            if ($newProofPath !== null) {
+                $data->updateUserProofOfId((int)$user->id, $newProofPath);
+            }
             $success = 'Profile updated successfully.';
+            if ($newProofPath !== null) {
+                $success = 'Profile updated successfully. Your proof of ID was re-uploaded and is now pending admin verification.';
+            }
             // Reload the user data to show the updated values
             $user = $data->findUserById((int)$authUser['id']);
         } else {
@@ -102,7 +130,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
     <?php endif; ?>
 
-    <form method="post">
+    <form method="post" enctype="multipart/form-data">
         <?= csrf_field() ?>
 
         <div>
@@ -120,6 +148,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <label>Contact Number</label><br>
             <input type="text" name="contact_number" maxlength="20"
                    value="<?= htmlspecialchars($contactNumber) ?>">
+        </div>
+
+        <div id="proof-of-id">
+            <label>Re-upload Proof of ID (JPG/PNG, max 5MB)</label><br>
+            <?php if (!empty($user->proof_of_id)): ?>
+                <small>Current file: <a href="/CitiServe/public/<?= htmlspecialchars((string)$user->proof_of_id) ?>" target="_blank">View Proof of ID</a></small><br>
+            <?php endif; ?>
+            <input type="file" name="proof_of_id" accept=".jpg,.jpeg,.png,image/jpeg,image/png">
+            <small>Uploading a new ID will reset your account to unverified until admin approval.</small>
         </div>
 
         <br>

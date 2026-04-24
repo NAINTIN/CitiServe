@@ -75,3 +75,19 @@ function require_resident()
 
     return $user;
 }
+
+function require_verified_resident($featureName = 'this feature')
+{
+    $user = require_resident();
+    $data = new CitiServeData();
+    $dbUser = $data->findUserById((int)$user['id']);
+
+    if (!$dbUser || (int)$dbUser->is_verified !== 1) {
+        http_response_code(403);
+        $safeFeature = htmlspecialchars((string)$featureName, ENT_QUOTES, 'UTF-8');
+        echo '<!doctype html><html><head><meta charset="utf-8"><title>Verification Required</title><style>body{font-family:Epilogue,Arial,sans-serif;background:#fff7f8;color:#2b2b2b;margin:0;padding:24px}.box{max-width:720px;margin:40px auto;background:#fff;border:1px solid #ffd0dc;border-radius:14px;padding:20px}.title{color:#f03871;font-size:24px;font-weight:700;margin:0 0 12px}.msg{font-size:15px;line-height:1.6;margin:0 0 18px}.btn{display:inline-block;padding:10px 16px;border-radius:10px;background:#f03871;color:#fff;text-decoration:none;font-weight:600}</style></head><body><div class="box"><h2 class="title">Account Verification Required</h2><p class="msg">You cannot access ' . $safeFeature . ' yet because your account is not verified. Please wait for admin approval or re-upload your ID in your profile if your previous submission was rejected.</p><a class="btn" href="/CitiServe/public/profile_edit.php#proof-of-id">Go to Profile Verification</a></div></body></html>';
+        exit;
+    }
+
+    return $user;
+}

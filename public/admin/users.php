@@ -102,6 +102,7 @@ $users = $db->query("
     <h2>Admin - Manage User Roles</h2>
     <p>
         Logged in as <?= htmlspecialchars($admin['full_name']) ?> (<?= htmlspecialchars($admin['role']) ?>)
+        | <a href="/CitiServe/public/admin/user_verification.php">User Verification</a>
         | <a href="/CitiServe/public/index.php">Home</a>
         | <a href="/CitiServe/public/logout.php">Logout</a>
     </p>

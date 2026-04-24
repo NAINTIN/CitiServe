@@ -24,7 +24,7 @@ $user = [
   'first_name' => trim(explode(' ', (string)$sessionUser->full_name)[0]),
   'full_name'  => (string)$sessionUser->full_name,
   'barangay'   => 'Barangay Kalayaan, Angono, Rizal',
-  'verified'   => true,
+  'verified'   => ((int)$sessionUser->is_verified === 1),
   'avatar'     => '',
 ];
 
@@ -364,11 +364,12 @@ foreach ($notifications as $n) {
           </div>
           <div class="greeting-name">Welcome, <?= htmlspecialchars($user['full_name']) ?></div>
           <div class="greeting-sub"><?= htmlspecialchars($user['barangay']) ?> — <?= htmlspecialchars($greetingPortalText) ?></div>
-          <span class="badge-verified">
-            <img src="<?= $user['verified'] ? '/CitiServe/frontend/dashboard/images/full_verification.png' : '/CitiServe/frontend/dashboard/images/basic_verification.png' ?>"
-              class="badge-img"
-              alt="<?= $user['verified'] ? 'Fully Verified' : 'Basic Verification' ?>">
-          </span>
+          <?php if ($user['verified']): ?>
+            <span class="badge-verified" style="display:inline-flex;align-items:center;gap:8px;padding:6px 12px;border-radius:999px;background:#dcfce7;color:#166534;font-size:12px;font-weight:700;">Fully Verified</span>
+          <?php else: ?>
+            <span class="badge-verified" style="display:inline-flex;align-items:center;gap:8px;padding:6px 12px;border-radius:999px;background:#ffedd5;color:#c2410c;font-size:12px;font-weight:700;">Not Verified</span>
+            <div style="margin-top:8px;font-size:12px;color:#7a7f94;max-width:460px;">Your account is still under review. Please wait for admin approval or re-upload your ID if it gets rejected.</div>
+          <?php endif; ?>
         </div>
 
         <div class="action-btns">

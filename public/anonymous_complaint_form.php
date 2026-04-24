@@ -12,7 +12,7 @@ function anonymous_form_normalize_category($name)
   return trim((string)$v);
 }
 
-$userInfo = require_resident();
+$userInfo = require_verified_resident('complaint submission');
 $data = new CitiServeData();
 $categories = $data->getActiveComplaintCategories();
 $categoryById = [];

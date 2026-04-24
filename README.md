@@ -15,8 +15,9 @@ Document request flow pages:
 - `/public/request_confirm.php` (step 4 confirm/cancel)
 - `/public/request_success.php` (step 5 submission summary)
 
-If your DB is older, run migration:
+If your DB is older, run migrations:
 - `database/migrations/003_document_request_flow.sql`
+- `database/migrations/004_user_verification.sql`
 
 
 ## Local database configuration - IMPORTANT!!!!!!!! This is how you can see it when you clone this repo

@@ -9,7 +9,7 @@ require_once __DIR__ . '/../app/core/CitiServeData.php';
 require_once __DIR__ . '/../app/helpers/upload.php';
 require_once __DIR__ . '/../app/helpers/document_request.php';
 
-$user = require_resident();
+$user = require_verified_resident('document request pages');
 $data = new CitiServeData();
 
 $serviceId = isset($_GET['service_id']) ? (int)$_GET['service_id'] : 0;

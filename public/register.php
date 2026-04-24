@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../app/core/CitiServeData.php';
+require_once __DIR__ . '/../app/helpers/upload.php';
 
 session_start();
 
@@ -39,6 +40,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $errors[] = 'Passwords do not match.';
     }
 
+    $proofOfIdPath = null;
+    $proofFile = $_FILES['proof_of_id'] ?? null;
+    $uploadErr = isset($proofFile['error']) ? (int)$proofFile['error'] : UPLOAD_ERR_NO_FILE;
+    if ($uploadErr === UPLOAD_ERR_NO_FILE) {
+        $errors[] = 'Proof of ID is required.';
+    } elseif ($uploadErr === UPLOAD_ERR_INI_SIZE || $uploadErr === UPLOAD_ERR_FORM_SIZE) {
+        $errors[] = 'Proof of ID exceeds the maximum file size (5MB).';
+    } elseif ($uploadErr !== UPLOAD_ERR_OK) {
+        $errors[] = 'Proof of ID upload failed.';
+    } else {
+        try {
+            $proofOfIdPath = saveProofOfIdImage(
+                $proofFile,
+                __DIR__ . '/uploads/proof_of_id',
+                'uploads/proof_of_id'
+            );
+        } catch (Throwable $e) {
+            $errors[] = 'Proof of ID: ' . $e->getMessage();
+        }
+    }
+
     if (empty($errors)) {
         $existingUser = $data->findUserByEmail($email);
 
@@ -50,7 +72,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $userId = $data->createUser([
                 'full_name' => $full_name,
                 'email' => $email,
-                'password_hash' => $hash
+                'password_hash' => $hash,
+                'address' => $address !== '' ? $address : null,
+                'proof_of_id' => $proofOfIdPath,
+                'is_verified' => 0,
             ]);
 
             $_SESSION['user_id'] = $userId;
@@ -142,9 +167,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
   </div>
 
-  <!-- Proof of Residency -->
+  <!-- Proof of ID -->
   <div class="field">
-    <label>Proof of Residency <span class="label-note">(Upload Valid ID / Proof of Billing)</span></label>
+    <label>Proof of ID <span class="label-note">(Upload a clear valid ID image)</span></label>
     <div class="file-row">
       <div class="file-name">
         <img src="/CitiServe/frontend/login_register/images/nofilechosen.png" alt="" id="fileStatusIcon">
@@ -154,7 +179,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <img src="/CitiServe/frontend/login_register/images/choosefile.png" alt="">
         Choose File
       </button>
-      <input type="file" id="fileInput" name="proof_file" accept="image/*,.pdf">
+      <input type="file" id="fileInput" name="proof_of_id" accept=".jpg,.jpeg,.png,image/jpeg,image/png" required>
     </div>
   </div>
 

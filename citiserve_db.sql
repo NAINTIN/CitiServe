@@ -266,6 +266,8 @@ CREATE TABLE `users` (
   `role` enum('resident','staff','admin') NOT NULL DEFAULT 'resident',
   `address` text DEFAULT NULL,
   `contact_number` varchar(20) DEFAULT NULL,
+  `is_verified` tinyint(1) NOT NULL DEFAULT 1,
+  `proof_of_id` varchar(255) DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -274,11 +276,11 @@ CREATE TABLE `users` (
 -- Dumping data for table `users`
 --
 
-INSERT INTO `users` (`id`, `full_name`, `email`, `password_hash`, `role`, `address`, `contact_number`, `created_at`, `updated_at`) VALUES
-(1, 'Dan Deniel V. Belaro', 'danndenielbelaro@gmail.com', '$2y$12$UegDuWyBvBpUG/hVL4LsPeFOCQY9FbtKdlqsvg6KP/dwXWxQ/zpUK', 'resident', 'blok 1 lot 4', '945855940404044', '2026-03-14 07:58:33', '2026-03-14 09:57:10'),
-(2, 'testing the database', 'thechosenone@gmail.com', '$2y$12$VXWioTizKE5Vz7PTG378Yuxm/TcwsEPnXZfbOJEUR2lI.2JWDTG2G', 'resident', NULL, NULL, '2026-03-14 08:18:38', '2026-03-14 08:18:38'),
-(3, 'admin_citi', 'admin@citiserve.local', '$2y$12$HLaUZerW/3VWIB9GqJzGwuNYf2Gdyq6sbXt7KmhhZu/tpgDh0MOiy', 'admin', NULL, NULL, '2026-03-14 08:56:45', '2026-03-14 08:57:44'),
-(4, 'jasmin armayan', 'armayan@gmail.com', '$2y$10$/dFMp8SiOhoDju61TWzc4eRTd/gOTKykND276mceGYieaIZNcBrca', 'resident', '119 Sitio Pinagpala', '09998526770', '2026-03-17 06:13:01', '2026-03-17 06:21:42');
+INSERT INTO `users` (`id`, `full_name`, `email`, `password_hash`, `role`, `address`, `contact_number`, `is_verified`, `proof_of_id`, `created_at`, `updated_at`) VALUES
+(1, 'Dan Deniel V. Belaro', 'danndenielbelaro@gmail.com', '$2y$12$UegDuWyBvBpUG/hVL4LsPeFOCQY9FbtKdlqsvg6KP/dwXWxQ/zpUK', 'resident', 'blok 1 lot 4', '945855940404044', 1, NULL, '2026-03-14 07:58:33', '2026-03-14 09:57:10'),
+(2, 'testing the database', 'thechosenone@gmail.com', '$2y$12$VXWioTizKE5Vz7PTG378Yuxm/TcwsEPnXZfbOJEUR2lI.2JWDTG2G', 'resident', NULL, NULL, 1, NULL, '2026-03-14 08:18:38', '2026-03-14 08:18:38'),
+(3, 'admin_citi', 'admin@citiserve.local', '$2y$12$HLaUZerW/3VWIB9GqJzGwuNYf2Gdyq6sbXt7KmhhZu/tpgDh0MOiy', 'admin', NULL, NULL, 1, NULL, '2026-03-14 08:56:45', '2026-03-14 08:57:44'),
+(4, 'jasmin armayan', 'armayan@gmail.com', '$2y$10$/dFMp8SiOhoDju61TWzc4eRTd/gOTKykND276mceGYieaIZNcBrca', 'resident', '119 Sitio Pinagpala', '09998526770', 1, NULL, '2026-03-17 06:13:01', '2026-03-17 06:21:42');
 
 --
 -- Indexes for dumped tables

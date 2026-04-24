@@ -2,7 +2,7 @@
 require_once __DIR__ . '/../app/helpers/auth.php';
 require_once __DIR__ . '/../app/core/CitiServeData.php';
 
-$user = require_resident();
+$user = require_verified_resident('document request pages');
 $data = new CitiServeData();
 
 $requestId = isset($_GET['request_id']) ? (int)$_GET['request_id'] : 0;

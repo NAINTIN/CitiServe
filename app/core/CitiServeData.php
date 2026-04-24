@@ -38,7 +38,7 @@ class CitiServeData
     public function createUser($data)
     {
         $stmt = $this->db->prepare(
-            'INSERT INTO users (full_name, email, password_hash, role, address, contact_number) VALUES (?, ?, ?, ?, ?, ?)'
+            'INSERT INTO users (full_name, email, password_hash, role, address, contact_number, is_verified, proof_of_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
         );
         $stmt->execute([
             $data['full_name'],
@@ -47,6 +47,8 @@ class CitiServeData
             isset($data['role']) ? $data['role'] : 'resident',
             isset($data['address']) ? $data['address'] : null,
             isset($data['contact_number']) ? $data['contact_number'] : null,
+            isset($data['is_verified']) ? (int)$data['is_verified'] : 1,
+            isset($data['proof_of_id']) ? $data['proof_of_id'] : null,
         ]);
         return (int)$this->db->lastInsertId();
     }
@@ -57,6 +59,24 @@ class CitiServeData
             'UPDATE users SET full_name = ?, address = ?, contact_number = ?, updated_at = NOW() WHERE id = ?'
         );
         return $stmt->execute([$fullName, $address, $contactNumber, $id]);
+    }
+
+    public function updateUserProofOfId($id, $proofPath)
+    {
+        $stmt = $this->db->prepare('UPDATE users SET proof_of_id = ?, is_verified = 0, updated_at = NOW() WHERE id = ?');
+        return $stmt->execute([$proofPath, $id]);
+    }
+
+    public function updateUserVerificationStatus($id, $isVerified)
+    {
+        $stmt = $this->db->prepare('UPDATE users SET is_verified = ?, updated_at = NOW() WHERE id = ?');
+        return $stmt->execute([(int)$isVerified, (int)$id]);
+    }
+
+    public function getAllUsersWithVerification()
+    {
+        $sql = 'SELECT id, full_name, email, role, created_at, is_verified, proof_of_id FROM users ORDER BY created_at DESC, id DESC';
+        return $this->db->query($sql)->fetchAll();
     }
 
     public function updateUserPasswordHash($id, $newHash)

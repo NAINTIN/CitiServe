@@ -40,45 +40,132 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 }
+
+$cardVisuals = [
+    'Barangay Business Clearance' => ['bg' => 'Barangay Business Clearance - Container (1).png', 'icon' => 'docu-bbc.png'],
+    'Barangay Clearance' => ['bg' => 'Barangay Clearance - Container.png', 'icon' => 'docu-bc.png'],
+    'Barangay ID' => ['bg' => 'Barangay ID - Container.png', 'icon' => 'docu-bid.png'],
+    'Barangay Permit (Construction)' => ['bg' => 'Barangay Permit (Construction) - Container.png', 'icon' => 'docu-bp.png'],
+    'Certificate of Indigency' => ['bg' => 'Certificate of Indigency - Container.png', 'icon' => 'docu-coi.png'],
+    'Certificate of Residency' => ['bg' => 'Certificate of Residency - Container.png', 'icon' => 'docu-br.png'],
+    'Solo Parent Certificate' => ['bg' => 'Solo Parent Certificate - Container.png', 'icon' => 'docu-spc.png'],
+];
+
+function h($v)
+{
+    return htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8');
+}
 ?>
 <!doctype html>
-<html>
+<html lang="en">
 <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Select Document Request</title>
+    <link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/CitiServe/frontend/document_request/css/document.css">
+    <style>
+        .top-links { margin-bottom: 12px; font-size: 13px; color: #6B7280; }
+        .top-links a { color: #6B7280; text-decoration: none; margin-right: 12px; }
+        .top-links a:hover { color: #E8265E; }
+        .error-box { color: #B91C1C; background: #FEF2F2; border: 1px solid #FECACA; border-radius: 10px; padding: 12px; margin-bottom: 14px; }
+        .view-btn-wrap { display:block; width:100%; }
+    </style>
 </head>
 <body>
-    <h2>Select Document Request</h2>
-    <p>
-        <a href="/CitiServe/public/dashboard.php">Dashboard</a> |
-        <a href="/CitiServe/public/my_requests.php">My Requests</a> |
+<div class="content-area">
+    <div class="top-links">
+        <a href="/CitiServe/public/dashboard.php">Dashboard</a>
+        <a href="/CitiServe/public/my_requests.php">My Requests</a>
         <a href="/CitiServe/public/logout.php">Logout</a>
-    </p>
+    </div>
+
+    <div class="form-breadcrumb" id="form-breadcrumb"></div>
+
+    <div class="page-header">
+        <h1>Barangay Document Requests</h1>
+        <p>Select the document you need. Review requirements and fees before proceeding.</p>
+    </div>
 
     <?php if ($errors): ?>
-        <div style="color:red;">
+        <div class="error-box">
             <ul>
                 <?php foreach ($errors as $e): ?>
-                    <li><?= htmlspecialchars($e) ?></li>
+                    <li><?= h($e) ?></li>
                 <?php endforeach; ?>
             </ul>
         </div>
     <?php endif; ?>
 
-    <form method="post">
-        <?= csrf_field() ?>
-        <label for="service_id">Document Type / Service</label><br>
-        <select id="service_id" name="service_id" required>
-            <option value="">-- Select Document Type --</option>
-            <?php foreach ($services as $s): ?>
-                <?php if (!isset($definitions[$s['name']])): continue; endif; ?>
-                <option value="<?= (int)$s['id'] ?>">
-                    <?= htmlspecialchars($s['name']) ?> - ₱<?= htmlspecialchars((string)$s['price']) ?>
-                </option>
-            <?php endforeach; ?>
-        </select>
-        <br><br>
-        <button type="submit">Continue</button>
-    </form>
+    <div class="reminders">
+        <img src="/CitiServe/frontend/document_request/images/docu-yellowbg.png" alt="Reminders">
+    </div>
+
+    <div class="grid">
+        <?php foreach ($services as $s): ?>
+            <?php if (!isset($definitions[$s['name']])): continue; endif; ?>
+            <?php
+            $name = (string)$s['name'];
+            $definition = $definitions[$name];
+            $visual = $cardVisuals[$name] ?? ['bg' => 'Barangay Clearance - Container.png', 'icon' => 'docu-bc.png'];
+            ?>
+            <div class="card" style="background-image:url('/CitiServe/frontend/document_request/images/<?= h($visual['bg']) ?>')">
+                <div class="card-content">
+                    <div class="card-main">
+                        <div class="card-top">
+                            <img src="/CitiServe/frontend/document_request/images/<?= h($visual['icon']) ?>" class="card-icon" alt="">
+                            <div>
+                                <div class="card-title"><?= h($name) ?></div>
+                                <div class="card-desc"><?= h((string)($s['description'] ?? '')) ?></div>
+                            </div>
+                        </div>
+
+                        <div class="divider"></div>
+
+                        <div class="card-meta">
+                            <span><b>Fee:</b> <span class="price">₱<?= h((string)$s['price']) ?></span></span>
+                            <span><b>Processing:</b> <span class="processing"><?= h((string)$s['processing_time_days']) ?> day(s)</span></span>
+                            <span><b>Requirements:</b>
+                                <ul>
+                                    <?php foreach ((array)$definition['required_uploads'] as $upload): ?>
+                                        <li><?= h((string)$upload['label']) ?></li>
+                                    <?php endforeach; ?>
+                                </ul>
+                            </span>
+                        </div>
+                    </div>
+
+                    <a class="view-btn-wrap" href="/CitiServe/public/request_form.php?service_id=<?= (int)$s['id'] ?>">
+                        <img src="/CitiServe/frontend/document_request/images/docu-view-deets.png" class="view-btn" alt="Request">
+                    </a>
+                </div>
+            </div>
+        <?php endforeach; ?>
+
+        <div class="footer">
+            <img src="/CitiServe/frontend/document_request/images/docu-logo.png" class="footer-logo" alt="CitiServe">
+            <div class="form-logo-text">
+                <span class="logo-pink">CitiServe</span>
+                <span class="logo-gray"> © 2026. All rights reserved.</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+const trail = [
+  { label: "Document Requests", href: "/CitiServe/public/request_select.php" },
+  { label: "Request Document", href: null }
+];
+(function renderBreadcrumb() {
+  const el = document.getElementById("form-breadcrumb");
+  el.innerHTML = trail.map((item, i) => {
+    const isLast = i === trail.length - 1;
+    const sep = i > 0 ? `<span class="form-sep">></span>` : "";
+    if (isLast) return `${sep}<span class="form-active">${item.label}</span>`;
+    return `${sep}<a href="${item.href}">${item.label}</a>`;
+  }).join("");
+})();
+</script>
 </body>
 </html>

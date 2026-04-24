@@ -82,6 +82,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $notesForDb
                 ]);
 
+                if (!empty($current['user_id'])) {
+                    $data->createNotification(
+                        (int)$current['user_id'],
+                        'Complaint Update',
+                        "Your complaint #{$complaintId} status is now '{$newStatus}'.",
+                        '/CitiServe/public/my_complaints.php'
+                    );
+                }
+
                 // If everything worked, commit the transaction
                 $db->commit();
                 $message = "Complaint #{$complaintId} updated to '{$newStatus}'.";

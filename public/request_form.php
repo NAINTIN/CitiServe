@@ -147,20 +147,71 @@ function h($value)
 }
 ?>
 <!doctype html>
-<html>
+<html lang="en">
 <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document Request Form</title>
+    <link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/CitiServe/frontend/document_request/css/barangay_clearance_form.css">
+    <style>
+        .top-links { margin-bottom: 12px; font-size: 13px; color: #6B7280; }
+        .top-links a { color: #6B7280; text-decoration: none; margin-right: 12px; }
+        .top-links a:hover { color: #E8265E; }
+        .error-box { color: #B91C1C; background: #FEF2F2; border: 1px solid #FECACA; border-radius: 10px; padding: 12px; margin-bottom: 14px; }
+        .input-like, .select-like, .textarea-like { width: 100%; border: 1.5px solid #E5E7EB; border-radius: 3px; font-size: 12.5px; padding: 10px 14px; }
+        .input-like, .select-like { height: 35px; padding: 0 14px; }
+        .textarea-like { min-height: 100px; resize: vertical; }
+        .upload-box { background: #fff; align-items: flex-start; }
+        .upload-box input[type=file] { width: 100%; border: none; padding: 0; }
+    </style>
 </head>
 <body>
-    <h2>Step 2: Fill Up Form - <?= h($service['name']) ?></h2>
-    <p>
-        <a href="/CitiServe/public/request_select.php">Back to Selection</a> |
+<div class="content-area">
+    <div class="top-links">
+        <a href="/CitiServe/public/request_select.php">Back to Selection</a>
         <a href="/CitiServe/public/dashboard.php">Dashboard</a>
-    </p>
+    </div>
+
+    <div class="form-breadcrumb" id="form-breadcrumb"></div>
+
+    <h1 class="form-title"><?= h($service['name']) ?> – Request Form</h1>
+    <p class="form-subtitle">Fill in all required fields accurately. Incomplete forms will not be processed.</p>
+
+    <div class="form-stepper">
+        <div class="form-step">
+            <div class="step-icon active-icon">
+                <img src="/CitiServe/frontend/document_request/images/docu-personal-info.png" class="step-img-only" alt="">
+            </div>
+            <div class="step-label active-text">
+                <span class="step-name">Fill out Form</span>
+                <span class="step-sub">Enter your details</span>
+            </div>
+        </div>
+        <div class="step-arrow"><img src="/CitiServe/frontend/document_request/images/docu-arrow.png" alt=""></div>
+        <div class="form-step">
+            <div class="step-icon inactive-icon">
+                <img src="/CitiServe/frontend/document_request/images/docu-social-acc.png" class="step-img-only" alt="">
+            </div>
+            <div class="step-label inactive-text">
+                <span class="step-name">Payment</span>
+                <span class="step-sub">Complete your payment</span>
+            </div>
+        </div>
+        <div class="step-arrow"><img src="/CitiServe/frontend/document_request/images/docu-arrow.png" alt=""></div>
+        <div class="form-step">
+            <div class="step-icon inactive-icon">
+                <img src="/CitiServe/frontend/document_request/images/docu-payment-info.png" class="step-img-only" alt="">
+            </div>
+            <div class="step-label inactive-text">
+                <span class="step-name">Confirmation</span>
+                <span class="step-sub">Review and confirm</span>
+            </div>
+        </div>
+    </div>
 
     <?php if ($errors): ?>
-        <div style="color:red;">
+        <div class="error-box">
             <ul>
                 <?php foreach ($errors as $e): ?>
                     <li><?= h($e) ?></li>
@@ -171,88 +222,165 @@ function h($value)
 
     <form method="post" enctype="multipart/form-data">
         <?= csrf_field() ?>
+        <div class="form-wrapper">
+            <div class="form-main">
+                <div class="form-card">
+                    <div class="form-card-bar">
+                        <img src="/CitiServe/frontend/document_request/images/docu-req-info.png" alt="">
+                        Request Information
+                    </div>
+                    <div class="form-card-body">
+                        <?php foreach ($definition['fields'] as $field): ?>
+                            <?php
+                            $name = $field['name'];
+                            $type = $field['type'];
+                            $label = $field['label'];
+                            $isRequired = !empty($field['required']);
+                            $value = $values[$name] ?? '';
+                            $placeholder = $type === 'date_mmddyyyy' ? 'MM/DD/YYYY' : ('Enter ' . $label);
+                            ?>
+                            <div class="form-group" data-field-name="<?= h($name) ?>">
+                                <label for="<?= h($name) ?>"><?= h($label) ?><?php if ($isRequired): ?> <span class="req">*</span><?php endif; ?></label>
 
-        <?php foreach ($definition['fields'] as $field): ?>
-            <?php
-            $name = $field['name'];
-            $type = $field['type'];
-            $label = $field['label'];
-            $required = !empty($field['required']) ? 'required' : '';
-            $value = $values[$name] ?? '';
-            ?>
-            <div style="margin-bottom:10px;" data-field-name="<?= h($name) ?>">
-                <label for="<?= h($name) ?>"><?= h($label) ?></label><br>
-
-                <?php if ($type === 'textarea'): ?>
-                    <textarea id="<?= h($name) ?>" name="<?= h($name) ?>" rows="4" cols="50" <?= $required ?>><?= h($value) ?></textarea>
-                <?php elseif ($type === 'select'): ?>
-                    <select id="<?= h($name) ?>" name="<?= h($name) ?>" <?= $required ?>>
-                        <option value="">-- Select --</option>
-                        <?php foreach ((array)$field['options'] as $option): ?>
-                            <option value="<?= h($option) ?>" <?= ($value === $option) ? 'selected' : '' ?>><?= h($option === '' ? 'None' : $option) ?></option>
+                                <?php if ($type === 'textarea'): ?>
+                                    <textarea class="textarea-like" id="<?= h($name) ?>" name="<?= h($name) ?>" <?= $isRequired ? 'required' : '' ?>><?= h($value) ?></textarea>
+                                <?php elseif ($type === 'select'): ?>
+                                    <select class="select-like" id="<?= h($name) ?>" name="<?= h($name) ?>" <?= $isRequired ? 'required' : '' ?>>
+                                        <option value="">-- Select --</option>
+                                        <?php foreach ((array)$field['options'] as $option): ?>
+                                            <option value="<?= h($option) ?>" <?= ($value === $option) ? 'selected' : '' ?>><?= h($option === '' ? 'None' : $option) ?></option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                <?php else: ?>
+                                    <?php
+                                    $inputType = 'text';
+                                    if ($type === 'email') {
+                                        $inputType = 'email';
+                                    } elseif ($type === 'number') {
+                                        $inputType = 'number';
+                                    }
+                                    ?>
+                                    <input class="input-like" type="<?= h($inputType) ?>" id="<?= h($name) ?>" name="<?= h($name) ?>" value="<?= h($value) ?>" placeholder="<?= h($placeholder) ?>" <?= $isRequired ? 'required' : '' ?>>
+                                <?php endif; ?>
+                            </div>
                         <?php endforeach; ?>
-                    </select>
-                <?php else: ?>
-                    <input id="<?= h($name) ?>" name="<?= h($name) ?>" value="<?= h($value) ?>" <?= $required ?>>
-                <?php endif; ?>
-            </div>
-        <?php endforeach; ?>
 
-        <h3>Required Uploads (JPG, PNG, PDF. Max 5MB each)</h3>
-        <?php foreach ($definition['required_uploads'] as $upload): ?>
-            <div style="margin-bottom:10px;">
-                <label for="<?= h($upload['key']) ?>"><?= h($upload['label']) ?></label><br>
-                <input type="file" id="<?= h($upload['key']) ?>" name="<?= h($upload['key']) ?>" accept=".jpg,.jpeg,.png,.pdf,application/pdf,image/jpeg,image/png" required>
-            </div>
-        <?php endforeach; ?>
+                        <?php foreach ($definition['required_uploads'] as $upload): ?>
+                            <div class="form-group">
+                                <label for="<?= h($upload['key']) ?>"><?= h($upload['label']) ?> <span class="req">*</span></label>
+                                <div class="upload-box">
+                                    <input type="file" id="<?= h($upload['key']) ?>" name="<?= h($upload['key']) ?>" accept=".jpg,.jpeg,.png,.pdf,application/pdf,image/jpeg,image/png" required>
+                                </div>
+                                <small class="upload-note">JPG, PNG, PDF – max 5MB</small>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
 
-        <button type="submit">Continue to Payment</button>
+                    <div class="form-btn-divider"></div>
+                    <div class="form-btn-row">
+                        <div class="form-btn-group">
+                            <a class="form-btn form-btn-back" href="/CitiServe/public/request_select.php">
+                                <img src="/CitiServe/frontend/document_request/images/docu-back.png" alt="Back">
+                            </a>
+                            <button class="form-btn" type="submit">
+                                <img src="/CitiServe/frontend/document_request/images/proceedd-to-payment.png" alt="Proceed">
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-side">
+                <div class="form-card">
+                    <div class="form-card-bar form-gradient">Document Summary</div>
+                    <div class="form-card-body summary-body">
+                        <div class="summary-row">
+                            <span class="summary-label">Document</span>
+                            <span class="summary-value"><?= h((string)$service['name']) ?></span>
+                        </div>
+                        <div class="summary-row">
+                            <span class="summary-label">Fee</span>
+                            <span class="summary-fee">₱<?= h((string)$service['price']) ?></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-reminders">
+                    <img src="/CitiServe/frontend/document_request/images/docu-reminders.png" alt="Reminders">
+                </div>
+            </div>
+        </div>
     </form>
 
-    <?php
-    $conditionalWires = [];
-    foreach ($definition['fields'] as $field) {
-        if (!empty($field['required_if'])) {
-            $conditionalWires[] = [
-                'source' => (string)$field['required_if']['field'],
-                'equals' => (string)$field['required_if']['equals'],
-                'target' => (string)$field['name'],
-            ];
+    <div class="form-logo">
+        <img src="/CitiServe/frontend/document_request/images/docu-logo.png" alt="CitiServe">
+        <div class="form-logo-text">
+            <span class="logo-pink">CitiServe</span>
+            <span class="logo-gray"> © 2026. All rights reserved.</span>
+        </div>
+    </div>
+</div>
+
+<?php
+$conditionalWires = [];
+foreach ($definition['fields'] as $field) {
+    if (!empty($field['required_if'])) {
+        $conditionalWires[] = [
+            'source' => (string)$field['required_if']['field'],
+            'equals' => (string)$field['required_if']['equals'],
+            'target' => (string)$field['name'],
+        ];
+    }
+}
+?>
+<script>
+const trail = [
+  { label: "Document Requests", href: "/CitiServe/public/request_select.php" },
+  { label: "Request Document", href: "/CitiServe/public/request_select.php" },
+  { label: <?= json_encode((string)$service['name'], JSON_UNESCAPED_UNICODE) ?>, href: null },
+  { label: "Form", href: null }
+];
+(function renderBreadcrumb() {
+  const el = document.getElementById("form-breadcrumb");
+  el.innerHTML = trail.map((item, i) => {
+    const isLast = i === trail.length - 1;
+    const sep = i > 0 ? `<span class="form-sep">></span>` : "";
+    if (isLast) return `${sep}<span class="form-active">${item.label}</span>`;
+    if (!item.href) return `${sep}<span>${item.label}</span>`;
+    return `${sep}<a href="${item.href}">${item.label}</a>`;
+  }).join("");
+})();
+
+(function () {
+    function toggleConditional(sourceField, expectedValue, targetField) {
+        var source = document.getElementById(sourceField);
+        var targetWrap = document.querySelector('[data-field-name="' + targetField + '"]');
+        if (!source || !targetWrap) return;
+
+        var targetInput = targetWrap.querySelector('input, textarea, select');
+        var isShown = source.value === expectedValue;
+        targetWrap.style.display = isShown ? '' : 'none';
+        if (targetInput) {
+            targetInput.required = isShown;
+            if (!isShown) {
+                targetInput.value = '';
+            }
         }
     }
-    ?>
-    <script>
-        (function () {
-            function toggleConditional(sourceField, expectedValue, targetField) {
-                var source = document.getElementById(sourceField);
-                var targetWrap = document.querySelector('[data-field-name="' + targetField + '"]');
-                if (!source || !targetWrap) return;
 
-                var targetInput = targetWrap.querySelector('input, textarea, select');
-                var isShown = source.value === expectedValue;
-                targetWrap.style.display = isShown ? '' : 'none';
-                if (targetInput) {
-                    targetInput.required = isShown;
-                    if (!isShown) {
-                        targetInput.value = '';
-                    }
-                }
-            }
+    function wire(sourceField, expectedValue, targetField) {
+        var source = document.getElementById(sourceField);
+        if (!source) return;
+        source.addEventListener('change', function () {
+            toggleConditional(sourceField, expectedValue, targetField);
+        });
+        toggleConditional(sourceField, expectedValue, targetField);
+    }
 
-            function wire(sourceField, expectedValue, targetField) {
-                var source = document.getElementById(sourceField);
-                if (!source) return;
-                source.addEventListener('change', function () {
-                    toggleConditional(sourceField, expectedValue, targetField);
-                });
-                toggleConditional(sourceField, expectedValue, targetField);
-            }
-
-            var wires = <?= json_encode($conditionalWires, JSON_UNESCAPED_UNICODE) ?>;
-            for (var i = 0; i < wires.length; i++) {
-                wire(wires[i].source, wires[i].equals, wires[i].target);
-            }
-        })();
-    </script>
+    var wires = <?= json_encode($conditionalWires, JSON_UNESCAPED_UNICODE) ?>;
+    for (var i = 0; i < wires.length; i++) {
+        wire(wires[i].source, wires[i].equals, wires[i].target);
+    }
+})();
+</script>
 </body>
 </html>

@@ -41,86 +41,87 @@ $error = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     csrf_verify_or_die();
 
-    $userId = isset($_POST['user_id']) ? (int)$_POST['user_id'] : 0;
     $action = isset($_POST['action']) ? trim($_POST['action']) : '';
 
-    if ($userId <= 0) {
-        $error = 'Invalid request.';
-    } else {
-        try {
-            $db->beginTransaction();
+    if ($action === 'add') {
+        // Add doesn't need a user_id — handle it separately
+        $firstName = trim($_POST['first_name'] ?? '');
+        $lastName  = trim($_POST['last_name']  ?? '');
+        $email     = trim($_POST['email']       ?? '');
+        $contact   = trim($_POST['contact']     ?? '');
+        $staffRole = trim($_POST['staff_role']  ?? 'Administrative Staff');
 
-            $stmt = $db->prepare("SELECT id, role, full_name, email, is_verified FROM users WHERE id = ? LIMIT 1");
-            $stmt->execute([$userId]);
-            $target = $stmt->fetch();
+        if ($firstName === '' || $lastName === '' || $email === '') {
+            $error = 'First name, last name, and email are required.';
+        } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $error = 'Invalid email address.';
+        } else {
+            $check = $db->prepare("SELECT id FROM users WHERE email = ? LIMIT 1");
+            $check->execute([$email]);
+            if ($check->fetch()) {
+                $error = 'Email already registered.';
+            } else {
+                $password     = bin2hex(random_bytes(8));
+                $passwordHash = password_hash($password, PASSWORD_DEFAULT);
+                $fullName     = $firstName . ' ' . $lastName;
 
-            if (!$target) {
-                throw new Exception('User not found.');
+                $stmt = $db->prepare("
+                    INSERT INTO users (full_name, email, password_hash, role, is_verified, created_at, updated_at)
+                    VALUES (?, ?, ?, 'staff', 1, NOW(), NOW())
+                ");
+                $stmt->execute([$fullName, $email, $passwordHash]);
+                $newId = (int)$db->lastInsertId();
+
+                $data->createNotification(
+                    $newId,
+                    'Staff Account Created',
+                    "Your staff account has been created. Your temporary password is: $password. Please change it after logging in.",
+                    '/CitiServe/public/admin/profile.php'
+                );
+
+                $message = "Added new staff: $fullName. Temporary password: $password";
             }
+        }
 
-            if ($action === 'toggle_status') {
-                // Toggle is_verified (1 = Active, 0 = Inactive)
-                $newStatus = ((int)$target['is_verified'] === 1) ? 0 : 1;
-                $db->prepare("UPDATE users SET is_verified = ?, updated_at = NOW() WHERE id = ?")->execute([$newStatus, $userId]);
-                $message = "Updated status for {$target['full_name']}.";
-            } elseif ($action === 'remove') {
-                // Soft-remove: set role to 'resident' (don't hard delete)
-                if ($userId === (int)$admin['id']) {
-                    $error = 'You cannot remove your own account.';
-                } else {
-                    $db->prepare("UPDATE users SET role = 'resident', updated_at = NOW() WHERE id = ?")->execute([$userId]);
-                    $message = "Removed {$target['full_name']} from staff.";
+    } else {
+        // Toggle and Remove both need a valid user_id
+        $userId = isset($_POST['user_id']) ? (int)$_POST['user_id'] : 0;
+
+        if ($userId <= 0) {
+            $error = 'Invalid request.';
+        } else {
+            try {
+                $db->beginTransaction();
+
+                $stmt = $db->prepare("SELECT id, role, full_name, email, is_verified FROM users WHERE id = ? LIMIT 1");
+                $stmt->execute([$userId]);
+                $target = $stmt->fetch();
+
+                if (!$target) {
+                    throw new Exception('User not found.');
                 }
-            } elseif ($action === 'add') {
-                // Add new staff member
-                $firstName = isset($_POST['first_name']) ? trim($_POST['first_name']) : '';
-                $lastName = isset($_POST['last_name']) ? trim($_POST['last_name']) : '';
-                $email = isset($_POST['email']) ? trim($_POST['email']) : '';
-                $contact = isset($_POST['contact']) ? trim($_POST['contact']) : '';
-                $staffRole = isset($_POST['staff_role']) ? trim($_POST['staff_role']) : 'Administrative Staff';
 
-                if ($firstName === '' || $lastName === '' || $email === '') {
-                    $error = 'First name, last name, and email are required.';
-                } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-                    $error = 'Invalid email address.';
-                } else {
-                    // Check if email already exists
-                    $check = $db->prepare("SELECT id FROM users WHERE email = ? LIMIT 1");
-                    $check->execute([$email]);
-                    if ($check->fetch()) {
-                        $error = 'Email already registered.';
+                if ($action === 'toggle_status') {
+                    $newStatus = ((int)$target['is_verified'] === 1) ? 0 : 1;
+                    $db->prepare("UPDATE users SET is_verified = ?, updated_at = NOW() WHERE id = ?")
+                       ->execute([$newStatus, $userId]);
+                    $message = "Updated status for {$target['full_name']}.";
+
+                } elseif ($action === 'remove') {
+                    if ($userId === (int)$admin['id']) {
+                        $error = 'You cannot remove your own account.';
                     } else {
-                        // Generate a random password
-                        $password = bin2hex(random_bytes(8));
-                        $passwordHash = password_hash($password, PASSWORD_DEFAULT);
-
-                        $fullName = $firstName . ' ' . $lastName;
-                        $stmt = $db->prepare("
-                            INSERT INTO users (full_name, email, password_hash, role, is_verified, created_at, updated_at)
-                            VALUES (?, ?, ?, 'staff', 1, NOW(), NOW())
-                        ");
-                        $stmt->execute([$fullName, $email, $passwordHash]);
-                        $newId = (int)$db->lastInsertId();
-
-                        // Create notification for the new staff member
-                        $data->createNotification(
-                            $newId,
-                            'Staff Account Created',
-                            "Your staff account has been created. Your temporary password is: $password. Please change it after logging in.",
-                            '/CitiServe/public/admin/profile.php'
-                        );
-
-                        $message = "Added new staff: $fullName. Temporary password: $password";
+                        $db->prepare("UPDATE users SET role = 'resident', updated_at = NOW() WHERE id = ?")
+                           ->execute([$userId]);
+                        $message = "Removed {$target['full_name']} from staff.";
                     }
                 }
-            }
 
-            $db->commit();
-        } catch (Throwable $e) {
-            if ($db->inTransaction()) {
-                $db->rollBack();
+                $db->commit();
+            } catch (Throwable $e) {
+                if ($db->inTransaction()) $db->rollBack();
+                $error = 'Operation failed: ' . $e->getMessage();
             }
-            $error = 'Operation failed: ' . $e->getMessage();
         }
     }
 }
@@ -349,7 +350,7 @@ foreach ($staffMembers as $s) {
         <div>Name</div>
         <div>Contact</div>
         <div>Role</div>
-        <div>Last Login</div>
+        <div>Date Joined</div>
         <div>Status</div>
         <div></div>
       </div>
@@ -369,6 +370,7 @@ foreach ($staffMembers as $s) {
               $staffId = formatStaffId($s['role'], (int)$s['id']);
             ?>
             <div class="request-row"
+              data-user-id="<?= (int)$s['id'] ?>"
               data-staff-id="<?= h($staffId) ?>"
               data-name="<?= h($s['full_name']) ?>"
               data-email="<?= h($s['email']) ?>"
@@ -402,7 +404,7 @@ foreach ($staffMembers as $s) {
               </div>
 
               <div class="request-cell staff-action-cell">
-                <button type="button" class="remove-staff-btn" data-action="remove">Remove</button>
+                <button type="button" class="remove-staff-btn">Remove</button>
                 <span class="staff-action-separator">|</span>
                 <button type="button" class="manage-btn view-profile-btn">View Profile</button>
               </div>
@@ -498,14 +500,14 @@ foreach ($staffMembers as $s) {
       </div>
 
       <div class="add-staff-field">
-        <label>Contact Number <span>*</span></label>
+        <label>Contact Number</label>
         <input type="text" name="contact" placeholder="09XX-XXX-XXXX">
       </div>
 
       <div class="add-staff-field">
         <label>Role</label>
         <div class="add-staff-select" id="addStaffRoleBox">
-          <button type="button" class="add-staff-select-btn" type="button">
+          <button type="button" class="add-staff-select-btn">
             <span id="addStaffSelectedRole">Barangay Captain</span>
             <span>▾</span>
           </button>
@@ -553,7 +555,7 @@ foreach ($staffMembers as $s) {
         <input type="hidden" name="action" value="remove">
         <input type="hidden" name="user_id" id="removeStaffId" value="">
         <button type="submit" class="remove-img-btn" id="confirmRemoveStaff">
-          <img src="/CitiServe/frontend/admin_dashboard/images/remove_staff_button_proceeds.png" alt="Remove">
+          <img src="/CitiServe/frontend/admin_dashboard/images/remove_staff_button_procees.png" alt="Remove">
         </button>
       </form>
       <button class="remove-img-btn" id="cancelRemoveStaff">
@@ -562,6 +564,13 @@ foreach ($staffMembers as $s) {
     </div>
   </div>
 </div>
+
+<!-- Hidden form for toggling staff active/inactive status -->
+<form method="post" id="toggleStaffForm" style="display:none;">
+  <?= csrf_field() ?>
+  <input type="hidden" name="action" value="toggle_status">
+  <input type="hidden" name="user_id" id="toggleStaffUserId" value="">
+</form>
 
 <script src="/CitiServe/frontend/admin_dashboard/JS/admin_dashboard.js"></script>
 <script src="/CitiServe/public/admin/JS/admin_staff.js"></script>

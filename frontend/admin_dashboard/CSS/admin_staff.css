@@ -1708,6 +1708,7 @@ img {
   margin-bottom: 5px;
   justify-content: flex-end;
   margin-right: 8px;
+  align-items: center; 
 }
 
 .remove-img-btn {
@@ -1718,4 +1719,14 @@ img {
 
 .remove-img-btn img {
   height: 45px;
+}
+
+#removeStaffForm {
+  display: flex;
+}
+
+.remove-content {
+  display: flex;
+  gap: 16px;
+  align-items: center;
 }

@@ -4,15 +4,17 @@ require_once __DIR__ . '/../app/helpers/csrf.php';
 require_once __DIR__ . '/../app/core/CitiServeData.php';
 require_once __DIR__ . '/../app/helpers/document_request.php';
 
-$user = require_verified_resident('document request pages');
+$user = require_resident();
 $data = new CitiServeData();
+$dbUser = $data->findUserById((int)$user['id']);
+$isVerified = ($dbUser && (int)$dbUser->is_verified === 1);
 $services = $data->getAllActiveDocumentServices();
 $definitions = document_request_definitions();
 
 $errors = [];
 $preselectedServiceId = isset($_GET['service_id']) ? (int)$_GET['service_id'] : 0;
 
-if ($preselectedServiceId > 0) {
+if ($isVerified && $preselectedServiceId > 0) {
     $service = $data->findDocumentServiceById($preselectedServiceId);
     if ($service && (int)$service['is_active'] === 1 && isset($definitions[$service['name']])) {
         unset($_SESSION['document_request_draft']);
@@ -24,19 +26,23 @@ if ($preselectedServiceId > 0) {
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     csrf_verify_or_die();
 
-    $serviceId = isset($_POST['service_id']) ? (int)$_POST['service_id'] : 0;
-    if ($serviceId <= 0) {
-        $errors[] = 'Please select a document type.';
+    if (!$isVerified) {
+        $errors[] = 'Your account must be verified before you can proceed with a document request.';
     } else {
-        $service = $data->findDocumentServiceById($serviceId);
-        if (!$service || (int)$service['is_active'] !== 1) {
-            $errors[] = 'Selected document service is not available.';
-        } elseif (!isset($definitions[$service['name']])) {
-            $errors[] = 'Selected document service is not yet supported in the new request flow.';
+        $serviceId = isset($_POST['service_id']) ? (int)$_POST['service_id'] : 0;
+        if ($serviceId <= 0) {
+            $errors[] = 'Please select a document type.';
         } else {
-            unset($_SESSION['document_request_draft']);
-            header('Location: /CitiServe/public/request_form.php?service_id=' . $serviceId);
-            exit;
+            $service = $data->findDocumentServiceById($serviceId);
+            if (!$service || (int)$service['is_active'] !== 1) {
+                $errors[] = 'Selected document service is not available.';
+            } elseif (!isset($definitions[$service['name']])) {
+                $errors[] = 'Selected document service is not yet supported in the new request flow.';
+            } else {
+                unset($_SESSION['document_request_draft']);
+                header('Location: /CitiServe/public/request_form.php?service_id=' . $serviceId);
+                exit;
+            }
         }
     }
 }
@@ -86,6 +92,9 @@ function h($v)
         <h1>Barangay Document Requests</h1>
         <p>Select the document you need. Review requirements and fees before proceeding.</p>
     </div>
+    <?php if (!$isVerified): ?>
+        <div class="error-box">Your account is not yet verified. You can browse document details, but you must be verified before proceeding with a request.</div>
+    <?php endif; ?>
 
     <?php if ($errors): ?>
         <div class="error-box">
@@ -135,9 +144,15 @@ function h($v)
                         </div>
                     </div>
 
-                    <a class="view-btn-wrap" href="/CitiServe/public/request_form.php?service_id=<?= (int)$s['id'] ?>">
-                        <img src="/CitiServe/frontend/document_request/images/docu-view-deets.png" class="view-btn" alt="Request">
-                    </a>
+                    <?php if ($isVerified): ?>
+                        <a class="view-btn-wrap" href="/CitiServe/public/request_form.php?service_id=<?= (int)$s['id'] ?>">
+                            <img src="/CitiServe/frontend/document_request/images/docu-view-deets.png" class="view-btn" alt="Request">
+                        </a>
+                    <?php else: ?>
+                        <span class="view-btn-wrap" style="opacity:.55; cursor:not-allowed;">
+                            <img src="/CitiServe/frontend/document_request/images/docu-view-deets.png" class="view-btn" alt="Request">
+                        </span>
+                    <?php endif; ?>
                 </div>
             </div>
         <?php endforeach; ?>

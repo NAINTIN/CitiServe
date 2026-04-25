@@ -12,8 +12,10 @@ function anonymous_form_normalize_category($name)
   return trim((string)$v);
 }
 
-$userInfo = require_verified_resident('complaint submission');
+$userInfo = require_resident();
 $data = new CitiServeData();
+$dbUser = $data->findUserById((int)$userInfo['id']);
+$isVerified = ($dbUser && (int)$dbUser->is_verified === 1);
 $categories = $data->getActiveComplaintCategories();
 $categoryById = [];
 foreach ($categories as $cat) {
@@ -253,6 +255,9 @@ unset($_SESSION['complaint_form_errors']);
       <h1 class="form-page-title"><?= htmlspecialchars($currentCategory['title']) ?> – Complaint Form</h1>
       <p class="form-page-subtitle">Fill in all required fields accurately. Be as specific as possible.</p>
     </div>
+    <?php if (!$isVerified): ?>
+      <div style="margin: 0 24px 12px; color: #b42318; font-weight: 600;">Your account is not yet verified. You can view this form, but complaint submission is disabled until verification is approved.</div>
+    <?php endif; ?>
 
     <div class="progress-wrap">
     <div class="progress-step active">
@@ -414,7 +419,7 @@ unset($_SESSION['complaint_form_errors']);
             <img src="/CitiServe/frontend/complaints/images/complaint_form_back.png" alt="Back" class="form-action-img back-action-img">
             </a>
 
-            <button type="submit" class="submit-img-btn">
+            <button type="submit" class="submit-img-btn" <?= $isVerified ? '' : 'disabled style="opacity:.55;cursor:not-allowed;"' ?>>
                 <img src="/CitiServe/frontend/complaints/images/complaint_submit_complaint.png" alt="Submit Complaint" class="form-action-img submit-action-img">
             </button>
             </div>

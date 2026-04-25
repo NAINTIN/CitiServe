@@ -9,8 +9,10 @@ require_once __DIR__ . '/../app/core/CitiServeData.php';
 require_once __DIR__ . '/../app/helpers/upload.php';
 require_once __DIR__ . '/../app/helpers/document_request.php';
 
-$user = require_verified_resident('document request pages');
+$user = require_resident();
 $data = new CitiServeData();
+$dbUser = $data->findUserById((int)$user['id']);
+$isVerified = ($dbUser && (int)$dbUser->is_verified === 1);
 
 $serviceId = isset($_GET['service_id']) ? (int)$_GET['service_id'] : 0;
 if ($serviceId <= 0 && !empty($_SESSION['document_request_draft']['service_id'])) {
@@ -38,11 +40,14 @@ if (!empty($_SESSION['document_request_draft']) && (int)$_SESSION['document_requ
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     csrf_verify_or_die();
-
     $values = [];
     foreach ($definition['fields'] as $field) {
         $name = $field['name'];
         $values[$name] = trim((string)($_POST[$name] ?? ''));
+    }
+
+    if (!$isVerified) {
+        $errors[] = 'Your account must be verified before you can submit a document request.';
     }
 
     foreach ($definition['fields'] as $field) {
@@ -177,6 +182,9 @@ function h($value)
 
     <h1 class="form-title"><?= h($service['name']) ?> – Request Form</h1>
     <p class="form-subtitle">Fill in all required fields accurately. Incomplete forms will not be processed.</p>
+    <?php if (!$isVerified): ?>
+        <div class="error-box">Your account is not yet verified. You can review this form, but submission is disabled until verification is approved.</div>
+    <?php endif; ?>
 
     <div class="form-stepper">
         <div class="form-step">
@@ -282,7 +290,7 @@ function h($value)
                             <a class="form-btn form-btn-back" href="/CitiServe/public/request_select.php">
                                 <img src="/CitiServe/frontend/document_request/images/docu-back.png" alt="Back">
                             </a>
-                            <button class="form-btn" type="submit">
+                            <button class="form-btn" type="submit" <?= $isVerified ? '' : 'disabled style="opacity:.55;cursor:not-allowed;"' ?>>
                                 <img src="/CitiServe/frontend/document_request/images/proceedd-to-payment.png" alt="Proceed">
                             </button>
                         </div>

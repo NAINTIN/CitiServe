@@ -7,8 +7,10 @@ require_once __DIR__ . '/../app/helpers/auth.php';
 require_once __DIR__ . '/../app/helpers/csrf.php';
 require_once __DIR__ . '/../app/core/CitiServeData.php';
 require_once __DIR__ . '/../app/helpers/document_request.php';
+require_once __DIR__ . '/../app/helpers/resident_navbar.php';
 
 $user = require_verified_resident('document request pages');
+$navCtx = build_resident_navbar_context((int)$user['id']);
 $data = new CitiServeData();
 $db = $data->getPdo();
 
@@ -124,11 +126,9 @@ function h($v)
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Confirm Request</title>
     <link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/CitiServe/frontend/dashboard/CSS/dashboard.css">
     <link rel="stylesheet" href="/CitiServe/frontend/document_request/css/docu_business_payment.css">
     <style>
-        .top-links { margin-bottom: 12px; font-size: 13px; color: #6B7280; }
-        .top-links a { color: #6B7280; text-decoration: none; margin-right: 12px; }
-        .top-links a:hover { color: #E8265E; }
         .error-box { color: #B91C1C; background: #FEF2F2; border: 1px solid #FECACA; border-radius: 10px; padding: 12px; margin-bottom: 14px; }
         .summary-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
         .summary-list li { display: flex; justify-content: space-between; gap: 14px; font-size: 13px; border-bottom: 1px solid #F3F4F6; padding-bottom: 8px; }
@@ -145,12 +145,8 @@ function h($v)
     </style>
 </head>
 <body>
+<?php render_resident_navbar($navCtx, 'document'); ?>
 <div class="content-area">
-    <div class="top-links">
-        <a href="/CitiServe/public/request_payment.php">Back to Payment</a>
-        <a href="/CitiServe/public/dashboard.php">Dashboard</a>
-    </div>
-
     <div class="form-breadcrumb" id="form-breadcrumb"></div>
 
     <h1 class="form-title">Review and Confirm</h1>
@@ -268,5 +264,6 @@ const trail = [
   }).join("");
 })();
 </script>
+<script src="/CitiServe/frontend/dashboard/dashboard.js"></script>
 </body>
 </html>

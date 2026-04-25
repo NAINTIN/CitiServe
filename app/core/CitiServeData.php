@@ -75,7 +75,7 @@ class CitiServeData
 
     public function getAllUsersWithVerification()
     {
-        $sql = 'SELECT id, full_name, email, role, created_at, is_verified, proof_of_id FROM users ORDER BY created_at DESC, id DESC';
+        $sql = 'SELECT id, full_name, email, role, address, created_at, is_verified, proof_of_id FROM users ORDER BY created_at DESC, id DESC';
         return $this->db->query($sql)->fetchAll();
     }
 

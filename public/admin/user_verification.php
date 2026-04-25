@@ -8,10 +8,17 @@ error_reporting(E_ALL);
 require_once __DIR__ . '/../../app/helpers/auth.php';
 require_once __DIR__ . '/../../app/helpers/csrf.php';
 require_once __DIR__ . '/../../app/core/CitiServeData.php';
+require_once __DIR__ . '/../../app/helpers/admin_notifications.php';
 
 $admin = require_admin();
 $data = new CitiServeData();
 $db = $data->getPdo();
+
+$adminNotif = build_admin_notifications($data, (int)$admin['id']);
+$notifSections = $adminNotif['sections'];
+$hasNotif = $adminNotif['has_notif'];
+$notifications = $adminNotif['notifications'];
+$unreadCount = (int)$adminNotif['unread_count'];
 
 $message = '';
 $error = '';
@@ -67,92 +74,313 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-$users = $data->getAllUsersWithVerification();
+// Get all users and filter for unverified residents
+$allUsers = $data->getAllUsersWithVerification();
+$users = [];
+$pendingCount = 0;
+$approvedCount = 0;
+$rejectedCount = 0;
+
+foreach ($allUsers as $u) {
+    if ((string)$u['role'] === 'resident') {
+        if ((int)$u['is_verified'] === 0) {
+            $users[] = $u;
+            $pendingCount++;
+        } elseif ((int)$u['is_verified'] === 1) {
+            $approvedCount++;
+        } else {
+            $rejectedCount++;
+        }
+    }
+}
 
 function h($v)
 {
     return htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8');
 }
+
+function getInitials($name) {
+    $parts = explode(' ', trim($name));
+    $first = strtoupper(substr($parts[0] ?? '', 0, 1));
+    $last = strtoupper(substr(end($parts) ?: '', 0, 1));
+    return $first . $last;
+}
 ?>
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-    <meta charset="utf-8">
-    <title>Admin - User Verification</title>
+    <meta charset="UTF-8">
+    <title>Account Verification - CitiServe</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="/CitiServe/frontend/admin_dashboard/CSS/admin_dashboard.css">
+    <link rel="stylesheet" href="/CitiServe/public/admin/CSS/admin_account_verification.css">
 </head>
+
 <body>
-    <h2>Admin / Staff - User Verification</h2>
-    <p>
-        Logged in as <?= h($admin['full_name']) ?> (<?= h($admin['role']) ?>)
-        | <a href="/CitiServe/public/admin/users.php">Manage Roles</a>
-        | <a href="/CitiServe/public/index.php">Home</a>
-        | <a href="/CitiServe/public/logout.php">Logout</a>
-    </p>
+<div class="design-strip left" aria-hidden="true"><img src="/CitiServe/frontend/admin_dashboard/images/dashboard_design.png" alt=""></div>
+<div class="design-strip right" aria-hidden="true"><img src="/CitiServe/frontend/admin_dashboard/images/dashboard_design.png" alt=""></div>
 
-    <?php if ($message): ?><p style="color: green;"><?= h($message) ?></p><?php endif; ?>
-    <?php if ($error): ?><p style="color: red;"><?= h($error) ?></p><?php endif; ?>
-
-    <?php if (empty($users)): ?>
-        <p>No users found.</p>
-    <?php else: ?>
-        <table border="1" cellpadding="6" cellspacing="0">
-            <tr>
-                <th>ID</th>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Role</th>
-                <th>Registered</th>
-                <th>Status</th>
-                <th>Proof of ID</th>
-                <th>Action</th>
-            </tr>
-            <?php foreach ($users as $u): ?>
-                <?php
-                $isResident = ((string)$u['role'] === 'resident');
-                $isVerified = ((int)$u['is_verified'] === 1);
-                $proofPath = isset($u['proof_of_id']) ? (string)$u['proof_of_id'] : '';
-                $isImage = preg_match('/\.(jpg|jpeg|png)$/i', $proofPath) === 1;
-                ?>
-                <tr>
-                    <td><?= (int)$u['id'] ?></td>
-                    <td><?= h($u['full_name']) ?></td>
-                    <td><?= h($u['email']) ?></td>
-                    <td><?= h($u['role']) ?></td>
-                    <td><?= h($u['created_at']) ?></td>
-                    <td>
-                        <?php if ($isVerified): ?>
-                            <span style="color:green; font-weight:700;">Verified</span>
-                        <?php else: ?>
-                            <span style="color:#d97706; font-weight:700;">Unverified</span>
-                        <?php endif; ?>
-                    </td>
-                    <td>
-                        <?php if ($proofPath !== ''): ?>
-                            <?php if ($isImage): ?>
-                                <a href="/CitiServe/public/<?= h($proofPath) ?>" target="_blank">
-                                    <img src="/CitiServe/public/<?= h($proofPath) ?>" alt="Proof of ID" style="max-width:120px; max-height:80px; border:1px solid #ddd;">
-                                </a><br>
-                            <?php endif; ?>
-                            <a href="/CitiServe/public/<?= h($proofPath) ?>" target="_blank">View File</a>
-                        <?php else: ?>
-                            -
-                        <?php endif; ?>
-                    </td>
-                    <td>
-                        <?php if ($isResident && !$isVerified): ?>
-                            <form method="post" style="margin:0 0 6px 0;">
-                                <?= csrf_field() ?>
-                                <input type="hidden" name="user_id" value="<?= (int)$u['id'] ?>">
-                                <button type="submit" name="action" value="verify">Verify</button>
-                                <button type="submit" name="action" value="reject">Reject</button>
-                            </form>
-                        <?php else: ?>
-                            -
-                        <?php endif; ?>
-                    </td>
-                </tr>
+<nav class="navbar">
+  <a href="/CitiServe/public/admin/dashboard.php" class="navbar-logo">
+    <img src="/CitiServe/frontend/admin_dashboard/images/logo_pink.png" alt="CitiServe">
+  </a>
+  <div class="navbar-nav admin-nav">
+    <a href="/CitiServe/public/admin/dashboard.php" class="nav-item"><span class="nav-text">Dashboard</span></a>
+    <a href="/CitiServe/public/admin/requests.php" class="nav-item"><span class="nav-text">Document Requests</span></a>
+    <a href="/CitiServe/public/admin/complaints.php" class="nav-item"><span class="nav-text">Complaints</span></a>
+    <div class="nav-item has-dropdown" id="navUserManagement">
+      <span class="nav-text">User Management</span>
+      <span class="nav-chevron">⏷</span>
+      <div class="nav-dropdown">
+        <a href="/CitiServe/public/admin/users.php" class="nav-dropdown-item">Residents</a>
+      </div>
+    </div>
+    <a href="/CitiServe/public/admin/user_verification.php" class="nav-item active"><span class="nav-text">Account Verification</span></a>
+  </div>
+  <div class="navbar-right admin-navbar-right">
+    <button class="notif-btn" id="notifBtn"
+      data-has-notif="<?= $hasNotif ? '1' : '0' ?>"
+      data-img-on="/CitiServe/frontend/admin_dashboard/images/with_notif.png"
+      data-img-off="/CitiServe/frontend/admin_dashboard/images/no_notif.png"
+      data-img-active="/CitiServe/frontend/admin_dashboard/images/select_notif.png"
+      data-read-url="/CitiServe/public/admin/notifications_read.php"
+      data-csrf-token="<?= h(csrf_token()) ?>"
+      title="Notifications">
+      <img id="notifIcon"
+        src="<?= $hasNotif ? '/CitiServe/frontend/admin_dashboard/images/with_notif.png' : '/CitiServe/frontend/admin_dashboard/images/no_notif.png' ?>"
+        alt="Notifications">
+      <span class="notif-count-badge" id="notifCount" <?= $unreadCount > 0 ? '' : 'style="display:none;"' ?>>
+        <?= $unreadCount > 99 ? '99+' : (int)$unreadCount ?>
+      </span>
+    </button>
+    <div class="notif-panel" id="notifPanel" aria-label="Notifications">
+      <div class="notif-panel-header">
+        <span class="notif-panel-title">Notifications</span>
+        <button class="notif-panel-more" title="More options">···</button>
+      </div>
+      <div class="notif-tabs">
+        <button class="notif-tab active" data-filter="all">All</button>
+        <button class="notif-tab" data-filter="document">Document</button>
+        <button class="notif-tab" data-filter="complaint">Complaint</button>
+      </div>
+      <div class="notif-list" id="notifList">
+        <?php foreach (['new' => 'New', 'today' => 'Today', 'earlier' => 'Earlier'] as $key => $label): ?>
+          <?php if (!empty($notifSections[$key])): ?>
+            <div class="notif-section-label" data-section="<?= h($key) ?>"><?= h($label) ?></div>
+            <?php foreach ($notifSections[$key] as $n): ?>
+              <div class="notif-item <?= $n['read'] ? '' : 'unread' ?>"
+                data-id="<?= (int)$n['id'] ?>"
+                data-category="<?= h($n['category']) ?>"
+                data-link="<?= h($n['link']) ?>">
+                <div class="notif-icon-wrap">
+                  <img class="notif-icon-main" src="<?= h($n['main_icon']) ?>" alt="">
+                  <?php if (!empty($n['badge_icon'])): ?>
+                    <img class="notif-icon-badge" src="<?= h($n['badge_icon']) ?>" alt="">
+                  <?php endif; ?>
+                </div>
+                <div class="notif-text">
+                  <div class="notif-msg"><?= h($n['message']) ?></div>
+                  <div class="notif-time"><?= h($n['time_label']) ?></div>
+                </div>
+                <div class="notif-dot"></div>
+              </div>
             <?php endforeach; ?>
-        </table>
-    <?php endif; ?>
+          <?php endif; ?>
+        <?php endforeach; ?>
+        <?php if (empty($notifications)): ?>
+          <div class="notif-empty">No notifications yet.</div>
+        <?php endif; ?>
+      </div>
+      <div class="notif-footer">
+        <button class="notif-see-prev" id="notifSeePrev"><p>Go to requests and complaints</p></button>
+      </div>
+    </div>
+    <div class="profile-pill" id="profilePill">
+      <div class="profile-avatar">
+        <img src="<?= !empty($admin['avatar']) ? h($admin['avatar']) : '/CitiServe/frontend/admin_dashboard/images/admin_dummy_icon.png' ?>" alt="Admin">
+      </div>
+      <span class="profile-name"><?= h(explode(' ', (string)$admin['full_name'])[0]) ?></span>
+      <span class="profile-chevron"><img src="/CitiServe/frontend/admin_dashboard/images/profile_dropdown.png" alt=""></span>
+    </div>
+
+    <div class="profile-panel" id="profilePanel">
+      <div class="profile-panel-top">
+        <div class="profile-panel-fullname"><?= h($admin['full_name']) ?></div>
+        <div class="profile-panel-subtext">Admin • Brgy. Kalayaan</div>
+      </div>
+
+      <a href="/CitiServe/public/admin/profile.php" class="profile-panel-item">
+        <img src="/CitiServe/frontend/admin_dashboard/images/my_profile.png" class="profile-panel-icon1" alt="">
+        <span>My Profile</span>
+      </a>
+
+      <a href="/CitiServe/public/logout.php" class="profile-panel-item logout">
+        <img src="/CitiServe/frontend/admin_dashboard/images/logout.png" class="profile-panel-icon2" alt="">
+        <span>Logout</span>
+      </a>
+    </div>
+  </div>
+</nav>
+
+<div class="page-body">
+  <div class="admin-doc-card">
+
+    <div class="page-head">
+      <h1 class="page-title">Account Verification</h1>
+      <p class="page-subtitle">Review and approve resident account registrations.</p>
+    </div>
+    <?php if ($message): ?><p style="color:#15803d;margin-top:10px;"><?= h($message) ?></p><?php endif; ?>
+    <?php if ($error): ?><p style="color:#b91c1c;margin-top:10px;"><?= h($error) ?></p><?php endif; ?>
+
+    <div class="admin-summary-row">
+      <div class="summary-box summary-pending-verification">
+        <div class="summary-number"><?= $pendingCount ?></div>
+        <div class="summary-label">Pending</div>
+        <img src="/CitiServe/frontend/verification_table/images/admin_verification_pending.png" class="summary-icon1">
+      </div>
+
+      <div class="summary-box summary-approved-verification">
+        <div class="summary-number"><?= $approvedCount ?></div>
+        <div class="summary-label">Approved</div>
+        <img src="/CitiServe/frontend/verification_table/images/admin_verification_approved.png" class="summary-icon2">
+      </div>
+
+      <div class="summary-box summary-rejected-verification">
+        <div class="summary-number"><?= $rejectedCount ?></div>
+        <div class="summary-label">Rejected</div>
+        <img src="/CitiServe/frontend/verification_table/images/admin_verification_rejected.png" class="summary-icon3">
+      </div>
+    </div>
+
+    <div class="pending-title-row">
+      <img src="/CitiServe/frontend/verification_table/images/pending_acc_icon.png" alt="">
+      <span>Pending Accounts</span>
+    </div>
+
+    <div class="verification-table-card">
+      <div class="verification-table-head">
+        <div>Resident ID</div>
+        <div>Name</div>
+        <div>Address</div>
+        <div>Date</div>
+        <div></div>
+      </div>
+
+      <div class="verification-table-body" id="verificationTableBody">
+        <?php foreach ($users as $u): ?>
+          <?php
+          // Format date
+          $date = !empty($u['created_at']) ? date('M j, Y', strtotime($u['created_at'])) : 'Unknown';
+          // Get proof of ID filename
+          $proofOfId = !empty($u['proof_of_id']) ? basename($u['proof_of_id']) : 'No document';
+          ?>
+          <div class="verification-row"
+            data-resident-id="<?= h($u['id']) ?>"
+            data-name="<?= h($u['full_name']) ?>"
+            data-email="<?= h($u['email']) ?>"
+            data-address="<?= h($u['address'] ?? 'No address provided') ?>"
+            data-date="<?= h($date) ?>"
+            data-initials="<?= h(getInitials($u['full_name'])) ?>"
+            data-document="<?= h($proofOfId) ?>">
+
+
+            <div class="verification-cell request-id"><?= h($u['id']) ?></div>
+
+            <div class="verification-cell resident-name-cell">
+              <div class="resident-initials"><?= h(getInitials($u['full_name'])) ?></div>
+              <div>
+                <div class="resident-fullname"><?= h($u['full_name']) ?></div>
+                <div class="resident-email"><?= h($u['email']) ?></div>
+              </div>
+            </div>
+
+            <div class="verification-cell address-cell"><?= h($u['address'] ?? 'No address provided') ?></div>
+            <div class="verification-cell request-date"><?= h($date) ?></div>
+
+            <div class="verification-cell review-cell">
+              <button type="button" class="review-btn">Review</button>
+            </div>
+          </div>
+        <?php endforeach; ?>
+      </div>
+    </div>
+
+    <div class="page-footer">
+      <span><strong>CitiServe</strong> © 2026. All rights reserved.</span>
+    </div>
+  </div>
+</div>
+
+<div class="account-review-modal" id="accountReviewModal">
+  <div class="account-review-box">
+    <button type="button" class="account-review-close" id="accountReviewClose">×</button>
+
+    <div class="account-review-title">
+      Account Review – <span id="reviewResidentId">RES-0000000001</span>
+    </div>
+
+    <div class="account-review-divider"></div>
+
+    <div class="account-review-header">
+      <div class="account-review-avatar" id="reviewInitials">EF</div>
+
+      <div>
+        <div class="account-review-name" id="reviewName">Eduardo Flores</div>
+        <div class="account-review-id" id="reviewSmallId">RES-0000000001</div>
+        <img src="/CitiServe/frontend/admin_dashboard/images/resident_active_staff.png" class="account-review-status-img" alt="Active">
+      </div>
+    </div>
+
+    <div class="account-review-divider"></div>
+
+    <div class="account-review-grid">
+      <div>
+        <label>Email</label>
+        <p id="reviewEmail">eduardo.f@email.com</p>
+      </div>
+
+      <div>
+        <label>Date Submitted</label>
+        <p id="reviewDate">04/01/2025</p>
+      </div>
+
+      <div class="review-address">
+        <label>Address</label>
+        <p id="reviewAddress">123 Rizal St., Brgy. Kalayaan, Angono, Rizal</p>
+      </div>
+    </div>
+
+    <div class="review-document-box">
+      <div class="review-document-title">Uploaded Document</div>
+
+      <div class="review-document-item">
+        <span id="reviewDocumentName">Valid ID (Front).jpg</span>
+        <a href="#" id="reviewDocumentLink" target="_blank" class="review-doc-link">View</a>
+      </div>
+    </div>
+
+    <div class="account-review-actions">
+      <form method="POST" id="verifyForm" style="margin:0;">
+        <?= csrf_field() ?>
+        <input type="hidden" name="user_id" id="verifyUserId" value="">
+        <input type="hidden" name="action" id="verifyAction" value="">
+      </form>
+      <button type="button" class="account-review-img-btn" id="rejectAccountBtn">
+        <img src="/CitiServe/frontend/verification_table/images/admin_reject_account.png" alt="Reject">
+      </button>
+
+      <button type="button" class="account-review-img-btn" id="approveAccountBtn">
+        <img src="/CitiServe/frontend/verification_table/images/admin_approve_account.png" alt="Approve Account">
+      </button>
+    </div>
+  </div>
+</div>
+
+<script src="/CitiServe/frontend/admin_dashboard/JS/admin_dashboard.js"></script>
+<script src="/CitiServe/public/admin/JS/admin_account_verification.js"></script>
 </body>
 </html>

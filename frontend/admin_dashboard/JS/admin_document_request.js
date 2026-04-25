@@ -1,4 +1,142 @@
 document.addEventListener('DOMContentLoaded', function () {
+  /* ================= NOTIFICATION PANEL ================= */
+  const notifBtn = document.getElementById('notifBtn');
+  const notifIcon = document.getElementById('notifIcon');
+  const notifPanel = document.getElementById('notifPanel');
+
+  if (notifBtn && notifIcon && notifPanel) {
+    const notifCountBadge = document.getElementById('notifCount');
+    const imgOn = notifBtn.getAttribute('data-img-on');
+    const imgOff = notifBtn.getAttribute('data-img-off');
+    const imgActive = notifBtn.getAttribute('data-img-active');
+    const readUrl = notifBtn.getAttribute('data-read-url');
+    const csrfToken = notifBtn.getAttribute('data-csrf-token');
+    let panelOpen = false;
+
+    function getUnreadItems() {
+      return notifPanel.querySelectorAll('.notif-item.unread');
+    }
+
+    function updateUnreadUI() {
+      const unreadCount = getUnreadItems().length;
+      notifBtn.setAttribute('data-has-notif', unreadCount > 0 ? '1' : '0');
+      if (notifCountBadge) {
+        if (unreadCount > 0) {
+          notifCountBadge.style.display = '';
+          notifCountBadge.textContent = unreadCount > 99 ? '99+' : String(unreadCount);
+        } else {
+          notifCountBadge.style.display = 'none';
+        }
+      }
+      if (!panelOpen) {
+        notifIcon.src = unreadCount > 0 ? imgOn : imgOff;
+      }
+    }
+
+    function persistRead(ids) {
+      if (!readUrl || !csrfToken || !ids || !ids.length) return;
+      const body = new URLSearchParams();
+      body.set('_csrf_token', csrfToken);
+      body.set('action', 'mark_many');
+      body.set('ids', ids.join(','));
+      fetch(readUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
+        body: body.toString()
+      }).catch(function () {});
+    }
+
+    function markVisibleAsPendingRead() {
+      notifPanel.querySelectorAll('.notif-item.unread').forEach(function (item) {
+        if (item.style.display !== 'none') item.setAttribute('data-pending-read', '1');
+      });
+    }
+
+    function applyPendingRead() {
+      const idsToPersist = [];
+      notifPanel.querySelectorAll('.notif-item[data-pending-read="1"]').forEach(function (item) {
+        const id = parseInt(item.getAttribute('data-id') || '0', 10);
+        if (id > 0) idsToPersist.push(id);
+        item.classList.remove('unread');
+        item.classList.add('is-read');
+        item.removeAttribute('data-pending-read');
+      });
+      persistRead(idsToPersist);
+      updateUnreadUI();
+    }
+
+    function openNotifPanel() {
+      panelOpen = true;
+      notifPanel.classList.add('open');
+      notifIcon.src = imgActive;
+      markVisibleAsPendingRead();
+    }
+
+    function closeNotifPanel() {
+      panelOpen = false;
+      notifPanel.classList.remove('open');
+      applyPendingRead();
+      notifIcon.src = getUnreadItems().length > 0 ? imgOn : imgOff;
+    }
+
+    notifBtn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      panelOpen ? closeNotifPanel() : openNotifPanel();
+    });
+
+    document.addEventListener('click', function (e) {
+      if (panelOpen && !notifPanel.contains(e.target) && !notifBtn.contains(e.target)) closeNotifPanel();
+    });
+
+    notifPanel.addEventListener('click', function (e) {
+      const item = e.target.closest('.notif-item');
+      if (!item) return;
+      item.setAttribute('data-pending-read', '1');
+      const link = item.getAttribute('data-link');
+      if (link) {
+        applyPendingRead();
+        setTimeout(function () { window.location.href = link; }, 120);
+      }
+    });
+
+    const tabs = notifPanel.querySelectorAll('.notif-tab');
+    tabs.forEach(function (tab) {
+      tab.addEventListener('click', function (e) {
+        e.stopPropagation();
+        tabs.forEach(function (t) { t.classList.remove('active'); });
+        tab.classList.add('active');
+        const filter = tab.getAttribute('data-filter');
+        notifPanel.querySelectorAll('.notif-item').forEach(function (item) {
+          item.style.display = filter === 'all' || item.getAttribute('data-category') === filter ? '' : 'none';
+        });
+        notifPanel.querySelectorAll('.notif-section-label').forEach(function (label) {
+          let sibling = label.nextElementSibling;
+          let hasVisible = false;
+          while (sibling && !sibling.classList.contains('notif-section-label')) {
+            if (sibling.classList.contains('notif-item') && sibling.style.display !== 'none') {
+              hasVisible = true;
+              break;
+            }
+            sibling = sibling.nextElementSibling;
+          }
+          label.style.display = hasVisible ? '' : 'none';
+        });
+        markVisibleAsPendingRead();
+      });
+    });
+
+    const seePrev = document.getElementById('notifSeePrev');
+    if (seePrev) {
+      seePrev.addEventListener('click', function (e) {
+        e.stopPropagation();
+        applyPendingRead();
+        window.location.href = '/CitiServe/public/admin/requests.php';
+      });
+    }
+
+    updateUnreadUI();
+  }
+
   /* ================= PROFILE DROPDOWN ================= */
   const profilePill = document.getElementById('profilePill');
   const profilePanel = document.getElementById('profilePanel');

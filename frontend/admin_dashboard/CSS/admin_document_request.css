@@ -930,3 +930,29 @@ img {
 .manage-img-btn:hover {
   opacity: 0.88;
 }
+
+/* ===================== SIZE CONSISTENCY OVERRIDES ===================== */
+.admin-doc-card {
+  height: auto;
+  min-height: 668px;
+}
+
+.admin-summary-row {
+  flex-wrap: wrap;
+}
+
+.summary-box {
+  flex: 1 1 280px;
+  width: auto;
+  min-width: 260px;
+}
+
+.requests-table-card {
+  width: 100%;
+  max-width: 100%;
+}
+
+/* Keep table readable on smaller widths instead of compressing text too much */
+.requests-table-body {
+  overflow-x: auto;
+}

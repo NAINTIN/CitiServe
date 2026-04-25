@@ -8,6 +8,7 @@ error_reporting(E_ALL);
 require_once __DIR__ . '/../../app/helpers/auth.php';
 require_once __DIR__ . '/../../app/helpers/csrf.php';
 require_once __DIR__ . '/../../app/core/CitiServeData.php';
+require_once __DIR__ . '/../../app/helpers/admin_notifications.php';
 
 // Make sure the user is an admin or staff
 $admin = require_admin();
@@ -74,8 +75,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($complaintId <= 0 || !in_array($newStatus, $allowedStatuses, true)) {
             $error = 'Invalid complaint status update request.';
         } else {
-            // Find the current complaint
-            $current = $data->findComplaintById($complaintId);
+            // Find the current complaint with owner so we can notify the resident
+            $current = $data->findComplaintByIdWithOwner($complaintId);
 
             if (!$current) {
                 $error = 'Complaint not found.';
@@ -175,6 +176,12 @@ function complaint_type_image($isAnonymous)
         ? '/CitiServe/frontend/admin_dashboard/images/complaint_anonymous_type.png'
         : '/CitiServe/frontend/admin_dashboard/images/complaint_identified_type.png';
 }
+
+$adminNotif = build_admin_notifications($data, (int)$admin['id']);
+$notifSections = $adminNotif['sections'];
+$hasNotif = $adminNotif['has_notif'];
+$notifications = $adminNotif['notifications'];
+$unreadCount = (int)$adminNotif['unread_count'];
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -185,6 +192,7 @@ function complaint_type_image($isAnonymous)
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/CitiServe/frontend/admin_dashboard/CSS/admin_dashboard.css">
     <link rel="stylesheet" href="/CitiServe/frontend/admin_dashboard/CSS/admin_complaints.css">
 </head>
 <body>
@@ -205,6 +213,63 @@ function complaint_type_image($isAnonymous)
     <a href="/CitiServe/public/admin/user_verification.php" class="nav-item"><span class="nav-text">Account Verification</span></a>
   </div>
   <div class="navbar-right admin-navbar-right">
+    <button class="notif-btn" id="notifBtn"
+      data-has-notif="<?= $hasNotif ? '1' : '0' ?>"
+      data-img-on="/CitiServe/frontend/admin_dashboard/images/with_notif.png"
+      data-img-off="/CitiServe/frontend/admin_dashboard/images/no_notif.png"
+      data-img-active="/CitiServe/frontend/admin_dashboard/images/select_notif.png"
+      data-read-url="/CitiServe/public/admin/notifications_read.php"
+      data-csrf-token="<?= h(csrf_token()) ?>"
+      title="Notifications">
+      <img id="notifIcon"
+        src="<?= $hasNotif ? '/CitiServe/frontend/admin_dashboard/images/with_notif.png' : '/CitiServe/frontend/admin_dashboard/images/no_notif.png' ?>"
+        alt="Notifications">
+      <span class="notif-count-badge" id="notifCount" <?= $unreadCount > 0 ? '' : 'style="display:none;"' ?>>
+        <?= $unreadCount > 99 ? '99+' : (int)$unreadCount ?>
+      </span>
+    </button>
+    <div class="notif-panel" id="notifPanel" aria-label="Notifications">
+      <div class="notif-panel-header">
+        <span class="notif-panel-title">Notifications</span>
+        <button class="notif-panel-more" title="More options">···</button>
+      </div>
+      <div class="notif-tabs">
+        <button class="notif-tab active" data-filter="all">All</button>
+        <button class="notif-tab" data-filter="document">Document</button>
+        <button class="notif-tab" data-filter="complaint">Complaint</button>
+      </div>
+      <div class="notif-list" id="notifList">
+        <?php foreach (['new' => 'New', 'today' => 'Today', 'earlier' => 'Earlier'] as $key => $label): ?>
+          <?php if (!empty($notifSections[$key])): ?>
+            <div class="notif-section-label" data-section="<?= h($key) ?>"><?= h($label) ?></div>
+            <?php foreach ($notifSections[$key] as $n): ?>
+              <div class="notif-item <?= $n['read'] ? '' : 'unread' ?>"
+                data-id="<?= (int)$n['id'] ?>"
+                data-category="<?= h($n['category']) ?>"
+                data-link="<?= h($n['link']) ?>">
+                <div class="notif-icon-wrap">
+                  <img class="notif-icon-main" src="<?= h($n['main_icon']) ?>" alt="">
+                  <?php if (!empty($n['badge_icon'])): ?>
+                    <img class="notif-icon-badge" src="<?= h($n['badge_icon']) ?>" alt="">
+                  <?php endif; ?>
+                </div>
+                <div class="notif-text">
+                  <div class="notif-msg"><?= h($n['message']) ?></div>
+                  <div class="notif-time"><?= h($n['time_label']) ?></div>
+                </div>
+                <div class="notif-dot"></div>
+              </div>
+            <?php endforeach; ?>
+          <?php endif; ?>
+        <?php endforeach; ?>
+        <?php if (empty($notifications)): ?>
+          <div class="notif-empty">No notifications yet.</div>
+        <?php endif; ?>
+      </div>
+      <div class="notif-footer">
+        <button class="notif-see-prev" id="notifSeePrev"><p>Go to requests and complaints</p></button>
+      </div>
+    </div>
     <div class="profile-pill" id="profilePill">
       <div class="profile-avatar"><img src="/CitiServe/frontend/admin_dashboard/images/admin_dummy_icon.png" alt="Admin"></div>
       <span class="profile-name"><?= h(explode(' ', (string)$admin['full_name'])[0]) ?></span>
@@ -212,6 +277,7 @@ function complaint_type_image($isAnonymous)
     </div>
     <div class="profile-panel" id="profilePanel">
       <div class="profile-panel-top"><div class="profile-panel-fullname"><?= h($admin['full_name']) ?></div><div class="profile-panel-subtext"><?= h(ucfirst((string)$admin['role'])) ?> • Brgy. Kalayaan</div></div>
+      <a href="/CitiServe/public/admin/profile.php" class="profile-panel-item"><img src="/CitiServe/frontend/admin_dashboard/images/my_profile.png" class="profile-panel-icon1" alt=""><span>My Profile</span></a>
       <a href="/CitiServe/public/logout.php" class="profile-panel-item logout"><img src="/CitiServe/frontend/admin_dashboard/images/logout.png" class="profile-panel-icon2" alt=""><span>Logout</span></a>
     </div>
   </div>

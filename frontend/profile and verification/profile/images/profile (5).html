@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>My Profile – CitiServe</title>
+  <link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Epilogue', sans-serif; }
+    body { background: #ffffff; padding: 28px 32px; }
+
+    .content-area {
+      background: #F5F5F5;
+      border-radius: 20px;
+      padding: 24px 30px 30px;
+      margin: 10px 0;
+      min-height: calc(100vh - 90px);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .form-breadcrumb, .form-title, .form-subtitle, .profile-wrapper {
+      position: relative;
+      z-index: 1;
+    }
+
+    .form-breadcrumb { margin-bottom: 14px; font-size: 13.6px; color: #6B7280; }
+    .form-breadcrumb a { color: #6B7280; text-decoration: none; }
+    .form-breadcrumb a:hover { color: #E8265E; text-decoration: underline; }
+    .form-active { color: #E8265E; font-weight: 600; }
+    .form-sep { color: #111; margin: 0 6px; font-weight: 600; }
+
+    .form-title { font-size: 30px; font-weight: 700; color: #000000; margin-bottom: 8px; }
+    .form-subtitle { font-size: 12.5px; color: rgba(0,0,0,.5); margin-bottom: 30px; }
+
+    .profile-wrapper { display: flex; gap: 26px; align-items: flex-start; }
+    .profile-side {
+      flex: 0 0 250px;
+      display: flex;
+      flex-direction: column;
+      position: sticky;
+      top: 0;
+      align-self: flex-start;
+    }
+    .profile-main { flex: 1; display: flex; flex-direction: column; gap: 16px; }
+
+    .form-card {
+      background: #ffffff;
+      border-radius: 12px;
+      overflow: visible;
+      margin-bottom: 16px;
+      box-shadow: 3px 3px 11px rgba(255, 61, 127, 0.15);
+    }
+    .form-card-bar {
+      background: #F03871;
+      color: #ffffff;
+      padding: 15px 20px;
+      font-weight: 600;
+      font-size: 15px;
+      display: flex;
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 4px;
+      border-radius: 12px 12px 0 0;
+    }
+    .form-card-body {
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      overflow: visible;
+    }
+
+    .avatar-card {
+      background: #fff;
+      border-radius: 12px;
+      overflow: hidden;
+      margin-bottom: 16px;
+      box-shadow: 3px 3px 11px rgba(255, 61, 127, 0.15);
+    }
+    .avatar-section {
+      padding: 20px 20px 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .avatar-wrap { position: relative; margin-bottom: 10px; }
+    .avatar-img {
+      width: 72px; height: 72px; border-radius: 50%;
+      object-fit: cover;
+      border: 0.4px solid #fce4ed;
+      display: block;
+      margin-top: -5px;
+    }
+    .avatar-edit-btn {
+      position: absolute;
+      bottom: 2px; right: 0;
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      background: none; border: none;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; box-shadow: none; padding: 0;
+    }
+    .avatar-edit-btn img { width: 35px; height: 35px; }
+    .user-name { font-size: 15px; font-weight: 700; color: #111; text-align: center; margin-top: 3px; }
+    .user-role { font-size: 11.5px; color: #6B7280; margin-top: 4px; text-align: center; }
+    .avatar-divider { width: 85%; height: 1px; background: #F3F4F6; margin: 0 auto; }
+
+    .meta-table { padding: 6px 19px; }
+    .meta-row { display: flex; justify-content: space-between; align-items: center; padding: 4px 0; }
+    .meta-label { font-size: 11px; color: #6B7280; }
+    .meta-val { font-weight: 500; color: #111; font-size: 11px; }
+    .badge-active { color: #15803D; font-weight: 600; font-size: 11.5px; }
+
+    .sidenav-card {
+      background: #ffffff;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 3px 3px 11px rgba(255, 61, 127, 0.15);
+      width: 250px;
+    }
+    .sidenav-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 16px;
+      font-size: 13.5px;
+      font-weight: 400;
+      color: #000000;
+      cursor: pointer;
+      text-decoration: none;
+      border-bottom: 1px solid #F3F4F6;
+      transition: color .15s;
+      border-left: 3px solid transparent;
+      box-sizing: border-box;
+      width: 100%;
+    }
+    .sidenav-item:last-child { border-bottom: none; }
+    .sidenav-item img { width: 15px; height: 15px; flex-shrink: 0; margin-top: -4px; }
+    .sidenav-item:hover { color: #F03871; background: #fce4ed; }
+    .sidenav-item.active { color: #F03871; background: #fce4ed; border-left: 3px solid #F03871; }
+
+    .form-group {
+      display: flex; flex-direction: column; gap: 5px;
+      position: relative; overflow: visible;
+      margin-bottom: 9px; margin-top: 6px;
+    }
+    .form-group label { font-size: 12.7px; font-weight: 600; color: #111; line-height: 1.1; }
+    .req { color: #F03871; }
+    .opt { color: #9CA3AF; font-weight: 400; }
+    .form-group input {
+      width: 100%; height: 35px; padding: 0 14px;
+      border: 1.5px solid #E5E7EB; border-radius: 3px;
+      font-size: 12.5px; color: #111; background: #fff;
+      outline: none; font-family: 'Epilogue', sans-serif;
+      transition: border .2s;
+    }
+    .form-group input:focus { border-color: #F03871; }
+    .form-group input::placeholder { color: #9CA3AF; }
+
+    .custom-select { position: relative; width: 100%; }
+    .custom-select-selected {
+      display: flex; justify-content: space-between; align-items: center;
+      height: 35px; padding: 0 14px;
+      border: 1.5px solid #E5E7EB; border-radius: 3px;
+      font-size: 12.5px; color: #9CA3AF; background: #fff;
+      cursor: pointer; transition: border .2s; user-select: none;
+    }
+    .custom-select.open .custom-select-selected { color: #111; border-color: #F03871; }
+    .custom-select.filled .custom-select-selected { color: #111; }
+    .custom-select-arrow { color: #111; font-size: 16px; transform: translateY(2px); }
+    .custom-select-options {
+      display: none; position: absolute; top: calc(100% + 4px); left: 0; right: 0;
+      background: #fff; border: 1.5px solid #F03871; border-radius: 5px;
+      overflow-y: auto; max-height: 168px; z-index: 999;
+      box-shadow: 0 4px 12px rgba(0,0,0,.1);
+    }
+    .custom-select.open .custom-select-options { display: block; }
+    .custom-select-option { padding: 10px 14px; font-size: 13px; color: #111; cursor: pointer; transition: background .15s; }
+    .custom-select-option:hover,
+    .custom-select-option.selected { background: #F03871; color: #fff; }
+
+    .form-row-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 12px; align-items: end; overflow: visible; }
+    .form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; align-items: end; overflow: visible; }
+    .form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-items: end; overflow: visible; }
+
+    .success-banner { display: flex; align-items: center; animation: fadeIn .4s ease; }
+    .success-banner img { height: 38px; width: 98%; }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(3px); }
+      to { opacity: 1; }
+    }
+
+    .form-btn-row {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 12px;
+      padding: 3px 20px 20px;
+    }
+    .form-btn { border: none; background: none; padding: 0; cursor: pointer; }
+    .form-btn img { height: 38px; object-fit: fill; display: block; }
+
+    .form-logo {
+      position: absolute;
+      bottom: 17px;
+      left: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin: 0;
+      padding: 0;
+    }
+    .form-logo img { width: 40px; object-fit: contain; }
+    .form-logo-text { font-size: 10.5px; font-weight: 500; }
+    .logo-pink { color: #F03871; font-weight: 700; }
+    .logo-gray { color: #6B7280; font-weight: 600; }
+
+    .profile-section { display: none; }
+    .profile-section.active { display: block; }
+
+    /* ── ACCOUNT VERIFICATION LAYOUT ── */
+    .verif-body { flex-direction: row; gap: 16px; align-items: flex-start; }
+    .verif-left { flex: 1; display: flex; flex-direction: column; gap: 12px; }
+    .verif-right {
+      width: 320px;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      justify-content: space-between;
+      align-self: stretch;
+    }
+    .verif-images { display: flex; flex-direction: column; gap: 22px; }
+    .verif-right img { width: 100%; }
+
+    .verif-box {
+      border: 1px solid rgba(0,0,0,.1);
+      border-radius: 6px;
+      overflow: hidden;
+      background: #FFFFFF;
+    }
+    .verif-box-content { padding: 18px; }
+    .verif-box:first-child .verif-box-content { padding-bottom: 15px; }
+    .verif-box:first-child .verif-box-title { padding: 19px; }
+    .verif-box:last-child .verif-box-title { padding: 19px 20px; }
+    .verif-box-title {
+      background: #F9FAFB;
+      border-bottom: 0.8px solid #F3F4F6;
+      font-weight: 600;
+      font-size: 14px;
+      color: #111;
+      padding: 16px 20px;
+    }
+
+    .verif-details-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-right: 100px;
+    }
+    .verif-details-row p.label { font-size: 13.5px; color: rgba(0,0,0,.5); margin-bottom: 8px; margin-top: 1px; }
+    .verif-details-row p.value { font-size: 13px; color: #1F2937; font-weight: 500; margin-top: 1px; }
+    .verif-details-row img { height: 21px; }
+
+    .submit-again-row { display: flex; justify-content: flex-end; }
+    .submit-again-row img { height: 40px; width: 46%; cursor: pointer; }
+
+    .upload-area {
+      background: #F9FAFB;
+      border: 2px dashed #D1D5DB;
+      border-radius: 3px;
+      padding: 53px 20px;
+      text-align: center;
+      margin-bottom: 10px;
+      cursor: pointer;
+      transition: border-color .2s;
+    }
+    .upload-area:hover { border-color: #F03871; }
+    .upload-placeholder p { font-size: 13px; color: #1c1d1d; }
+    .upload-result { display: none; align-items: center; justify-content: center; gap: 8px; }
+    .upload-result img { width: 18px; height: 18px; vertical-align: middle; }
+    .upload-result span { font-size: 13px; color: #16a34a; font-weight: 600; }
+    .upload-hint { font-size: 12.5px; color: rgba(0,0,0,.5); margin-bottom: 1px; }
+    .upload-btn-row { display: flex; justify-content: flex-end; }
+    .upload-btn-row img { height: 38px; cursor: pointer; }
+
+    /* ── PASSWORD EYE TOGGLE ── */
+    .pw-wrap { position: relative; display: flex; align-items: center; }
+    .pw-wrap input { padding-right: 40px; }
+    .pw-eye {
+      position: absolute;
+      right: 10px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+      display: flex;
+      align-items: center;
+    }
+    .pw-eye img { width: 18px; height: 18px; opacity: 0.45; transition: opacity .15s; }
+    .pw-eye:hover img { opacity: 0.8; }
+
+    /* ── PASSWORD REQUIREMENTS ── */
+    .pw-requirements {
+      background: #F9FAFB;
+      border: 1px solid #F3F4F6;
+      border-radius: 6px;
+      padding: 14px 18px;
+      margin-top: 2px;
+    }
+    .pw-req-title { font-size: 12.5px; font-weight: 600; color: #111; margin-bottom: 8px; }
+    .pw-requirements ul { list-style: disc; padding-left: 18px; }
+    .pw-requirements ul li { font-size: 12px; color: rgba(0,0,0,.5); margin-bottom: 3px; }
+  </style>
+</head>
+<body>
+
+<div class="content-area">
+
+  <img src="images/profile-bg-top.png" style="position:absolute; top:20px; right:37%; width:275px; pointer-events:none; z-index:0;">
+  <img src="images/profile-bg-mid.png" style="position:absolute; top:0%; right:30px; width:275px; pointer-events:none; z-index:0;">
+
+  <div class="form-breadcrumb" id="form-breadcrumb"></div>
+  <h1 class="form-title">My Profile</h1>
+  <p class="form-subtitle">Manage your account information and password.</p>
+
+  <div class="profile-wrapper">
+
+    <!-- SIDEBAR -->
+    <aside class="profile-side">
+      <div class="avatar-card">
+        <div class="avatar-section">
+          <div class="avatar-wrap">
+            <img class="avatar-img"
+              src="https://api.dicebear.com/9.x/adventurer/svg?seed=Juan&backgroundColor=ff5f8f,fce4ed&radius=50"
+              alt="Juan Dela Cruz"/>
+            <input type="file" id="avatarInput" accept="image/*" style="display:none;" onchange="changeAvatar(event)">
+            <button class="avatar-edit-btn" onclick="document.getElementById('avatarInput').click()">
+              <img src="images/profile-edit.png" alt="Edit">
+            </button>
+          </div>
+          <div class="user-name" id="userName">Juan Dela Cruz</div>
+          <div class="user-role">Resident · Brgy. Kalayaan</div>
+        </div>
+        <div class="avatar-divider"></div>
+        <div class="meta-table">
+          <div class="meta-row">
+            <span class="meta-label">Member since</span>
+            <span class="meta-val">04-10-2026</span>
+          </div>
+          <div class="meta-row">
+            <span class="meta-label">Account Type</span>
+            <span class="meta-val">Fully Verified</span>
+          </div>
+          <div class="meta-row">
+            <span class="meta-label">Status</span>
+            <span class="badge-active">Active</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="sidenav-card">
+        <a href="#profile" class="sidenav-item active">
+          <img src="images/profile-pf-icon.png" alt="">
+          Profile Information
+        </a>
+        <a href="#verification" class="sidenav-item">
+          <img src="images/profile-change-password.png" alt="">
+          Account Verification
+        </a>
+        <a href="#password" class="sidenav-item">
+          <img src="images/profile-account-verification.png" alt="">
+          Change Password
+        </a>
+      </div>
+    </aside>
+
+    <!-- MAIN -->
+    <div class="profile-main">
+
+      <!-- ── SECTION: Profile Information ── -->
+      <div id="section-profile" class="profile-section active">
+        <div class="form-card">
+          <div class="form-card-bar">
+            Profile Information
+            <small style="font-weight:400; font-size:11px;">Update your personal details.</small>
+          </div>
+          <div class="form-card-body">
+            <div class="form-row-4">
+              <div class="form-group">
+                <label>First Name <span class="req">*</span></label>
+                <input type="text" id="firstNameInput" value="Juan">
+              </div>
+              <div class="form-group">
+                <label>Middle Name <span class="opt">(Optional)</span></label>
+                <input type="text" id="middleNameInput" value="N/A">
+              </div>
+              <div class="form-group">
+                <label>Last Name <span class="req">*</span></label>
+                <input type="text" id="lastNameInput" value="Dela Cruz">
+              </div>
+              <div class="form-group">
+                <label>Suffix <span class="opt">(Optional)</span></label>
+                <div class="custom-select" id="suffixDropdown">
+                  <div class="custom-select-selected" onclick="toggleDropdown('suffixDropdown')">
+                    <span class="custom-select-text">Select suffix</span>
+                    <span class="custom-select-arrow">▾</span>
+                  </div>
+                  <div class="custom-select-options">
+                    <div class="custom-select-option" onclick="selectOption('suffixDropdown','Jr.')">Jr.</div>
+                    <div class="custom-select-option" onclick="selectOption('suffixDropdown','Sr.')">Sr.</div>
+                    <div class="custom-select-option" onclick="selectOption('suffixDropdown','II')">II</div>
+                    <div class="custom-select-option" onclick="selectOption('suffixDropdown','III')">III</div>
+                    <div class="custom-select-option" onclick="selectOption('suffixDropdown','IV')">IV</div>
+                    <div class="custom-select-option" onclick="selectOption('suffixDropdown','V')">V</div>
+                    <div class="custom-select-option" onclick="selectOption('suffixDropdown','VI')">VI</div>
+                    <div class="custom-select-option" onclick="selectOption('suffixDropdown','VII')">VII</div>
+                    <div class="custom-select-option" onclick="selectOption('suffixDropdown','VIII')">VIII</div>
+                    <div class="custom-select-option" onclick="selectOption('suffixDropdown','IX')">IX</div>
+                    <div class="custom-select-option" onclick="selectOption('suffixDropdown','X')">X</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-row-2">
+              <div class="form-group">
+                <label>Contact Number <span class="req">*</span></label>
+                <input type="text" id="contactInput" value="096748791829">
+              </div>
+              <div class="form-group">
+                <label>Email Address</label>
+                <input type="email" id="emailInput" value="juand@gmail.com">
+              </div>
+            </div>
+
+            <div class="form-row-4">
+              <div class="form-group">
+                <label>Date of Birth <span class="req">*</span></label>
+                <input type="date" id="dobInput" value="2000-03-19">
+              </div>
+              <div class="form-group">
+                <label>Civil Status <span class="req">*</span></label>
+                <div class="custom-select filled" id="civilDropdown">
+                  <div class="custom-select-selected" onclick="toggleDropdown('civilDropdown')">
+                    <span class="custom-select-text">Married</span>
+                    <span class="custom-select-arrow">▾</span>
+                  </div>
+                  <div class="custom-select-options">
+                    <div class="custom-select-option" onclick="selectOption('civilDropdown','Single')">Single</div>
+                    <div class="custom-select-option selected" onclick="selectOption('civilDropdown','Married')">Married</div>
+                    <div class="custom-select-option" onclick="selectOption('civilDropdown','Widowed')">Widowed</div>
+                    <div class="custom-select-option" onclick="selectOption('civilDropdown','Separated')">Separated</div>
+                    <div class="custom-select-option" onclick="selectOption('civilDropdown','Annulled')">Annulled</div>
+                  </div>
+                </div>
+              </div>
+              <div class="form-group">
+                <label>Citizenship <span class="req">*</span></label>
+                <input type="text" id="citizenshipInput" value="Filipino">
+              </div>
+              <div class="form-group">
+                <label>Gender <span class="req">*</span></label>
+                <div class="custom-select filled" id="genderDropdown">
+                  <div class="custom-select-selected" onclick="toggleDropdown('genderDropdown')">
+                    <span class="custom-select-text">Male</span>
+                    <span class="custom-select-arrow">▾</span>
+                  </div>
+                  <div class="custom-select-options">
+                    <div class="custom-select-option selected" onclick="selectOption('genderDropdown','Male')">Male</div>
+                    <div class="custom-select-option" onclick="selectOption('genderDropdown','Female')">Female</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Complete Address <span class="req">*</span></label>
+              <input type="text" id="addressInput" value="123 Rizal St., Brgy. Kalayaan, Angono, Rizal">
+            </div>
+          </div>
+
+          <div class="form-btn-row">
+            <div class="success-banner" id="successBanner" style="display:none;">
+              <img src="images/profile-fully-verify-green.png" alt="">
+            </div>
+            <button class="form-btn" onclick="handleSave()">
+              <img src="images/profile-save-changes.png" alt="Save Changes">
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── SECTION: Account Verification ── -->
+      <div id="section-verification" class="profile-section">
+        <div class="form-card">
+          <div class="form-card-bar">
+            Account Verification
+            <small style="font-weight:400; font-size:11px;">Your identity verification status and details.</small>
+          </div>
+          <div class="form-card-body verif-body">
+            <div class="verif-left">
+              <div class="verif-box">
+                <div class="verif-box-title">Verification Details</div>
+                <div class="verif-box-content">
+                  <div class="verif-details-row">
+                    <div>
+                      <p class="label">Verification Status</p>
+                      <img src="images/profile-fully-verified.png" alt="Fully Verified">
+                    </div>
+                    <div>
+                      <p class="label">Date Submitted</p>
+                      <p class="value">04-10-2026</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="verif-box">
+                <div class="verif-box-title">Submitted Document</div>
+                <div class="verif-box-content">
+                  <div class="upload-area" onclick="document.getElementById('docInput').click()">
+                    <div class="upload-placeholder" id="uploadPlaceholder">
+                      <p>Click to upload a document</p>
+                    </div>
+                    <div class="upload-result" id="uploadedFile">
+                      <img src="https://api.iconify.design/lucide/circle-check.svg?color=%2316a34a" alt="">
+                      <span id="uploadedFileName"></span>
+                    </div>
+                  </div>
+                  <input type="file" id="docInput" accept=".jpg,.jpeg,.png,.pdf" style="display:none;" onchange="handleDocUpload(event)">
+                  <p class="upload-hint">Upload front side of any valid government-issued ID (JPG, PNG, PDF · max 5MB)</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="verif-right">
+              <div class="verif-images">
+                <img src="images/profile-your-account-is-verified.png" alt="Verified">
+                <img src="images/profile-what-you-can-do-now.png" alt="What you can do">
+              </div>
+              <div class="submit-again-row">
+                <img src="images/profile-cant-submit-agin.png" alt="Submit Again">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── SECTION: Change Password ── -->
+      <div id="section-password" class="profile-section">
+        <div class="form-card">
+          <div class="form-card-bar">
+            Change Password
+            <small style="font-weight:400; font-size:11px;">Use a strong password of at least 8 characters.</small>
+          </div>
+          <div class="form-card-body">
+
+            <div class="form-group">
+              <label>Current Password <span class="req">*</span></label>
+              <div class="pw-wrap">
+                <input type="password" id="currentPw" placeholder="Enter current password">
+                <button class="pw-eye" onclick="togglePw('currentPw', this)" tabindex="-1">
+                  <img src="images/eye-open.png" alt="Show">
+                </button>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>New Password <span class="req">*</span></label>
+              <div class="pw-wrap">
+                <input type="password" id="newPw" placeholder="Enter new password">
+                <button class="pw-eye" onclick="togglePw('newPw', this)" tabindex="-1">
+                  <img src="images/eye-open.png" alt="Show">
+                </button>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Confirm New Password <span class="req">*</span></label>
+              <div class="pw-wrap">
+                <input type="password" id="confirmPw" placeholder="Confirm new password">
+                <button class="pw-eye" onclick="togglePw('confirmPw', this)" tabindex="-1">
+                  <img src="images/eye-open.png" alt="Show">
+                </button>
+              </div>
+            </div>
+
+            <div class="pw-requirements">
+              <p class="pw-req-title">Password Requirements:</p>
+              <ul>
+                <li>At least 8 characters long</li>
+                <li>Mix of letters and numbers recommended</li>
+                <li>Avoid using personal information</li>
+              </ul>
+            </div>
+
+          </div>
+          <div class="form-btn-row">
+            <div class="success-banner" id="pwSuccessBanner" style="display:none;">
+              <img src="images/profile-fully-verify-green.png" alt="Success">
+            </div>
+            <button class="form-btn" onclick="handlePwSave()">
+              <img src="images/profile-save-changes.png" alt="Change Password">
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="form-logo">
+    <img src="images/docu-logo.png" onerror="this.style.display='none'">
+    <div class="form-logo-text">
+      <span class="logo-pink">CitiServe</span>
+      <span class="logo-gray"> © 2026. All rights reserved.</span>
+    </div>
+  </div>
+</div>
+
+<script>
+  /* Breadcrumb */
+  const trail = [
+    { label: "Dashboard", href: "dashboard.html" },
+    { label: "My Profile", href: null }
+  ];
+  (function () {
+    const el = document.getElementById("form-breadcrumb");
+    el.innerHTML = trail.map((item, i) => {
+      const sep = i > 0 ? `<span class="form-sep">›</span>` : "";
+      if (!item.href) return `${sep}<span class="form-active">${item.label}</span>`;
+      return `${sep}<a href="${item.href}">${item.label}</a>`;
+    }).join("");
+  })();
+
+  /* Dropdown */
+  function toggleDropdown(id) {
+    const d = document.getElementById(id);
+    document.querySelectorAll('.custom-select').forEach(x => { if (x.id !== id) x.classList.remove('open'); });
+    d.classList.toggle('open');
+  }
+  function selectOption(id, value) {
+    const d = document.getElementById(id);
+    d.querySelector('.custom-select-text').textContent = value;
+    d.querySelectorAll('.custom-select-option').forEach(o => o.classList.toggle('selected', o.textContent.trim() === value));
+    d.dataset.value = value;
+    d.classList.add('filled');
+    d.classList.remove('open');
+  }
+  document.addEventListener('click', e => {
+    if (!e.target.closest('.custom-select')) document.querySelectorAll('.custom-select').forEach(d => d.classList.remove('open'));
+  });
+
+  /* Sidenav */
+  const sectionMap = {
+    '#profile': 'section-profile',
+    '#verification': 'section-verification',
+    '#password': 'section-password'
+  };
+
+  function showSection(href) {
+    document.querySelectorAll('.profile-section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.sidenav-item').forEach(l => l.classList.remove('active'));
+    const target = sectionMap[href];
+    if (target) document.getElementById(target).classList.add('active');
+    const link = document.querySelector(`.sidenav-item[href="${href}"]`);
+    if (link) link.classList.add('active');
+  }
+
+  document.querySelectorAll('.sidenav-item').forEach(link => {
+    link.addEventListener('click', function (e) {
+      e.preventDefault();
+      const href = this.getAttribute('href');
+      showSection(href);
+      localStorage.setItem('activeTab', href);
+    });
+  });
+
+  const savedTab = localStorage.getItem('activeTab');
+  if (savedTab && sectionMap[savedTab]) showSection(savedTab);
+
+  /* Load saved data */
+  function loadSavedData() {
+    if (localStorage.getItem('userName')) document.getElementById('userName').textContent = localStorage.getItem('userName');
+    if (localStorage.getItem('avatarImg')) document.querySelector('.avatar-img').src = localStorage.getItem('avatarImg');
+    if (localStorage.getItem('firstName')) document.getElementById('firstNameInput').value = localStorage.getItem('firstName');
+    if (localStorage.getItem('middleName')) document.getElementById('middleNameInput').value = localStorage.getItem('middleName');
+    if (localStorage.getItem('lastName')) document.getElementById('lastNameInput').value = localStorage.getItem('lastName');
+    if (localStorage.getItem('contact')) document.getElementById('contactInput').value = localStorage.getItem('contact');
+    if (localStorage.getItem('email')) document.getElementById('emailInput').value = localStorage.getItem('email');
+    if (localStorage.getItem('dob')) document.getElementById('dobInput').value = localStorage.getItem('dob');
+    if (localStorage.getItem('citizenship')) document.getElementById('citizenshipInput').value = localStorage.getItem('citizenship');
+    if (localStorage.getItem('address')) document.getElementById('addressInput').value = localStorage.getItem('address');
+    if (localStorage.getItem('civilStatus')) selectOption('civilDropdown', localStorage.getItem('civilStatus'));
+    if (localStorage.getItem('gender')) selectOption('genderDropdown', localStorage.getItem('gender'));
+
+    const savedDoc = localStorage.getItem('docFileName');
+    if (savedDoc) {
+      document.getElementById('uploadPlaceholder').style.display = 'none';
+      const fileDiv = document.getElementById('uploadedFile');
+      fileDiv.style.display = 'flex';
+      document.getElementById('uploadedFileName').textContent = savedDoc;
+    }
+  }
+  loadSavedData();
+
+  /* Save Profile */
+  function handleSave() {
+    const firstName = document.getElementById('firstNameInput').value;
+    const lastName = document.getElementById('lastNameInput').value;
+    const fullName = firstName + ' ' + lastName;
+
+    document.getElementById('userName').textContent = fullName;
+    localStorage.setItem('userName', fullName);
+    localStorage.setItem('firstName', firstName);
+    localStorage.setItem('middleName', document.getElementById('middleNameInput').value);
+    localStorage.setItem('lastName', lastName);
+    localStorage.setItem('contact', document.getElementById('contactInput').value);
+    localStorage.setItem('email', document.getElementById('emailInput').value);
+    localStorage.setItem('dob', document.getElementById('dobInput').value);
+    localStorage.setItem('citizenship', document.getElementById('citizenshipInput').value);
+    localStorage.setItem('address', document.getElementById('addressInput').value);
+    localStorage.setItem('civilStatus', document.getElementById('civilDropdown').dataset.value || 'Married');
+    localStorage.setItem('gender', document.getElementById('genderDropdown').dataset.value || 'Male');
+
+    const b = document.getElementById('successBanner');
+    b.style.display = 'none';
+    requestAnimationFrame(() => {
+      b.style.display = 'flex';
+      b.style.animation = 'none';
+      b.offsetHeight;
+      b.style.animation = 'fadeIn .4s ease';
+    });
+    setTimeout(() => {
+      b.style.transition = 'opacity .5s';
+      b.style.opacity = '0';
+      setTimeout(() => { b.style.display = 'none'; b.style.opacity = '1'; b.style.transition = ''; }, 500);
+    }, 4000);
+  }
+
+  /* Avatar */
+  function changeAvatar(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      document.querySelector('.avatar-img').src = e.target.result;
+      localStorage.setItem('avatarImg', e.target.result);
+    };
+    reader.readAsDataURL(file);
+  }
+
+  /* Document Upload */
+  function handleDocUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    document.getElementById('uploadPlaceholder').style.display = 'none';
+    const fileDiv = document.getElementById('uploadedFile');
+    fileDiv.style.display = 'flex';
+    document.getElementById('uploadedFileName').textContent = file.name;
+    localStorage.setItem('docFileName', file.name);
+  }
+
+  /* Toggle Password Visibility */
+  function togglePw(inputId, btn) {
+    const input = document.getElementById(inputId);
+    const img = btn.querySelector('img');
+    if (input.type === 'password') {
+      input.type = 'text';
+      img.src = 'images/eye-closed.png';
+    } else {
+      input.type = 'password';
+      img.src = 'images/eye-open.png';
+    }
+  }
+
+  /* Save Password */
+  function handlePwSave() {
+    const b = document.getElementById('pwSuccessBanner');
+    b.style.display = 'none';
+    requestAnimationFrame(() => {
+      b.style.display = 'flex';
+      b.style.animation = 'none';
+      b.offsetHeight;
+      b.style.animation = 'fadeIn .4s ease';
+    });
+    setTimeout(() => {
+      b.style.transition = 'opacity .5s';
+      b.style.opacity = '0';
+      setTimeout(() => { b.style.display = 'none'; b.style.opacity = '1'; b.style.transition = ''; }, 500);
+    }, 4000);
+  }
+</script>
+</body>
+</html>

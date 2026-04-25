@@ -1,8 +1,10 @@
 <?php
 require_once __DIR__ . '/../app/helpers/auth.php';
 require_once __DIR__ . '/../app/core/CitiServeData.php';
+require_once __DIR__ . '/../app/helpers/resident_navbar.php';
 
 $user = require_verified_resident('document request pages');
+$navCtx = build_resident_navbar_context((int)$user['id']);
 $data = new CitiServeData();
 
 $requestId = isset($_GET['request_id']) ? (int)$_GET['request_id'] : 0;
@@ -51,9 +53,11 @@ $refLabel = 'DOC-' . str_pad((string)((int)$success['request_id']), 10, '0', STR
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Request Submitted</title>
     <link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/CitiServe/frontend/dashboard/CSS/dashboard.css">
     <link rel="stylesheet" href="/CitiServe/frontend/document_request/css/request_submitted.css">
 </head>
 <body>
+<?php render_resident_navbar($navCtx, 'document'); ?>
 <div class="content-area">
     <div class="ticket-wrapper">
         <img src="/CitiServe/frontend/document_request/images/request-receipt.png" alt="" class="ticket-bg" />
@@ -108,5 +112,6 @@ $refLabel = 'DOC-' . str_pad((string)((int)$success['request_id']), 10, '0', STR
         <img src="/CitiServe/frontend/document_request/images/request-faded-logo.png" class="faded-logo" alt="">
     </div>
 </div>
+<script src="/CitiServe/frontend/dashboard/dashboard.js"></script>
 </body>
 </html>

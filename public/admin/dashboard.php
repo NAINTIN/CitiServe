@@ -1,6 +1,8 @@
 <?php
 require_once __DIR__ . '/../../app/helpers/auth.php';
+require_once __DIR__ . '/../../app/helpers/csrf.php';
 require_once __DIR__ . '/../../app/core/CitiServeData.php';
+require_once __DIR__ . '/../../app/helpers/admin_notifications.php';
 
 $admin = require_admin();
 $data = new CitiServeData();
@@ -106,6 +108,12 @@ $user = [
     'avatar' => '',
 ];
 
+$adminNotif = build_admin_notifications($data, (int)$admin['id']);
+$notifSections = $adminNotif['sections'];
+$hasNotif = $adminNotif['has_notif'];
+$notifications = $adminNotif['notifications'];
+$unreadCount = (int)$adminNotif['unread_count'];
+
 $requestIcons = [
     'Barangay Business Clearance'    => 'images/business_clearance.png',
     'Barangay Clearance'             => 'images/barangay_clearance.png',
@@ -175,6 +183,63 @@ $hasAnnouncement = false;
     <a href="/CitiServe/public/admin/user_verification.php" class="nav-item"><span class="nav-text">Account Verification</span></a>
   </div>
   <div class="navbar-right admin-navbar-right">
+    <button class="notif-btn" id="notifBtn"
+      data-has-notif="<?= $hasNotif ? '1' : '0' ?>"
+      data-img-on="/CitiServe/frontend/admin_dashboard/images/with_notif.png"
+      data-img-off="/CitiServe/frontend/admin_dashboard/images/no_notif.png"
+      data-img-active="/CitiServe/frontend/admin_dashboard/images/select_notif.png"
+      data-read-url="/CitiServe/public/admin/notifications_read.php"
+      data-csrf-token="<?= h(csrf_token()) ?>"
+      title="Notifications">
+      <img id="notifIcon"
+        src="<?= $hasNotif ? '/CitiServe/frontend/admin_dashboard/images/with_notif.png' : '/CitiServe/frontend/admin_dashboard/images/no_notif.png' ?>"
+        alt="Notifications">
+      <span class="notif-count-badge" id="notifCount" <?= $unreadCount > 0 ? '' : 'style="display:none;"' ?>>
+        <?= $unreadCount > 99 ? '99+' : (int)$unreadCount ?>
+      </span>
+    </button>
+    <div class="notif-panel" id="notifPanel" aria-label="Notifications">
+      <div class="notif-panel-header">
+        <span class="notif-panel-title">Notifications</span>
+        <button class="notif-panel-more" title="More options">···</button>
+      </div>
+      <div class="notif-tabs">
+        <button class="notif-tab active" data-filter="all">All</button>
+        <button class="notif-tab" data-filter="document">Document</button>
+        <button class="notif-tab" data-filter="complaint">Complaint</button>
+      </div>
+      <div class="notif-list" id="notifList">
+        <?php foreach (['new' => 'New', 'today' => 'Today', 'earlier' => 'Earlier'] as $key => $label): ?>
+          <?php if (!empty($notifSections[$key])): ?>
+            <div class="notif-section-label" data-section="<?= h($key) ?>"><?= h($label) ?></div>
+            <?php foreach ($notifSections[$key] as $n): ?>
+              <div class="notif-item <?= $n['read'] ? '' : 'unread' ?>"
+                data-id="<?= (int)$n['id'] ?>"
+                data-category="<?= h($n['category']) ?>"
+                data-link="<?= h($n['link']) ?>">
+                <div class="notif-icon-wrap">
+                  <img class="notif-icon-main" src="<?= h($n['main_icon']) ?>" alt="">
+                  <?php if (!empty($n['badge_icon'])): ?>
+                    <img class="notif-icon-badge" src="<?= h($n['badge_icon']) ?>" alt="">
+                  <?php endif; ?>
+                </div>
+                <div class="notif-text">
+                  <div class="notif-msg"><?= h($n['message']) ?></div>
+                  <div class="notif-time"><?= h($n['time_label']) ?></div>
+                </div>
+                <div class="notif-dot"></div>
+              </div>
+            <?php endforeach; ?>
+          <?php endif; ?>
+        <?php endforeach; ?>
+        <?php if (empty($notifications)): ?>
+          <div class="notif-empty">No notifications yet.</div>
+        <?php endif; ?>
+      </div>
+      <div class="notif-footer">
+        <button class="notif-see-prev" id="notifSeePrev"><p>Go to requests and complaints</p></button>
+      </div>
+    </div>
     <div class="profile-pill" id="profilePill">
       <div class="profile-avatar">
         <img src="<?= !empty($user['avatar']) ? h($user['avatar']) : 'images/admin_dummy_icon.png' ?>" alt="Admin Profile">
@@ -187,6 +252,10 @@ $hasAnnouncement = false;
         <div class="profile-panel-fullname"><?= h($user['full_name']) ?></div>
         <div class="profile-panel-subtext"><?= h(ucfirst((string)$admin['role'])) ?> • Brgy. Kalayaan</div>
       </div>
+      <a href="/CitiServe/public/admin/profile.php" class="profile-panel-item">
+        <img src="/CitiServe/frontend/admin_dashboard/images/my_profile.png" alt="My Profile" class="profile-panel-icon1">
+        <span>My Profile</span>
+      </a>
       <a href="/CitiServe/public/logout.php" class="profile-panel-item logout">
         <img src="images/logout.png" alt="Logout" class="profile-panel-icon2">
         <span>Logout</span>

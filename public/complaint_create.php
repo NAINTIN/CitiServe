@@ -39,8 +39,10 @@ function complaint_normalize_category($name)
     return trim((string)$v);
 }
 
-$user = require_verified_resident('complaint submission');
+$user = require_resident();
 $data = new CitiServeData();
+$dbUser = $data->findUserById((int)$user['id']);
+$isVerified = ($dbUser && (int)$dbUser->is_verified === 1);
 $categories = $data->getActiveComplaintCategories();
 $categoryById = [];
 foreach ($categories as $cat) {
@@ -56,6 +58,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $errors[] = 'Only files less than or equal to 10MB are allowed.';
     } else {
         csrf_verify_or_die();
+        if (!$isVerified) {
+            $errors[] = 'Your account must be verified before you can submit a complaint.';
+        }
 
         $categoryId = isset($_POST['category_id']) ? (int)$_POST['category_id'] : 0;
         $title = isset($_POST['title']) ? trim((string)$_POST['title']) : '';
@@ -476,6 +481,9 @@ $complaintCategories[] = [
 
     <h1 class="page-title">Submit a Community Complaint</h1>
     <p class="page-subtitle">Select the category that best describes your concern.</p>
+    <?php if (!$isVerified): ?>
+      <div style="margin-bottom: 14px; color: #b42318; font-weight: 600;">Your account is not yet verified. You can browse complaint categories, but you must be verified before submitting.</div>
+    <?php endif; ?>
 
     <div class="reminders-wrap">
       <img src="/CitiServe/frontend/complaints/images/complaint_reminders.png" alt="Important Reminders" class="reminders-img">
@@ -483,9 +491,10 @@ $complaintCategories[] = [
 
     <div class="complaint-grid">
       <?php foreach ($complaintCategories as $item): ?>
-            <a href="<?= $item['title'] === 'Anonymous Report' ? '#' : htmlspecialchars($item['link']) ?>"
+            <a href="<?= !$isVerified ? '#' : ($item['title'] === 'Anonymous Report' ? '#' : htmlspecialchars($item['link'])) ?>"
             class="complaint-card-item <?= $item['title'] === 'Other Concerns' ? 'other-concerns-card' : '' ?>"
-            <?= $item['title'] === 'Anonymous Report' ? 'id="anonymousBtn" data-anonymous-link="' . htmlspecialchars($item['link']) . '"' : '' ?>>
+            <?= $item['title'] === 'Anonymous Report' ? 'id="anonymousBtn" data-anonymous-link="' . htmlspecialchars($item['link']) . '"' : '' ?>
+            <?= !$isVerified ? 'style="opacity:.6;cursor:not-allowed;"' : '' ?>>
             <div class="complaint-card-subtle">
             <img src="<?= htmlspecialchars($item['subtle']) ?>" alt="">
           </div>
@@ -519,7 +528,11 @@ $complaintCategories[] = [
     <div class="anon-actions">
     <div class="anon-actions">
       <img src="/CitiServe/frontend/complaints/images/anonymous_back.png" id="anonBack" class="anon-btn" alt="Back">
-      <img src="/CitiServe/frontend/complaints/images/anonymous_continue.png" id="anonContinue" class="anon-btn" alt="Continue">
+      <?php if ($isVerified): ?>
+        <img src="/CitiServe/frontend/complaints/images/anonymous_continue.png" id="anonContinue" class="anon-btn" alt="Continue">
+      <?php else: ?>
+        <img src="/CitiServe/frontend/complaints/images/anonymous_continue.png" class="anon-btn" alt="Continue" style="opacity:.55;cursor:not-allowed;">
+      <?php endif; ?>
     </div>
     </div>
   </div>

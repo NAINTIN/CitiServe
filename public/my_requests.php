@@ -1,9 +1,36 @@
 <?php
 require_once __DIR__ . '/../app/helpers/auth.php';
+require_once __DIR__ . '/../app/helpers/csrf.php';
 require_once __DIR__ . '/../app/core/CitiServeData.php';
 
 $user = require_login();
 $data = new CitiServeData();
+$deletableStatuses = ['received', 'pending'];
+$message = '';
+$error = '';
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    csrf_verify_or_die();
+    $action = isset($_POST['action']) ? trim((string)$_POST['action']) : '';
+    $requestId = isset($_POST['request_id']) ? (int)$_POST['request_id'] : 0;
+
+    if ($action === 'delete_request' && $requestId > 0) {
+        $current = $data->findDocumentRequestById($requestId);
+        if (!$current || (int)$current['user_id'] !== (int)$user['id']) {
+            $error = 'Request not found.';
+        } elseif (!in_array(strtolower((string)$current['status']), $deletableStatuses, true)) {
+            $error = 'This request can no longer be deleted.';
+        } else {
+            try {
+                $data->deleteDocumentRequestById($requestId);
+                $message = 'Request deleted successfully.';
+            } catch (Throwable $e) {
+                $error = 'Failed to delete request.';
+            }
+        }
+    }
+}
+
 $requests = $data->getDocumentRequestsByUserId((int)$user['id']);
 
 $notifications = [];
@@ -132,6 +159,13 @@ $firstName = trim(explode(' ', (string)($user['full_name'] ?? 'Resident'))[0]);
 
 <div class="page-body">
   <div class="requests-page-card">
+    <?php if ($message): ?>
+      <div style="margin: 12px 0; color: #198754; font-weight: 600;"><?= h($message) ?></div>
+    <?php endif; ?>
+    <?php if ($error): ?>
+      <div style="margin: 12px 0; color: #c1121f; font-weight: 600;"><?= h($error) ?></div>
+    <?php endif; ?>
+
     <img src="/CitiServe/frontend/my_resident/images/flower_design.png" alt="" class="flower-design top-flower">
     <img src="/CitiServe/frontend/my_resident/images/flower_design.png" alt="" class="flower-design bottom-flower">
 
@@ -228,6 +262,14 @@ $firstName = trim(explode(' ', (string)($user['full_name'] ?? 'Resident'))[0]);
               </div>
               <div class="request-cell details-cell">
                 <button type="button" class="details-btn">Details</button>
+                <?php if (in_array($status, $deletableStatuses, true)): ?>
+                  <form method="post" style="margin-top:6px;" onsubmit="return confirm('Delete this request? This action cannot be undone.');">
+                    <?= csrf_field() ?>
+                    <input type="hidden" name="action" value="delete_request">
+                    <input type="hidden" name="request_id" value="<?= (int)$r['id'] ?>">
+                    <button type="submit" class="details-btn">Delete</button>
+                  </form>
+                <?php endif; ?>
               </div>
             </div>
           <?php endforeach; ?>

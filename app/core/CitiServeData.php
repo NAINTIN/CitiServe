@@ -184,6 +184,15 @@ class CitiServeData
         return $stmt->fetch() ?: null;
     }
 
+    public function deleteDocumentRequestById($id)
+    {
+        $requestId = (int)$id;
+        $this->db->prepare('DELETE FROM document_request_files WHERE document_request_id = ?')->execute([$requestId]);
+        $this->db->prepare("DELETE FROM status_history WHERE entity_type = 'document_request' AND entity_id = ?")->execute([$requestId]);
+        $stmt = $this->db->prepare('DELETE FROM document_requests WHERE id = ?');
+        return $stmt->execute([$requestId]);
+    }
+
     public function getDocumentRequestByIdWithService($id)
     {
         $stmt = $this->db->prepare("
@@ -293,6 +302,22 @@ class CitiServeData
         $stmt = $this->db->prepare('SELECT id, status FROM complaints WHERE id = ? LIMIT 1');
         $stmt->execute([$id]);
         return $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
+    }
+
+    public function findComplaintByIdWithOwner($id)
+    {
+        $stmt = $this->db->prepare('SELECT id, user_id, status FROM complaints WHERE id = ? LIMIT 1');
+        $stmt->execute([(int)$id]);
+        return $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
+    }
+
+    public function deleteComplaintById($id)
+    {
+        $complaintId = (int)$id;
+        $this->db->prepare('DELETE FROM complaint_evidence WHERE complaint_id = ?')->execute([$complaintId]);
+        $this->db->prepare("DELETE FROM status_history WHERE entity_type = 'complaint' AND entity_id = ?")->execute([$complaintId]);
+        $stmt = $this->db->prepare('DELETE FROM complaints WHERE id = ?');
+        return $stmt->execute([$complaintId]);
     }
 
     public function updateComplaintStatus($complaintId, $newStatus)

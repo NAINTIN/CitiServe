@@ -1,9 +1,36 @@
 <?php
 require_once __DIR__ . '/../app/helpers/auth.php';
+require_once __DIR__ . '/../app/helpers/csrf.php';
 require_once __DIR__ . '/../app/core/CitiServeData.php';
 
 $user = require_login();
 $data = new CitiServeData();
+$deletableStatuses = ['submitted', 'under_review', 'in_progress'];
+$message = '';
+$error = '';
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    csrf_verify_or_die();
+    $action = isset($_POST['action']) ? trim((string)$_POST['action']) : '';
+    $complaintId = isset($_POST['complaint_id']) ? (int)$_POST['complaint_id'] : 0;
+
+    if ($action === 'delete_complaint' && $complaintId > 0) {
+        $current = $data->findComplaintByIdWithOwner($complaintId);
+        if (!$current || (int)$current['user_id'] !== (int)$user['id']) {
+            $error = 'Complaint not found.';
+        } elseif (!in_array(strtolower((string)$current['status']), $deletableStatuses, true)) {
+            $error = 'This complaint can no longer be deleted.';
+        } else {
+            try {
+                $data->deleteComplaintById($complaintId);
+                $message = 'Complaint deleted successfully.';
+            } catch (Throwable $e) {
+                $error = 'Failed to delete complaint.';
+            }
+        }
+    }
+}
+
 $rows = $data->getComplaintsByUserId((int)$user['id']);
 
 $notifications = [];
@@ -151,6 +178,13 @@ $contactNumber = isset($user['contact_number']) ? (string)$user['contact_number'
 
 <div class="page-body">
   <div class="complaints-page-card">
+    <?php if ($message): ?>
+      <div style="margin: 12px 0; color: #198754; font-weight: 600;"><?= h($message) ?></div>
+    <?php endif; ?>
+    <?php if ($error): ?>
+      <div style="margin: 12px 0; color: #c1121f; font-weight: 600;"><?= h($error) ?></div>
+    <?php endif; ?>
+
     <img src="/CitiServe/frontend/my_resident/images/flower_design.png" alt="" class="flower-design top-flower">
     <img src="/CitiServe/frontend/my_resident/images/flower_design.png" alt="" class="flower-design bottom-flower">
 
@@ -251,6 +285,14 @@ $contactNumber = isset($user['contact_number']) ? (string)$user['contact_number'
               </div>
               <div class="complaint-cell details-cell">
                 <button type="button" class="details-btn">Details</button>
+                <?php if (in_array(strtolower((string)($r['status'] ?? '')), $deletableStatuses, true)): ?>
+                  <form method="post" style="margin-top:6px;" onsubmit="return confirm('Delete this complaint? This action cannot be undone.');">
+                    <?= csrf_field() ?>
+                    <input type="hidden" name="action" value="delete_complaint">
+                    <input type="hidden" name="complaint_id" value="<?= (int)$r['id'] ?>">
+                    <button type="submit" class="details-btn">Delete</button>
+                  </form>
+                <?php endif; ?>
               </div>
             </div>
           <?php endforeach; ?>

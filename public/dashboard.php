@@ -20,6 +20,11 @@ $db = $data->getPdo();
 $isAdminPortal = ($sessionUser->role === 'admin' || $sessionUser->role === 'staff');
 $userId = (int)$sessionUser->id;
 
+if ($isAdminPortal) {
+  header('Location: /CitiServe/public/admin/dashboard.php');
+  exit;
+}
+
 $user = [
   'first_name' => trim(explode(' ', (string)$sessionUser->full_name)[0]),
   'full_name'  => (string)$sessionUser->full_name,

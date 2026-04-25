@@ -152,11 +152,11 @@ function request_status_image($status)
 <div class="design-strip right"><img src="/CitiServe/frontend/admin_dashboard/images/dashboard_design.png" alt=""></div>
 
 <nav class="navbar">
-  <a href="/CitiServe/public/dashboard.php" class="navbar-logo">
+  <a href="/CitiServe/public/admin/dashboard.php" class="navbar-logo">
     <img src="/CitiServe/frontend/admin_dashboard/images/logo_pink.png" alt="CitiServe">
   </a>
   <div class="navbar-nav admin-nav">
-    <a href="/CitiServe/public/dashboard.php" class="nav-item"><span class="nav-text">Dashboard</span></a>
+    <a href="/CitiServe/public/admin/dashboard.php" class="nav-item"><span class="nav-text">Dashboard</span></a>
     <a href="/CitiServe/public/admin/requests.php" class="nav-item active"><span class="nav-text">Document Requests</span></a>
     <a href="/CitiServe/public/admin/complaints.php" class="nav-item"><span class="nav-text">Complaints</span></a>
     <div class="nav-item has-dropdown">
